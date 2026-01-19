@@ -1,0 +1,15 @@
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+.logoMain {
+  width: 500px;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
