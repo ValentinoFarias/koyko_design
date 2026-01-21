@@ -3,6 +3,7 @@ body {
   display: grid;
   place-items: center;
   margin: 0;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .logoMain {
   width: 500px;
@@ -15,3 +16,36 @@ body {
   cursor: pointer;
 }
 
+/* Page Transition Overlay */
+.transitionContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.transition-row {
+  flex: 1;
+  display: flex;
+}
+
+.transition-row.row-1 .block {
+  transform-origin: top;
+}
+
+.transition-row.row-2 .block {
+  transform-origin: bottom;
+}
+
+.block {
+  flex: 1;
+  background-color: #000000;
+  transform: scaleY(0);
+  visibility: hidden;
+  will-change: transform;
+}

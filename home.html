@@ -9,14 +9,39 @@
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
- <div>
-    <!-- Lottie Logo  -->
-    <lottie-player class="logoMain" src="assets/anim/logoAnimation.json" background="#ffffff"  speed="1"   autoplay></lottie-player>
-    <!-- End Lottie Logo  -->
- </div>
+  <!-- Page Transition Overlay -->
+  <div class="transitionContainer">
+    <div class="transition-row row-1">
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+    </div>
+    <div class="transition-row row-2">
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+    </div>
+  </div>
+ <main>
+        <!-- Lottie Logo  -->
+        <div class="container d-flex justify-content-center align-items-center">
+            <div class="w-100 text-center">
+                <a href="index.html" class="logo-link d-inline-block">
+                    <lottie-player class="logoMain img-fluid w-100" src="assets/anim/logoAnimation.json" background="#ffffff" speed="1" autoplay></lottie-player>
+                </a>
+            </div>
+        </div>
+ </main>
+        
 
 
-    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
     <!-- LottieFiles Player CDN -->
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     
