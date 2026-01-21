@@ -49,3 +49,9 @@ body {
   visibility: hidden;
   will-change: transform;
 }
+
+/* On pages with run-reveal (index), start fully covered so there's no white flash */
+body.run-reveal .block {
+  transform: scaleY(1);
+  visibility: visible;
+}
