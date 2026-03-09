@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap');
+
 /* =============================================================================
    CSS CUSTOM PROPERTIES (DESIGN TOKENS)
    Central source of truth for all reusable values across the site.
@@ -8,6 +10,7 @@
   /* ---- Typography ---- */
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   --font-alt:  'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  --font-counter: 'Architects Daughter', 'Inter', system-ui, -apple-system, sans-serif;
 
   --font-size-xs:   0.75rem;              /* 12px — labels, meta */
   --font-size-sm:   0.85rem;              /* 13.6px — form labels, fine print */
@@ -104,16 +107,40 @@ body {
 
 /* ===== Landing Counter =====
    GSAP animates the text content from "0%" to "100%" over 3 seconds.
-   Positioned on the left edge and rotated 270° so digits read vertically.
+   Rendered in a centered 2-column grid next to the logo and rotated 270°
+   so digits read vertically while staying aligned with the logo centerline.
    font-family is declared with the literal stack (not just the variable) because
    lottie-player.js (a Lit web component) injects global styles at runtime that
    can override inherited and variable-referenced font declarations. */
+main .landing-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+main .landing-logo-slot {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 main .landing-counter {
-  position: absolute;
-  left: 40px;
-  top: 50%;
-  transform: translateY(-50%) rotate(270deg);
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  grid-column: 1;
+  justify-self: end;
+  margin-right: clamp(1.5rem, 6vw, 4.5rem);
+  position: static;
+  transform: rotate(270deg);
+  transform-origin: center;
+  display: inline-block;
+  width: 4ch; /* reserve width for "100%" so text updates do not shift position */
+  text-align: right;
+  white-space: nowrap;
+  line-height: 1;
+  font-family: var(--font-counter);
   font-size: 4rem;
   font-weight: var(--font-weight-normal);
   color: var(--color-fg);

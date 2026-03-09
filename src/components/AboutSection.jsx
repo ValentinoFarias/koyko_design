@@ -9,7 +9,7 @@ function AboutSection() {
             About
           </h2>
           <p className="section__lead">
-            I craft digital products that balance aesthetics, usability, and performance.
+            100 I craft digital products that balance aesthetics, usability, and performance.
           </p>
           <p className="section__body">
             With experience across design systems, front-end engineering, and motion design, I help teams ship fast,
