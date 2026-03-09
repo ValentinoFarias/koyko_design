@@ -1,29 +1,129 @@
+/* =============================================================================
+   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   Central source of truth for all reusable values across the site.
+   Update tokens here to propagate changes everywhere.
+   ============================================================================= */
+
+:root {
+  /* ---- Typography ---- */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  --font-alt:  'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+
+  --font-size-xs:   0.75rem;              /* 12px — labels, meta */
+  --font-size-sm:   0.85rem;              /* 13.6px — form labels, fine print */
+  --font-size-base: 1rem;                 /* 16px — body copy */
+  --font-size-lg:   1.05rem;              /* card titles */
+  --font-size-xl:   1.8rem;              /* section headings */
+  --font-size-2xl:  clamp(2.3rem, 4vw, 3rem); /* hero headline — fluid */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold:   700;
+
+  --line-height-tight:  1.05;
+  --line-height-normal: 1.7;
+
+  /* ---- Color Palette (Light Theme) ---- */
+  --color-bg:             #f7f3e2;              /* warm off-white canvas */
+  --color-bg-elevated:    #ffffff;              /* cards, modals, header */
+  --color-surface-subtle: #f0e9d4;              /* skeleton base, section tints */
+  --color-fg:             #000000;              /* primary text */
+  --color-fg-muted:       #5b5444;              /* secondary / supporting text */
+  --color-accent:         #99753f;              /* brand color — CTAs, links */
+  --color-accent-soft:    rgba(153, 117, 63, 0.14); /* tinted hover backgrounds */
+  --color-border-subtle:  rgba(0, 0, 0, 0.08);
+  --color-error:          #d72638;              /* form validation messages */
+
+  /* ---- Shadows ---- */
+  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.12); /* cards, elevated surfaces */
+  --shadow-card: 0 14px 30px rgba(0, 0, 0, 0.04); /* lighter card shadow */
+
+  /* ---- Spacing Scale ---- */
+  --space-xs:  0.35rem;
+  --space-sm:  0.75rem;
+  --space-md:  1.5rem;
+  --space-lg:  2.5rem;
+  --space-xl:  4rem;
+  --space-2xl: 5rem;
+
+  /* ---- Border Radius ---- */
+  --radius-sm:   0.85rem;  /* inputs */
+  --radius-md:   1.25rem;  /* cards */
+  --radius-lg:   1.5rem;   /* card containers / panels */
+  --radius-full: 999px;    /* pills — buttons, toggles, nav links */
+
+  /* ---- Transitions ---- */
+  --transition-fast:   0.2s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow:   0.35s ease;
+
+  /* ---- Z-index Scale ---- */
+  --z-overlay: 9999; /* page transition curtain — always on top */
+  --z-header:    40; /* sticky header */
+}
+
+/* Dark theme token overrides.
+   Applied automatically when HomePage.jsx sets <html data-theme="dark">.
+   Only tokens that differ from the light theme are listed here. */
+html[data-theme='dark'] {
+  --color-bg:             #050510;
+  --color-bg-elevated:    #10101c;
+  --color-surface-subtle: #151526;
+  --color-fg:             #f9f9ff;
+  --color-fg-muted:       #a2a2c5;
+  --color-accent:         #7b7bff;
+  --color-accent-soft:    rgba(123, 123, 255, 0.16);
+  --color-border-subtle:  rgba(249, 249, 255, 0.06);
+  --shadow-soft:          0 22px 55px rgba(0, 0, 0, 0.65);
+}
 
 
-
-
+/* =============================================================================
+   BASE / GLOBAL RESET
+   Minimal foundational styles applied to the document root and body.
+   ============================================================================= */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  min-height: 100vh;
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  /* Used by page-transition logic to fade the body during route changes */
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
-.landing-counter {
+
+
+/* =============================================================================
+   LANDING PAGE  (LandingPage.jsx)
+   Intro / splash screen served at route "/".
+   Visual order: animated percentage counter → centred Lottie logo animation.
+   ============================================================================= */
+
+/* ===== Landing Counter =====
+   GSAP animates the text content from "0%" to "100%" over 3 seconds.
+   Positioned on the left edge and rotated 270° so digits read vertically.
+   font-family is declared with the literal stack (not just the variable) because
+   lottie-player.js (a Lit web component) injects global styles at runtime that
+   can override inherited and variable-referenced font declarations. */
+main .landing-counter {
   position: absolute;
   left: 40px;
-  bottom: 40px;
+  top: 50%;
+  transform: translateY(-50%) rotate(270deg);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   font-size: 4rem;
-  font-weight: 700;
-  color: #000;
-  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-normal);
+  color: var(--color-fg);
+  font-variant-numeric: tabular-nums; /* fixed-width digits prevent layout shift */
   pointer-events: none;
 }
 
+/* ===== Landing Logo Animation =====
+   Wraps the <lottie-player> custom element. The player manages its own
+   internal canvas; we set fixed dimensions and center it on screen. */
 .logoMain {
   width: 500px;
   height: 500px;
@@ -31,150 +131,170 @@ body {
   justify-content: center;
   align-items: center;
   margin: auto;
-  transform: translateY(-1px);
+  transform: translateY(-1px); /* optical alignment — corrects a 1px visual offset */
   cursor: pointer;
 }
 
-/* Page Transition Overlay */
+
+/* =============================================================================
+   PAGE TRANSITION OVERLAY  (TransitionOverlay.jsx + pageTransitions.js)
+   A full-screen curtain rendered above all content (z-index: --z-overlay).
+   Ten blocks arranged in two rows of five animate scaleY via GSAP to produce
+   a split-wipe effect when navigating between "/" and "/home".
+   ============================================================================= */
+
+/* Fixed overlay container — pointer-events: none so it never blocks interaction */
 .transitionContainer {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100dvh;
+  height: 100dvh; /* dvh accounts for collapsible mobile browser chrome */
   display: flex;
   flex-direction: column;
-  z-index: 9999;
+  z-index: var(--z-overlay);
   pointer-events: none;
 }
 
+/* Each row fills half the screen height and lays five blocks side by side */
 .transition-row {
   flex: 1;
   display: flex;
 }
 
+/* Row 1 blocks scale from the top edge (curtain pulls up) */
 .transition-row.row-1 .block {
   transform-origin: top;
 }
 
+/* Row 2 blocks scale from the bottom edge (curtain pulls down) */
 .transition-row.row-2 .block {
   transform-origin: bottom;
 }
 
+/* Individual curtain segment — starts collapsed and hidden */
 .block {
   flex: 1;
   background-color: #000000;
   transform: scaleY(0);
   visibility: hidden;
-  will-change: transform;
+  will-change: transform; /* promote to compositor layer for smooth GSAP tweens */
 }
 
-/* On pages with run-reveal (index), start fully covered so there's no white flash */
+/* On the landing page, body receives .run-reveal so blocks start fully visible
+   and GSAP animates them away, revealing the page beneath on first load. */
 body.run-reveal .block {
   transform: scaleY(1);
   visibility: visible;
 }
 
-/* ==========================
-   Theme tokens
-   ========================== */
 
-:root {
-  --color-bg: #f5f5f7;
-  --color-bg-elevated: #ffffff;
-  --color-surface-subtle: #f0f0f3;
-  --color-fg: #111118;
-  --color-fg-muted: #4a4a55;
-  --color-accent: #5b5bff;
-  --color-accent-soft: rgba(91, 91, 255, 0.12);
-  --color-border-subtle: rgba(17, 17, 24, 0.08);
-  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.08);
-}
+/* =============================================================================
+   HOMEPAGE – APP WRAPPER & TOP-LEVEL LAYOUT  (HomePage.jsx)
+   Root wrapper that carries the themed gradient background and
+   the main content offset below the sticky header.
+   ============================================================================= */
 
-html[data-theme='dark'] {
-  --color-bg: #050510;
-  --color-bg-elevated: #10101c;
-  --color-surface-subtle: #151526;
-  --color-fg: #f9f9ff;
-  --color-fg-muted: #a2a2c5;
-  --color-accent: #7b7bff;
-  --color-accent-soft: rgba(123, 123, 255, 0.16);
-  --color-border-subtle: rgba(249, 249, 255, 0.06);
-  --shadow-soft: 0 22px 55px rgba(0, 0, 0, 0.65);
-}
-
+/* ===== App Wrapper =====
+   Dual radial gradient overlaid on --color-bg creates a subtle ambient glow.
+   The gradient colors are intentionally theme-agnostic (they read well on both
+   light and dark backgrounds). */
 .app {
-  background: radial-gradient(circle at top left, rgba(91, 91, 255, 0.12), transparent 55%),
-    radial-gradient(circle at bottom right, rgba(255, 111, 145, 0.16), transparent 60%), var(--color-bg);
+  background:
+    radial-gradient(circle at top left,  rgba(91, 91, 255, 0.12), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(255, 111, 145, 0.16), transparent 60%),
+    var(--color-bg);
   color: var(--color-fg);
   min-height: 100vh;
 }
 
+/* Pushes page content below the sticky header (height ≈ 5rem) */
 .layout-main {
   padding-top: 5rem;
 }
 
+
+/* =============================================================================
+   HOMEPAGE – SHARED SECTION UTILITIES
+   Applied to every <section> on the homepage for consistent spacing and layout.
+   ============================================================================= */
+
 .section {
-  padding: 4rem 1.5rem;
+  padding: var(--space-xl) var(--space-md);
+  /* Prevents sticky header from obscuring the section anchor when scrolled-to */
   scroll-margin-top: 6rem;
 }
 
-@media (min-width: 768px) {
-  .section {
-    padding: 5rem 3rem;
-  }
-}
-
+/* Constrains section content to the design's max readable width */
 .section__inner {
   max-width: 1120px;
   margin: 0 auto;
 }
 
 .section__title {
-  font-size: 1.8rem;
+  font-size: var(--font-size-xl);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0 0 0.75rem;
 }
 
 .section__lead {
-  margin: 0 0 1.5rem;
-  font-size: 1rem;
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-base);
   color: var(--color-fg-muted);
 }
 
 .section__body {
   margin: 0 0 1rem;
   color: var(--color-fg-muted);
-  line-height: 1.7;
+  line-height: var(--line-height-normal);
 }
 
 .section__header {
   margin-bottom: 2.5rem;
 }
 
+/* Small uppercase label displayed above section headings for visual hierarchy */
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-fg-muted);
   margin-bottom: 0.5rem;
 }
 
-/* ==========================
-   Header / Navigation
-   ========================== */
+/* Generic inline hyperlink — used in the Contact aside */
+.link-inline {
+  color: var(--color-accent);
+  text-decoration: none;
+}
 
+.link-inline:hover,
+.link-inline:focus-visible {
+  text-decoration: underline;
+}
+
+
+/* =============================================================================
+   HOMEPAGE – HEADER / NAVIGATION  (Header.jsx)
+   Sticky top bar: logo, desktop nav links, theme toggle, mobile hamburger.
+   ============================================================================= */
+
+/* ===== Site Header ===== */
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 40;
-  backdrop-filter: blur(16px);
+  z-index: var(--z-header);
+  backdrop-filter: blur(16px); /* frosted-glass effect behind the header */
   background: color-mix(in srgb, var(--color-bg-elevated) 88%, transparent 12%);
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  transition:
+    box-shadow    var(--transition-normal),
+    background    var(--transition-normal),
+    border-color  var(--transition-normal);
 }
 
+/* Shadow class toggled by JS when window.scrollY exceeds ~10px */
 .site-header--scrolled {
   box-shadow: var(--shadow-soft);
 }
@@ -182,15 +302,15 @@ html[data-theme='dark'] {
 .site-header__inner {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0.9rem 1.5rem;
+  padding: 0.9rem var(--space-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--space-md);
 }
 
 .site-header__logo {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-size: 0.9rem;
@@ -198,35 +318,34 @@ html[data-theme='dark'] {
   color: var(--color-fg);
 }
 
+/* ===== Desktop Navigation List ===== */
+
 .nav-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: none;
+  display: none; /* base state — overridden by the desktop modifier below */
 }
 
+/* Hidden by default; revealed via media query at the bottom of this file */
 .nav-list--desktop {
   display: none;
 }
 
-@media (min-width: 768px) {
-  .nav-list--desktop {
-    display: flex;
-    gap: 1rem;
-  }
-}
-
+/* Nav links are <button> elements for proper keyboard and screen-reader support */
 .nav-list__link {
   background: none;
   border: none;
   padding: 0.4rem 0.8rem;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   color: var(--color-fg-muted);
   font-size: 0.9rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color var(--transition-fast),
+    color            var(--transition-fast);
 }
 
 .nav-list__link:hover,
@@ -236,14 +355,16 @@ html[data-theme='dark'] {
   color: var(--color-fg);
 }
 
+/* ===== Header Action Buttons (theme toggle + mobile hamburger) ===== */
+
 .site-header__actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-sm);
 }
 
 .theme-toggle {
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   width: 2.2rem;
   height: 2.2rem;
   border: 1px solid var(--color-border-subtle);
@@ -255,8 +376,9 @@ html[data-theme='dark'] {
   font-size: 1.1rem;
 }
 
+/* Hamburger icon — hidden via media query at the bottom of this file */
 .menu-toggle {
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   width: 2.4rem;
   height: 2.4rem;
   border: 1px solid var(--color-border-subtle);
@@ -272,20 +394,18 @@ html[data-theme='dark'] {
 .menu-toggle__bar {
   width: 1.1rem;
   height: 2px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background-color: var(--color-fg);
 }
 
-@media (min-width: 768px) {
-  .menu-toggle {
-    display: none;
-  }
-}
+/* ===== Mobile Navigation Drawer ===== */
 
+/* Collapsed by default; max-height transition creates a slide-down open effect.
+   Hidden entirely on desktop via media query at the bottom of this file. */
 .mobile-nav {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s ease;
+  transition: max-height var(--transition-slow);
   background: var(--color-bg-elevated);
   border-bottom: 1px solid var(--color-border-subtle);
 }
@@ -297,7 +417,7 @@ html[data-theme='dark'] {
 .mobile-nav__list {
   list-style: none;
   margin: 0;
-  padding: 0.75rem 1.5rem 1.5rem;
+  padding: 0.75rem var(--space-md) var(--space-md);
 }
 
 .mobile-nav__item + .mobile-nav__item {
@@ -317,30 +437,31 @@ html[data-theme='dark'] {
   color: var(--color-fg-muted);
 }
 
-@media (min-width: 768px) {
-  .mobile-nav {
-    display: none;
-  }
-}
 
-/* ==========================
-   Buttons
-   ========================== */
+/* =============================================================================
+   HOMEPAGE – BUTTONS  (Hero.jsx, ContactSection.jsx)
+   Shared button styles used across the homepage.
+   ============================================================================= */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid transparent;
-  padding: 0.75rem 1.3rem;
+  padding: var(--space-sm) 1.3rem;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color var(--transition-fast),
+    color            var(--transition-fast),
+    box-shadow       var(--transition-fast),
+    border-color     var(--transition-fast);
 }
 
+/* Solid accent-filled button — primary call to action */
 .btn--primary {
   background: var(--color-accent);
   color: #ffffff;
@@ -353,6 +474,7 @@ html[data-theme='dark'] {
   box-shadow: 0 14px 32px rgba(91, 91, 255, 0.45);
 }
 
+/* Outlined transparent button — secondary call to action */
 .btn--ghost {
   border-color: var(--color-border-subtle);
   background: transparent;
@@ -365,33 +487,32 @@ html[data-theme='dark'] {
   background: var(--color-accent-soft);
 }
 
-/* ==========================
-   Hero section
-   ========================== */
+
+/* =============================================================================
+   HOMEPAGE – HERO SECTION  (Hero.jsx)
+   Full-width intro: typewriter headline, subtitle, CTA buttons, decorative orb.
+   ============================================================================= */
 
 .section-hero {
-  padding-top: 4rem;
+  padding-top: var(--space-xl);
 }
 
+/* Two-column grid — text on the left, decorative visual on the right.
+   Collapses to a single column on mobile; expands via media query below. */
 .section-hero__inner {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr);
   align-items: center;
-  gap: 2.5rem;
-}
-
-@media (min-width: 900px) {
-  .section-hero__inner {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  }
+  gap: var(--space-lg);
 }
 
 .section-hero__title {
-  font-size: clamp(2.3rem, 4vw, 3rem);
-  line-height: 1.05;
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
   margin: 0 0 0.75rem;
 }
 
+/* Blinking pipe character appended to the typewriter headline */
 .section-hero__cursor {
   color: var(--color-accent);
   margin-left: 0.1em;
@@ -399,19 +520,13 @@ html[data-theme='dark'] {
 }
 
 @keyframes cursor-blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  50.01%,
-  100% {
-    opacity: 0;
-  }
+  0%,    50%   { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
 }
 
 .section-hero__subtitle {
-  font-size: 1rem;
-  line-height: 1.7;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   max-width: 34rem;
   color: var(--color-fg-muted);
 }
@@ -419,28 +534,26 @@ html[data-theme='dark'] {
 .section-hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--space-sm);
   margin-top: 1.6rem;
 }
 
+/* Decorative orb — hidden on mobile, revealed via media query below */
 .section-hero__visual {
   display: none;
   justify-content: center;
 }
 
-@media (min-width: 900px) {
-  .section-hero__visual {
-    display: flex;
-  }
-}
-
+/* ===== Hero Orbit Decoration =====
+   A gradient sphere with a dashed inner ring and two floating dot "planets". */
 .hero-orbit {
   width: 260px;
   height: 260px;
   border-radius: 50%;
   position: relative;
-  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.25), transparent 55%),
-    radial-gradient(circle at 70% 80%, rgba(91, 91, 255, 0.5), transparent 60%);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.25), transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(91, 91, 255, 0.5),   transparent 60%);
   box-shadow: var(--shadow-soft);
 }
 
@@ -473,34 +586,27 @@ html[data-theme='dark'] {
   opacity: 0.75;
 }
 
-/* ==========================
-   About section
-   ========================== */
 
+/* =============================================================================
+   HOMEPAGE – ABOUT SECTION  (AboutSection.jsx)
+   Bio text with a three-column key/value grid inside a card container.
+   ============================================================================= */
+
+/* Card container with gradient background and soft shadow.
+   Padding increases via media query below. */
 .section-about__inner {
-  border-radius: 1.5rem;
+  border-radius: var(--radius-lg);
   padding: 2.1rem 1.8rem;
   background: linear-gradient(135deg, var(--color-bg-elevated), var(--color-surface-subtle));
   box-shadow: var(--shadow-soft);
 }
 
-@media (min-width: 768px) {
-  .section-about__inner {
-    padding: 2.5rem 2.3rem;
-  }
-}
-
+/* Three-column info grid — stacks on mobile, expands via media query below */
 .section-about__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.1rem;
   margin-top: 1.75rem;
-}
-
-@media (min-width: 768px) {
-  .section-about__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 .section-about__item {
@@ -509,7 +615,7 @@ html[data-theme='dark'] {
 }
 
 .section-about__label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--color-fg-muted);
@@ -520,32 +626,30 @@ html[data-theme='dark'] {
   font-size: 0.9rem;
 }
 
-/* ==========================
-   Projects section
-   ========================== */
 
+/* =============================================================================
+   HOMEPAGE – PROJECTS SECTION  (ProjectsSection.jsx)
+   Three-column project card grid with a shimmer skeleton loading state.
+   ============================================================================= */
+
+/* ===== Project Card Grid =====
+   Single column on mobile; three columns via media query below. */
 .projects-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
-}
-
-@media (min-width: 840px) {
-  .projects-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  gap: var(--space-md);
 }
 
 .project-card {
-  border-radius: 1.25rem;
+  border-radius: var(--radius-md);
   padding: 1.6rem 1.4rem;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-subtle);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-card);
 }
 
 .project-card__title {
-  font-size: 1.05rem;
+  font-size: var(--font-size-lg);
   margin: 0 0 0.6rem;
 }
 
@@ -562,53 +666,49 @@ html[data-theme='dark'] {
   color: var(--color-fg-muted);
 }
 
+/* ===== Skeleton Loading State =====
+   Displayed with aria-busy while projects are simulating an async fetch.
+   An animated shimmer gradient sweeps left-to-right across each placeholder card. */
 .projects-skeleton {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
-}
-
-@media (min-width: 840px) {
-  .projects-skeleton {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  gap: var(--space-md);
 }
 
 .projects-skeleton__card {
   height: 170px;
-  border-radius: 1.25rem;
-  background: linear-gradient(90deg, var(--color-surface-subtle), var(--color-bg-elevated), var(--color-surface-subtle));
+  border-radius: var(--radius-md);
+  /* Animated gradient sweeps left-to-right to simulate content loading */
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-subtle),
+    var(--color-bg-elevated),
+    var(--color-surface-subtle)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* ==========================
-   Services section
-   ========================== */
 
+/* =============================================================================
+   HOMEPAGE – SERVICES SECTION  (ServicesSection.jsx)
+   Three-column card grid listing the studio's offered services.
+   ============================================================================= */
+
+/* Single column on mobile; three columns via media query below */
 .services-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.4rem;
 }
 
-@media (min-width: 840px) {
-  .services-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 .service-card {
-  border-radius: 1.25rem;
+  border-radius: var(--radius-md);
   padding: 1.6rem 1.4rem;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-subtle);
@@ -616,7 +716,7 @@ html[data-theme='dark'] {
 
 .service-card__title {
   margin: 0 0 0.45rem;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .service-card__description {
@@ -625,25 +725,27 @@ html[data-theme='dark'] {
   color: var(--color-fg-muted);
 }
 
-/* ==========================
-   Contact section
-   ========================== */
 
+/* =============================================================================
+   HOMEPAGE – CONTACT SECTION  (ContactSection.jsx)
+   Form with inline client-side validation and a sidebar aside.
+   ============================================================================= */
+
+/* Card container matching the About section treatment */
 .section-contact__inner {
-  border-radius: 1.5rem;
+  border-radius: var(--radius-lg);
   padding: 2.2rem 1.8rem;
   background: linear-gradient(135deg, var(--color-bg-elevated), var(--color-surface-subtle));
   box-shadow: var(--shadow-soft);
 }
 
-@media (min-width: 900px) {
-  .section-contact__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
-    gap: 2.2rem;
-    align-items: flex-start;
-  }
+/* Two-column layout: form left, aside right.
+   Stacked on mobile; side-by-side via media query below. */
+.section-contact__grid {
+  display: block;
 }
+
+/* ===== Contact Form Fields ===== */
 
 .contact-form__field {
   margin-bottom: 1.2rem;
@@ -651,83 +753,67 @@ html[data-theme='dark'] {
 
 .contact-form__label {
   display: block;
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-xs);
 }
 
 .contact-form__input {
   width: 100%;
-  border-radius: 0.85rem;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border-subtle);
   padding: 0.7rem 0.8rem;
   font-size: 0.95rem;
   background: rgba(255, 255, 255, 0.88);
 }
 
+/* Dark mode needs a darker input background since the default is near-white */
 html[data-theme='dark'] .contact-form__input {
   background: rgba(4, 4, 16, 0.9);
 }
 
+/* Allow the textarea to grow vertically but not horizontally */
 .contact-form__input--textarea {
   resize: vertical;
 }
 
+/* Inline error shown below a field when validation fails */
 .contact-form__error {
-  color: #d72638;
+  color: var(--color-error);
   font-size: 0.8rem;
   margin-top: 0.25rem;
 }
 
+/* Success message rendered after the form is successfully submitted */
 .contact-form__success {
-  margin-top: 0.75rem;
+  margin-top: var(--space-sm);
   font-size: 0.9rem;
   color: var(--color-fg);
 }
 
+/* Full-width on mobile; auto-width via media query below */
 .contact-form__submit {
   width: 100%;
 }
 
-@media (min-width: 600px) {
-  .contact-form__submit {
-    width: auto;
-  }
-}
 
-.link-inline {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.link-inline:hover,
-.link-inline:focus-visible {
-  text-decoration: underline;
-}
-
-/* ==========================
-   Footer
-   ========================== */
+/* =============================================================================
+   HOMEPAGE – FOOTER  (Footer.jsx)
+   Minimal footer with copyright notice and quick-link navigation.
+   ============================================================================= */
 
 .site-footer {
-  padding: 2rem 1.5rem 3rem;
+  padding: 2rem var(--space-md) 3rem;
 }
 
+/* Stacked on mobile; side-by-side via media query below */
 .site-footer__inner {
   max-width: 1120px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-sm);
   border-top: 1px solid var(--color-border-subtle);
   padding-top: 1.4rem;
-}
-
-@media (min-width: 640px) {
-  .site-footer__inner {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
 }
 
 .site-footer__copy {
@@ -738,7 +824,7 @@ html[data-theme='dark'] .contact-form__input {
 
 .site-footer__nav {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-sm);
 }
 
 .site-footer__link {
@@ -750,4 +836,112 @@ html[data-theme='dark'] .contact-form__input {
 .site-footer__link:hover,
 .site-footer__link:focus-visible {
   text-decoration: underline;
+}
+
+
+/* =============================================================================
+   RESPONSIVE — MEDIA QUERIES
+   All breakpoint overrides collected here, ordered smallest → largest.
+   Each block is labelled with the component it targets for easy scanning.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   600px — Contact form submit button
+   Full-width on mobile becomes auto-width once there is enough horizontal room.
+   ----------------------------------------------------------------------------- */
+@media (min-width: 600px) {
+  .contact-form__submit {
+    width: auto;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   640px — Footer
+   Footer copy and nav links switch from stacked column to a single row.
+   ----------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+  .site-footer__inner {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   768px — Section padding / About / Header navigation
+   ----------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  /* Section — increase vertical padding on wider viewports */
+  .section {
+    padding: var(--space-2xl) 3rem;
+  }
+
+  /* Header — show the desktop nav list, hide the hamburger and mobile drawer */
+  .nav-list--desktop {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: none;
+  }
+
+  /* About — more generous card padding on wider viewports */
+  .section-about__inner {
+    padding: 2.5rem 2.3rem;
+  }
+
+  /* About grid — expand from 1 column to 3 columns */
+  .section-about__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   840px — Projects / Services / Skeleton
+   Three-column grid layouts unlock on wider viewports.
+   ----------------------------------------------------------------------------- */
+@media (min-width: 840px) {
+  /* Projects — switch from 1 column to 3 */
+  .projects-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Projects skeleton — match the real grid so placeholders align correctly */
+  .projects-skeleton {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Services — switch from 1 column to 3 */
+  .services-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   900px — Hero / Contact
+   Hero reveals its decorative orb column; Contact switches to a side-by-side layout.
+   ----------------------------------------------------------------------------- */
+@media (min-width: 900px) {
+  /* Hero — two-column layout: text (wider) + decorative orb */
+  .section-hero__inner {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  /* Hero — show the decorative orbit visual (hidden on mobile) */
+  .section-hero__visual {
+    display: flex;
+  }
+
+  /* Contact — two-column layout: form (wider) + aside */
+  .section-contact__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
+    gap: 2.2rem;
+    align-items: flex-start;
+  }
 }
