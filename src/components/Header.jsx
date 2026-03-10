@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 /**
  * Site header with navigation, dark/light toggle and mobile menu.
@@ -7,7 +10,7 @@ import { Link, useLocation } from 'react-router-dom';
 function Header({ theme, onToggleTheme, onNavClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,7 +24,7 @@ function Header({ theme, onToggleTheme, onNavClick }) {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   const handleNavClick = (sectionId) => {
     if (onNavClick) {
@@ -33,7 +36,7 @@ function Header({ theme, onToggleTheme, onNavClick }) {
     <header className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
       <div className="site-header__inner">
         <div className="site-header__brand">
-          <Link to="/home" className="site-header__logo" aria-label="Go to homepage">
+          <Link href="/home" className="site-header__logo" aria-label="Go to homepage">
             Koyko
           </Link>
         </div>

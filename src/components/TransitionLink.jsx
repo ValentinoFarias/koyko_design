@@ -1,10 +1,12 @@
+'use client';
+
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { usePathname, useRouter } from 'next/navigation';
 import { animateTransition } from '../assets/anim/pageTransitions.js';
 
 function TransitionLink({ to, children, className, ...rest }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleClick = (event) => {
     if (rest.onClick) {
@@ -15,7 +17,21 @@ function TransitionLink({ to, children, className, ...rest }) {
       return;
     }
 
-    if (!to || location.pathname === to) {
+    if (
+      !to ||
+      to.startsWith('http://') ||
+      to.startsWith('https://') ||
+      to.startsWith('mailto:') ||
+      to.startsWith('tel:')
+    ) {
+      return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || rest.target === '_blank') {
+      return;
+    }
+
+    if (pathname === to) {
       event.preventDefault();
       return;
     }
@@ -23,7 +39,7 @@ function TransitionLink({ to, children, className, ...rest }) {
     event.preventDefault();
 
     animateTransition().then(() => {
-      navigate(to);
+      router.push(to);
     });
   };
 

@@ -1,5 +1,6 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 /**
  * Hero section with typewriter-style animated headline and CTAs.
@@ -54,9 +55,9 @@ function Hero({ onPrimaryAction, onSecondaryAction }) {
             <button type="button" className="btn btn--primary" onClick={handlePrimary}>
               View Portfolio
             </button>
-            <Link to="/home" className="btn btn--ghost" onClick={handleSecondary}>
+            <button type="button" className="btn btn--ghost" onClick={handleSecondary}>
               Contact Me
-            </Link>
+            </button>
           </div>
         </div>
 
