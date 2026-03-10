@@ -49,9 +49,9 @@ function Header({ theme, onToggleTheme, onNavClick }) {
               </button>
             </li>
             <li className="nav-list__item">
-              <button type="button" className="nav-list__link" onClick={() => handleNavClick('about')}>
+              <Link href="/about" className="nav-list__link">
                 About
-              </button>
+              </Link>
             </li>
             <li className="nav-list__item">
               <button type="button" className="nav-list__link" onClick={() => handleNavClick('portfolio')}>
@@ -104,9 +104,9 @@ function Header({ theme, onToggleTheme, onNavClick }) {
             </button>
           </li>
           <li className="mobile-nav__item">
-            <button type="button" className="mobile-nav__link" onClick={() => handleNavClick('about')}>
+            <Link href="/about" className="mobile-nav__link">
               About
-            </button>
+            </Link>
           </li>
           <li className="mobile-nav__item">
             <button type="button" className="mobile-nav__link" onClick={() => handleNavClick('portfolio')}>
