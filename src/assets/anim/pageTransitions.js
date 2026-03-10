@@ -1,103 +1,53 @@
 import { gsap } from 'gsap';
 
+// --- REVEAL (page enter) ---
+// The block is currently covering the screen (scaleX: 1).
+// We change the transform origin to 'right' so it collapses to the right,
+// sweeping off-screen and revealing the new page underneath.
 export function revealTransition() {
   return new Promise((resolve) => {
-    const tl = gsap.timeline({
-      onComplete: resolve,
+    gsap.set('.block', {
+      transformOrigin: 'right', // collapse toward the right edge
     });
 
-    tl.fromTo(
-      '.row-1 .block',
-      { scaleY: 1 },
-      {
-        scaleY: 0,
-        duration: 1,
-        delay: 0.2,
-        stagger: {
-          each: 0.1,
-          from: 'start',
-          grid: [1, 5],
-          axis: 'x',
-        },
-        ease: 'expo.inOut',
-      },
-      0
-    );
-
-    tl.fromTo(
-      '.row-2 .block',
-      { scaleY: 1 },
-      {
-        scaleY: 0,
-        duration: 1,
-        delay: 0.2,
-        stagger: {
-          each: 0.1,
-          from: 'start',
-          grid: [1, 5],
-          axis: 'x',
-        },
-        ease: 'expo.inOut',
-      },
-      0
-    );
+    gsap.to('.block', {
+      scaleX: 0,
+      duration: 0.7,
+      ease: 'expo.inOut',
+      onComplete: resolve,
+    });
   });
 }
 
+// --- ANIMATE OUT (page exit) ---
+// The block starts flat (scaleX: 0) and sweeps in from the left,
+// covering the screen before the new route is pushed.
 export function animateTransition() {
   return new Promise((resolve) => {
     gsap.set('.block', {
       visibility: 'visible',
-      scaleY: 0,
+      scaleX: 0,
+      transformOrigin: 'left', // expand from the left edge
     });
 
-    const tl = gsap.timeline({
+    gsap.to('.block', {
+      scaleX: 1,
+      duration: 0.7,
+      ease: 'expo.inOut',
       onComplete: resolve,
     });
-
-    tl.fromTo(
-      '.row-1 .block',
-      { scaleY: 0 },
-      {
-        scaleY: 1,
-        duration: 1,
-        delay: 0.2,
-        stagger: {
-          each: 0.1,
-          from: 'end',
-          grid: [1, 5],
-          axis: 'x',
-        },
-        ease: 'expo.out',
-      },
-      0
-    );
-
-    tl.fromTo(
-      '.row-2 .block',
-      { scaleY: 0 },
-      {
-        scaleY: 1,
-        duration: 1,
-        delay: 0.2,
-        stagger: {
-          each: 0.1,
-          from: 'end',
-          grid: [1, 5],
-          axis: 'x',
-        },
-        ease: 'expo.out',
-      },
-      0
-    );
   });
 }
 
+// --- INITIAL LOAD REVEAL ---
+// If the landing page adds .run-reveal to <body>, we start with the block
+// fully covering the screen and animate it away on first load.
 export function setupInitialRevealIfNeeded() {
   if (document.body.classList.contains('run-reveal')) {
     gsap.set('.block', {
       visibility: 'visible',
-      scaleY: 1,
+      scaleX: 1,
+      transformOrigin: 'right',
     });
 
     revealTransition().then(() => {

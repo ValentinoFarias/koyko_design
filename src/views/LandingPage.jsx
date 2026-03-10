@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { gsap } from 'gsap';
 import TransitionLink from '../components/TransitionLink.jsx';
-import { setupInitialRevealIfNeeded } from '../assets/anim/pageTransitions.js';
+import { setupInitialRevealIfNeeded, animateTransition } from '../assets/anim/pageTransitions.js';
 
 function LandingPage() {
   const counterRef = useRef(null);
+  const router = useRouter(); // used to navigate programmatically after the counter finishes
 
   useEffect(() => {
     document.body.classList.add('run-reveal');
@@ -32,6 +34,15 @@ function LandingPage() {
           if (counterRef.current) {
             counterRef.current.textContent = Math.round(obj.value) + '%';
           }
+        },
+        // When the counter reaches 100, wait 1 second, then fire the
+        // block transition and navigate to the home page.
+        onComplete: () => {
+          setTimeout(() => {
+            animateTransition().then(() => {
+              router.push('/home');
+            });
+          }, 1000);
         },
       });
     });

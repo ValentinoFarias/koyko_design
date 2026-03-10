@@ -1,22 +1,11 @@
 import React from 'react';
 
+// A single full-screen block that sweeps horizontally across the screen.
+// GSAP will animate its scaleX to cover/uncover the page during transitions.
 function TransitionOverlay() {
   return (
     <div className="transitionContainer">
-      <div className="transition-row row-1">
-        <div className="block"></div>
-        <div className="block"></div>
-        <div className="block"></div>
-        <div className="block"></div>
-        <div className="block"></div>
-      </div>
-      <div className="transition-row row-2">
-        <div className="block"></div>
-        <div className="block"></div>
-        <div className="block"></div>
-        <div className="block"></div>
-        <div className="block"></div>
-      </div>
+      <div className="block"></div>
     </div>
   );
 }

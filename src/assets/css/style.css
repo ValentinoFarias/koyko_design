@@ -177,41 +177,27 @@ main .landing-counter {
   left: 0;
   width: 100vw;
   height: 100dvh; /* dvh accounts for collapsible mobile browser chrome */
-  display: flex;
-  flex-direction: column;
   z-index: var(--z-overlay);
   pointer-events: none;
 }
 
-/* Each row fills half the screen height and lays five blocks side by side */
-.transition-row {
-  flex: 1;
-  display: flex;
-}
-
-/* Row 1 blocks scale from the top edge (curtain pulls up) */
-.transition-row.row-1 .block {
-  transform-origin: top;
-}
-
-/* Row 2 blocks scale from the bottom edge (curtain pulls down) */
-.transition-row.row-2 .block {
-  transform-origin: bottom;
-}
-
-/* Individual curtain segment — starts collapsed and hidden */
+/* Single full-screen block that sweeps horizontally (scaleX).
+   GSAP sets transformOrigin to 'left' on enter and 'right' on exit,
+   producing the hyperactive block reveal effect. */
 .block {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   background-color: #000000;
-  transform: scaleY(0);
+  transform: scaleX(0);
+  transform-origin: left; /* default; GSAP overrides per animation */
   visibility: hidden;
   will-change: transform; /* promote to compositor layer for smooth GSAP tweens */
 }
 
-/* On the landing page, body receives .run-reveal so blocks start fully visible
-   and GSAP animates them away, revealing the page beneath on first load. */
+/* On the landing page, body receives .run-reveal so the block starts fully
+   visible and GSAP sweeps it off-screen on first load. */
 body.run-reveal .block {
-  transform: scaleY(1);
+  transform: scaleX(1);
   visibility: visible;
 }
 
