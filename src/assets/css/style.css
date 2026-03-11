@@ -182,12 +182,18 @@ body.run-reveal .block {
 
 
 /* ---- Page wrapper --------------------------------------------------------- */
-/* White canvas. overflow-x:hidden clips the marquee track at the viewport edge */
+/* White canvas.
+   overflow-x: clip (NOT hidden) clips the marquee track at the viewport edge
+   without creating a "scroll container". overflow:hidden would silently break
+   position:sticky on any descendant because sticky sticks inside its nearest
+   scroll-container ancestor — if the page wrapper IS that container, the browser
+   can resolve it incorrectly and disable the lock. clip gives identical visual
+   clipping without that side-effect. */
 .koyko-page {
   background: #ffffff;
   color: #000000;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   font-family: var(--font-sans);
 }
 
@@ -260,71 +266,63 @@ body.run-reveal .block {
 
 
 /* ---- Hero ----------------------------------------------------------------- */
-/* Full-viewport editorial section — two flex rows:
-     Row 1 (.koyko-hero__inner):  "k o y k" wordmark (left) + logo image (right)
-     Row 2 (.koyko-hero__bottom): gold dot (left) + "D E S I G N" label (right) */
+/* Full-viewport editorial section — overlapping layout:
+     "k o y k" wordmark on the left, logo centred, "DESIGN" bottom-right.
+     The logo's head visually replaces the missing 'O' in "koyko". */
 .koyko-hero {
   min-height: calc(100vh - 5rem);
   padding-top: clamp(5rem, 8vw, 9rem);      /* clears the fixed navbar */
   padding-bottom: clamp(2rem, 4vw, 3rem);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
 }
 
-/* Row 1: align bottom edges so the text baseline meets the logo's foot */
-.koyko-hero__inner {
-  display: flex;
-  align-items: flex-end;
-  padding: 0 clamp(1rem, 3vw, 2rem);
+/* Stage — positioning context for the overlapping elements */
+.koyko-hero__stage {
+  position: relative;
+  width: 100%;
+  /* Height matches the logo aspect ratio — fluid from ~380px to ~550px */
+  height: clamp(380px, 50vw, 600px);
 }
 
-/* "k o y k" — Inter Regular, fluid 4rem → 8rem */
+/* "k o y k" — Inter Regular, positioned left & top-aligned with logo head.
+   The text sits so the last letter 'k' ends just before the logo, and
+   the logo's head reads as the 'O' completing "koyko". */
 .koyko-hero__wordmark {
+  position: absolute;
+  /* Vertically align with the top of the logo (where the head is) */
+  top: 10%;
+  left: 15%;
   font-family: var(--font-sans);
   font-weight: 400;
-  font-size: clamp(4rem, 8.9vw, 8rem);
+  font-size: clamp(3.5rem, 8.9vw, 8rem);
   letter-spacing: 0.04em;
   line-height: 1;
   color: #000000;
   margin: 0;
-  flex-shrink: 0;
-  align-self: flex-end;
-  padding-left: clamp(0.5rem, 2vw, 1rem);
+  white-space: nowrap;
 }
 
-/* Logo wrapper takes the remaining space and centres the image horizontally */
-.koyko-hero__logo-wrap {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-
-/* Koyko bird/figure illustration — fluid width via clamp */
+/* Koyko bird/figure illustration — centred in the stage */
 .koyko-hero__logo {
-  width: clamp(160px, 28.5vw, 410px);
+  position: absolute;
+  /* Centre horizontally */
+  left: 55%;
+  transform: translateX(-50%);
+  top: 0;
+  /* Fluid width matching the Figma proportions (~410px at 1440px viewport) */
+  width: clamp(180px, 28.5vw, 410px);
   height: auto;
   display: block;
 }
 
-/* Row 2: decorative dot on the left, "DESIGN" label on the right */
-.koyko-hero__bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 clamp(1rem, 3vw, 2rem);
-  margin-top: clamp(1rem, 2vw, 2rem);
-}
-
-/* Small gold circle — aria-hidden, purely visual */
-.koyko-hero__gold-dot {
-  width: clamp(16px, 2.8vw, 40px);
-  height: auto;
-}
-
-/* "D  E  S  I  G  N" — Noto Sans JP W3 (light weight), spaced letters */
+/* "D  E  S  I  G  N" — positioned at the bottom-right of the stage,
+   sitting just below where the logo's body ends */
 .koyko-hero__design-label {
+  position: absolute;
+  bottom: 10%;
+  right: 8%;
   font-family: var(--font-alt);
   font-weight: 300;
   font-size: clamp(1.2rem, 3.3vw, 3rem);
@@ -335,18 +333,32 @@ body.run-reveal .block {
 
 
 /* ---- Mission -------------------------------------------------------------- */
-/* Full-bleed dark section.
-   overflow is NOT hidden here — we need falling words to be visible outside
-   the text container.  The bg image has its own wrapper with overflow:hidden. */
+/* 300vh tall so there is ~200vh of scroll room while the sticky container
+   holds the content locked in the viewport. No padding here — the sticky
+   container and its content handle all layout. */
 .koyko-mission {
+  height: 300vh;
+  position: relative;
   background: #010000;
   color: #ffffff;
-  position: relative;   /* positioning context for absolute word spans */
-  padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 4vw, 3.5rem);
 }
 
-/* Wrapper that clips the faint texture image without clipping the words.
-   position:absolute + inset:0 makes it fill the section exactly. */
+/* Sticky container — locks the visible content to the viewport top while
+   the user scrolls through the full 300vh section.
+   position:sticky also acts as a positioning context, so the physics phase
+   can use position:absolute on word spans relative to this element. */
+.koyko-mission__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: clip;    /* clips falling words without creating a scroll container (which breaks sticky) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Background texture fills the sticky container.
+   position:absolute + inset:0 is now relative to the sticky layer. */
 .koyko-mission__bg-wrap {
   position: absolute;
   inset: 0;
@@ -364,22 +376,25 @@ body.run-reveal .block {
   display: block;
 }
 
-/* Content sits above the bg image */
+/* Content sits above the bg image inside the sticky container */
 .koyko-mission__content {
   position: relative;
   z-index: 1;
   max-width: 1320px;
-  margin: 0 auto;
+  width: 100%;
+  padding: clamp(2rem, 4vw, 3.5rem); /* side breathing room (section no longer has padding) */
 }
 
-/* "Let's create the home of your work." — centred tagline */
+/* Tagline — sits OUTSIDE the sticky container in the normal document flow.
+   It scrolls away naturally before the body text locks into view. */
 .koyko-mission__tagline {
   font-family: var(--font-alt);
   font-weight: 800;
-  font-size: clamp(0.9rem, 1.7vw, 1.5rem);
+  font-size: clamp(5rem, 1.7vw, 1.5rem);
   text-align: center;
   color: #ffffff;
-  margin: 0 0 clamp(2rem, 4vw, 4rem);
+  padding: clamp(2rem, 6vh, 5rem) clamp(2rem, 4vw, 3.5rem);
+  margin: 0;
 }
 
 /* Five body paragraphs — Noto Sans JP W8, generous line-height */
@@ -690,19 +705,15 @@ a.koyko-footer__value:hover {
 /* Mobile (≤ 640px) ---------------------------------------------------------- */
 @media (max-width: 640px) {
 
-  /* Hero: stack logo above wordmark so the illustration stays prominent */
-  .koyko-hero__inner {
-    flex-direction: column-reverse;
-    align-items: center;
+  /* Hero: on mobile, shrink the stage and adjust wordmark position */
+  .koyko-hero__stage {
+    height: clamp(300px, 70vw, 420px);
   }
 
   .koyko-hero__wordmark {
-    align-self: flex-start;
-    padding-left: clamp(1rem, 4vw, 2rem);
-  }
-
-  .koyko-hero__bottom {
-    padding: 0 clamp(1rem, 4vw, 2rem);
+    top: clamp(20px, 5vw, 50px);
+    left: clamp(0.5rem, 3vw, 1.5rem);
+    font-size: clamp(2.2rem, 10vw, 4rem);
   }
 
   /* Footer: collapse to a single column */

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Falling Text — Koyko Demo</title>
+  <style>
+    /* ============================================================
+       BASE RESET & PAGE SETUP
+    ============================================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d0d0d;
+      color: #ffffff;
+      font-family: 'Georgia', serif;
+    }
+
+    /* Simple placeholder sections above and below the effect */
+    .placeholder {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #444;
+      font-size: 1.2rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ============================================================
+       SCROLL SECTION  (the tall scrollable wrapper)
+       500vh gives ~400vh of scroll room after the sticky lock
+       activates. All four ScrollTrigger instances use this element
+       as their trigger, chaining start/end percentages together.
+    ============================================================ */
+    .scroll-section {
+      height: 500vh;
+      position: relative;
+    }
+
+    /* ============================================================
+       STICKY CONTAINER
+       Locks to the top of the viewport for the entire 500vh.
+       The 400vh of consumed scroll drives all the animations.
+
+       WHY overflow: clip and NOT overflow: hidden:
+       overflow: hidden creates a "scroll container" in the browser's
+       layout model. CSS sticky positioning works by searching for the
+       nearest scroll-container ancestor to stick inside — when the
+       sticky element ITSELF is a scroll container, some browsers
+       resolve this ambiguity by silently disabling the sticky lock.
+       overflow: clip produces identical visual clipping but does NOT
+       create a scroll container, so sticky always works correctly.
+    ============================================================ */
+    .sticky-container {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: clip; /* clips without breaking sticky — never use overflow:hidden here */
+    }
+
+    /* ============================================================
+       FALLING TEXT WRAPPER
+       Centred paragraph. max-width keeps lines at a readable length.
+    ============================================================ */
+    .falling-text {
+      position: relative;
+      max-width: 750px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .falling-text p {
+      font-size: clamp(1.4rem, 3.5vw, 2.8rem);
+      line-height: 1.9;
+    }
+
+    /* ============================================================
+       .word SPANS  (created by JavaScript, not in the HTML)
+       Every word in the paragraph gets wrapped in a <span class="word">
+       by splitWords(). This gives GSAP and Matter.js one element
+       per word to target.
+
+       --x, --y, --rotate default to 0 so the span sits normally
+       in the text flow before physics fires. The Matter.js loop
+       writes new numbers to these properties each frame.
+
+       translate() moves the span to match the physics body position.
+       rotate() spins it to match the body's angle.
+
+       display: inline-block is required — CSS transforms don't
+       work on bare inline elements.
+    ============================================================ */
+    .word {
+      display: inline-block;
+      --x: 0;
+      --y: 0;
+      --rotate: 0;
+      transform:
+        translate(calc(var(--x) * 1px), calc(var(--y) * 1px))
+        rotate(calc(var(--rotate) * 1rad));
+      will-change: transform;
+    }
+
+    /* ============================================================
+       .highlight SPANS  (written in the HTML)
+       Mark the words that will: turn red in Phase 2, stay visible
+       while others fade in Phase 3, and fall with physics in Phase 4.
+       Colour starts as white — GSAP animates it to #cc3311.
+    ============================================================ */
+    .highlight {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="placeholder">scroll down ↓</div>
+
+  <!-- ============================================================
+       THE SCROLL SECTION
+       All ScrollTrigger instances use this as their trigger.
+  ============================================================ -->
+  <div class="scroll-section" id="scrollSection">
+    <div class="sticky-container">
+      <div class="falling-text">
+
+        <!-- ======================================================
+             THE PARAGRAPH
+             Words inside <span class="highlight"> will:
+               Phase 2 — turn red
+               Phase 3 — stay visible while others fade
+               Phase 4 — fall with physics
+
+             JavaScript wraps EVERY word (including those inside
+             .highlight) in its own <span class="word"> element.
+        ====================================================== -->
+        <p id="mainText">
+          Koyko is drawn from Mapudungun, the language of the
+          Mapuche people, where it means
+          <span class="highlight">water</span>.
+          Like water, the work here takes the shape of what it holds —
+          <span class="highlight">adapting</span>,
+          <span class="highlight">flowing</span>,
+          always finding its
+          <span class="highlight">truest</span>
+          form.
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="placeholder">↑ scroll back up to replay</div>
+
+  <!-- ============================================================
+       CDN DEPENDENCIES  (load order matters)
+       1. gsap.min.js        — core GSAP engine
+       2. ScrollTrigger.min.js — scroll-driven animation plugin
+       3. matter.min.js      — 2D rigid-body physics
+  ============================================================ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+  <script>
+    // ============================================================
+    // SETUP — register plugin, grab elements
+    // ============================================================
+    gsap.registerPlugin(ScrollTrigger);
+
+    const scrollSection = document.getElementById('scrollSection');
+    const mainText      = document.getElementById('mainText');
+
+    // ============================================================
+    // STEP 1 — SPLIT WORDS INTO INDIVIDUAL <span class="word">
+    //
+    // Why: GSAP needs one element per word to stagger animations.
+    //      Matter.js needs one DOM element per physics body.
+    //
+    // How: Walk every child node in the paragraph.
+    //   • Text nodes  → split by whitespace, wrap each word in
+    //                    <span class="word">
+    //   • Element nodes (i.e. .highlight spans) → wrap the whole
+    //                    element in a <span class="word"> so the
+    //                    physics body covers the whole span.
+    //
+    // Result example:
+    //   <span class="word">Koyko</span>
+    //   <span class="word">is</span>
+    //   <span class="word"><span class="highlight">water</span></span>
+    // ============================================================
+    function splitWords(el) {
+      // Snapshot children first — we'll mutate the DOM as we go
+      const nodes = Array.from(el.childNodes);
+
+      nodes.forEach(node => {
+
+        // ── TEXT NODE ────────────────────────────────────────────
+        if (node.nodeType === Node.TEXT_NODE) {
+          // Split on whitespace, keeping the whitespace runs as
+          // separate tokens so we can re-insert them as spaces.
+          const parts = node.textContent.split(/(\s+)/);
+          const frag  = document.createDocumentFragment();
+
+          parts.forEach(part => {
+            if (part === '' || /^\s+$/.test(part)) {
+              // Preserve whitespace between words
+              frag.appendChild(document.createTextNode(part));
+            } else {
+              const span = document.createElement('span');
+              span.className = 'word';
+              span.textContent = part;
+              frag.appendChild(span);
+            }
+          });
+
+          el.replaceChild(frag, node);
+
+        // ── ELEMENT NODE (e.g. <span class="highlight">) ─────────
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          // Wrap the entire element in one .word span.
+          // This keeps multi-word highlights as a single physics body.
+          const wrapper = document.createElement('span');
+          wrapper.className = 'word';
+          node.parentNode.insertBefore(wrapper, node);
+          wrapper.appendChild(node);
+        }
+
+      });
+    }
+
+    splitWords(mainText);
+
+    // ── Collect word references after splitting ────────────────────
+    // allWords          — every .word span in the paragraph
+    // highlightWrappers — .word spans that wrap a .highlight child
+    //                     (one per highlight unit, used for physics)
+    // highlightSpans    — the .highlight elements themselves
+    //                     (used for Phase 2 colour animation)
+    // plainWords        — .word spans with no .highlight inside
+    //                     (used for Phase 3 fade-out)
+    const allWords          = Array.from(mainText.querySelectorAll('.word'));
+    const highlightWrappers = allWords.filter(w => w.querySelector('.highlight'));
+    const highlightSpans    = highlightWrappers.map(w => w.querySelector('.highlight'));
+    const plainWords        = allWords.filter(w => !w.querySelector('.highlight'));
+
+    // ============================================================
+    // PHASE 1 — STICKY LOCK
+    //
+    // No JavaScript needed here — CSS handles it entirely.
+    // position: sticky on .sticky-container keeps the content
+    // locked at the top of the viewport while the user scrolls
+    // through the full 500vh of .scroll-section.
+    // ============================================================
+
+
+    // ============================================================
+    // PHASE 2 — HIGHLIGHTED WORDS TURN RED  (0 % → 30 % of section)
+    //
+    // scrub: true binds the animation playhead directly to scroll
+    // position. Scrolling forward advances it; scrolling backward
+    // reverses it — no time-based playback.
+    //
+    // We target highlightSpans (the inner .highlight elements) so
+    // only the red words change colour, not the wrapper.
+    //
+    // stagger from:'start' colours words left-to-right one by one.
+    // ============================================================
+    const colorTl = gsap.timeline({ paused: true });
+
+    colorTl.fromTo(
+      highlightSpans,
+      { color: '#ffffff' },
+      {
+        color: '#cc3311',
+        duration: 0.4,
+        stagger: { amount: 0.8, from: 'start' },
+        ease: 'none',
+      }
+    );
+
+    ScrollTrigger.create({
+      trigger:   scrollSection,
+      start:     'top top',    // Phase 2 begins when section locks in
+      end:       '30% top',    // ends after 30% of 500vh = 150vh scrolled
+      scrub:     true,
+      animation: colorTl,
+    });
+
+
+    // ============================================================
+    // PHASE 3 — PLAIN WORDS FADE OUT  (30 % → 55 % of section)
+    //
+    // Picks up exactly where Phase 2 ends ('30% top').
+    // Only plainWords are in this timeline — highlight words are
+    // untouched and remain red and fully visible.
+    //
+    // stagger from:'random' gives a scattered, organic fade
+    // rather than a left-to-right wipe.
+    // ============================================================
+    const fadeTl = gsap.timeline({ paused: true });
+
+    fadeTl.fromTo(
+      plainWords,
+      { opacity: 1 },
+      {
+        opacity: 0,
+        duration: 0.4,
+        stagger: { amount: 0.8, from: 'random' },
+        ease: 'none',
+      }
+    );
+
+    ScrollTrigger.create({
+      trigger:   scrollSection,
+      start:     '30% top',   // picks up exactly where Phase 2 ended
+      end:       '55% top',   // ends after 55% of 500vh = 275vh scrolled
+      scrub:     true,
+      animation: fadeTl,
+    });
+
+
+    // ============================================================
+    // PHASE 4 — RED WORDS FALL WITH PHYSICS
+    //
+    // Physics is time-based and cannot be scrubbed to a scroll
+    // position — we use onEnter / onLeaveBack callbacks instead.
+    //
+    // Trigger: fires at 55% scroll (where Phase 3 ends).
+    //          onLeaveBack resets everything if the user scrolls up.
+    // ============================================================
+
+    // ── Matter.js engine setup ─────────────────────────────────────
+    // Destructure only what we need from the global Matter object.
+    const { Engine, Bodies, Body, World } = Matter;
+
+    // Create the engine. gravity.y = 1.5 is slightly stronger than
+    // the default (1.0) for a more satisfying, weighty fall.
+    const engine = Engine.create();
+    engine.world.gravity.y = 1.5;
+
+    // Static ground body near the bottom of the viewport.
+    // isStatic: true means gravity never moves it.
+    // Extra-wide (innerWidth × 3) so sideways-bouncing words are caught.
+    const ground = Bodies.rectangle(
+      window.innerWidth / 2,   // centre X
+      window.innerHeight - 10, // near bottom of viewport
+      window.innerWidth * 3,   // very wide
+      20,                      // thin
+      { isStatic: true }
+    );
+    World.add(engine.world, ground);
+
+    // ── Physics state ──────────────────────────────────────────────
+    // physicsData holds { body, wrapper, origCX, origCY } for each
+    // highlight word. Populated by startPhysics(), cleared by resetPhysics().
+    let physicsData  = [];
+    let animFrameId  = null;
+    let physicsActive = false;
+
+    // ── rAF loop: advance engine + sync CSS ───────────────────────
+    // Called every frame while physics is running.
+    // Engine.update() steps the simulation by one frame (1000/60 ms).
+    // We then read each body's new position and angle, compute the
+    // displacement from the word's original screen position, and
+    // write those values into CSS custom properties.
+    // The CSS transform on .word reads them and moves the element.
+    function physicsLoop() {
+      if (!physicsActive) return;
+
+      // Step the simulation by one 60fps frame
+      Engine.update(engine, 1000 / 60);
+
+      physicsData.forEach(({ body, wrapper, origCX, origCY }) => {
+        // Displacement from the word's original centre position
+        const dx = body.position.x - origCX;
+        const dy = body.position.y - origCY;
+
+        wrapper.style.setProperty('--x',      dx);
+        wrapper.style.setProperty('--y',      dy);
+        wrapper.style.setProperty('--rotate', body.angle);
+      });
+
+      animFrameId = requestAnimationFrame(physicsLoop);
+    }
+
+    // ── startPhysics ───────────────────────────────────────────────
+    // Called by ScrollTrigger onEnter (user scrolls into Phase 4).
+    // 1. Measures each highlight word's current screen position.
+    // 2. Creates a Matter.js body at that exact position.
+    // 3. Applies a small random force so each word falls differently.
+    // 4. Starts the rAF loop.
+    function startPhysics() {
+      if (physicsActive) return;
+      physicsActive = true;
+
+      physicsData = highlightWrappers.map(wrapper => {
+        const rect = wrapper.getBoundingClientRect();
+        const cx   = rect.left + rect.width  / 2; // body centre X (viewport)
+        const cy   = rect.top  + rect.height / 2; // body centre Y (viewport)
+
+        // Create a body sized to match the word span exactly
+        const body = Bodies.rectangle(cx, cy, rect.width, rect.height, {
+          restitution: Math.random() * 0.3 + 0.3, // 0.3–0.6 bounce
+          friction:    0.3,
+          frictionAir: 0.01,  // light air resistance for natural motion
+        });
+
+        World.add(engine.world, body);
+
+        // Random initial impulse — slight lateral drift + tiny upward kick
+        // so each word takes a slightly different arc
+        Body.applyForce(body, body.position, {
+          x:  (Math.random() - 0.5) * 0.008,
+          y: -(Math.random() * 0.004 + 0.001), // negative = upward in CSS coords
+        });
+
+        return { body, wrapper, origCX: cx, origCY: cy };
+      });
+
+      physicsLoop(); // kick off the animation loop
+    }
+
+    // ── resetPhysics ───────────────────────────────────────────────
+    // Called by ScrollTrigger onLeaveBack (user scrolls back up past Phase 4).
+    // 1. Stops the rAF loop.
+    // 2. Removes all physics bodies from the world.
+    // 3. Zeros the CSS custom properties so each word snaps back to
+    //    its original position in the text flow.
+    // The GSAP scrub triggers automatically reverse Phase 2 & 3
+    // as the user continues scrolling up — no extra code needed.
+    function resetPhysics() {
+      physicsActive = false;
+      cancelAnimationFrame(animFrameId);
+
+      physicsData.forEach(({ body, wrapper }) => {
+        World.remove(engine.world, body); // clean up physics world
+
+        // Zero the custom props → transform becomes identity → word snaps back
+        wrapper.style.setProperty('--x',      0);
+        wrapper.style.setProperty('--y',      0);
+        wrapper.style.setProperty('--rotate', 0);
+      });
+
+      physicsData = []; // clear for next startPhysics() call
+    }
+
+    // ── Phase 4 ScrollTrigger ──────────────────────────────────────
+    // Fires at 55% scroll (right where Phase 3 ends).
+    // Does NOT use scrub — physics runs on its own clock.
+    ScrollTrigger.create({
+      trigger:     scrollSection,
+      start:       '55% top',   // picks up exactly where Phase 3 ended
+      onEnter:     () => startPhysics(),
+      onLeaveBack: () => resetPhysics(),
+    });
+
+
+    // ============================================================
+    // RESIZE HANDLING
+    // When the viewport resizes, update the ground body's position
+    // and reset physics so positions re-snapshot on the next trigger.
+    // ============================================================
+    window.addEventListener('resize', () => {
+      Body.setPosition(ground, {
+        x: window.innerWidth / 2,
+        y: window.innerHeight - 10,
+      });
+
+      if (physicsActive) {
+        resetPhysics();
+      }
+    });
+
+  </script>
+</body>
+</html>
