@@ -3,22 +3,21 @@
 // KoykoMission — brand-story section with a sticky lock + scroll-driven animation.
 //
 // SECTION SETUP
-//   The <section> is 300vh tall. Inside is a position:sticky container that
+//   The <section> is 400vh tall. Inside is a position:sticky container that
 //   locks the visible content to the top of the viewport while the user
-//   scrolls through all 300vh — consuming scroll without moving the page.
+//   scrolls through all 400vh — consuming scroll without moving the page.
 //
-// PHASE 1 — STICKY LOCK + WORD FADE-IN (scroll-scrubbed)
+// PHASE 1 — STICKY LOCK + WORD FADE-IN (0% → 33% of scroll progress)
 //   As the user scrolls (while locked), a GSAP timeline tied to scroll
 //   progress fades every word in, one by one in a random order.
-//   scrub: 1 means the user's scroll speed controls how fast words appear.
 //
-// PHASE 2 — PHYSICS CRUMBLE (fires at 85 % of scroll progress)
+// PHASE 2 — HIGHLIGHT WORDS TURN RED (33% → 55% of scroll progress)
+//   Specific key words (Koyko, water, design, etc.) animate from white
+//   to red, one by one, while the rest of the text stays white.
+//
+// PHASE 3 — PHYSICS CRUMBLE (fires at 85% of scroll progress)
 //   Matter.js takes over: every word span is detached from normal flow,
 //   placed at its exact screen position, and given a physics body.
-//   A small random force kicks each word loose; gravity pulls them down
-//   onto a static ground at the bottom of the sticky viewport.
-//   A requestAnimationFrame loop writes each body's position + angle into
-//   CSS custom properties (--x, --y, --rotate) that drive the span's transform.
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
@@ -37,6 +36,20 @@ const PARAGRAPHS = [
   'And the best part? Your website should belong to you — fully, unconditionally. Koyko Design delivers clean, custom code with no subscriptions, no recurring fees, no strings attached. Built for you. Yours to keep. Forever.',
 ];
 
+// ── Words that will turn red in Phase 2 ─────────────────────────────────────
+// Stored lowercase for case-insensitive matching. We also strip common
+// punctuation (.,!?—) from each word before comparing so "water." matches "water".
+const HIGHLIGHT_WORDS = new Set([
+  'koyko', 'mapuche', 'water', 'design', 'precision', 'intention',
+  'care', 'bespoke', 'luxury', 'craftsmanship', 'high-quality', 'forever',
+]);
+
+// Helper: strip trailing punctuation so "water." or "care." matches the set
+function isHighlightWord(word) {
+  const clean = word.replace(/[.,!?;:—"'()]/g, '').toLowerCase();
+  return HIGHLIGHT_WORDS.has(clean);
+}
+
 // Pre-split at module level so ref indices stay stable across re-renders.
 const WORD_GRID = PARAGRAPHS.map(p => p.split(' '));
 
@@ -48,7 +61,7 @@ const PARA_OFFSETS = WORD_GRID.reduce((acc, _words, i) => {
 
 
 function KoykoMission() {
-  const sectionRef = useRef(null); // outer <section> — 300vh, positioning context
+  const sectionRef = useRef(null); // outer <section> — 400vh, positioning context
   const stickyRef  = useRef(null); // sticky container — 100vh, locked in view
   const wordRefs   = useRef([]);   // one ref slot per word span
   const rafRef     = useRef(null); // rAF handle for cleanup
@@ -62,42 +75,76 @@ function KoykoMission() {
     let cancelled    = false;
     let stopPhysics  = () => {};
 
-    // ── Phase 1: scroll-scrubbed word fade-in ─────────────────────────────────
-    // Words start invisible. A GSAP timeline is scrubbed to scroll position so
-    // the user literally scrolls the words into view — slower scroll = slower reveal.
+    // ── Separate highlight words from plain words ───────────────────────────
+    // data-highlight="true" was set in JSX on words that match HIGHLIGHT_WORDS
+    const highlightEls = words.filter(el => el.dataset.highlight === 'true');
+    const plainEls     = words.filter(el => el.dataset.highlight !== 'true');
+
+    // ── Phase 1: scroll-scrubbed word fade-in (0% → 33%) ───────────────────
+    // Words start invisible. GSAP timeline scrubbed to scroll so the user
+    // literally scrolls the words into view.
     gsap.set(words, { opacity: 0 });
 
     const fadeIn = gsap.timeline({
       scrollTrigger: {
         trigger: section,
-        start:   'top top',  // begins the moment the section locks into view
-        end:     '+=100%',   // fully revealed after 1 viewport-height of scrolling
-        scrub:   1,          // ties playhead to scroll; lag=1s makes it feel smooth
+        start:   'top top',   // begins when the section locks into view
+        end:     '33% top',   // fully revealed after 33% of the 400vh scroll range
+        scrub:   1,           // ties playhead to scroll; lag=1s feels smooth
       },
     });
 
     fadeIn.to(words, {
       opacity:  1,
       duration: 1,
-      stagger:  { amount: 1.5, from: 'random' }, // random order feels more organic
+      stagger:  { amount: 1.5, from: 'random' }, // random order feels organic
       ease:     'none',
     });
 
-    // ── Phase 2: physics crumble ──────────────────────────────────────────────
-    // We use onUpdate + a progress threshold instead of 'bottom X%' because
-    // with sticky positioning, 'bottom X%' fires only after the section has
-    // already left the viewport — too late. Progress 0.85 = 85% through the
-    // section's ~200vh scroll range, while the content is still fully in view.
+    // ── Phase 2: highlight words turn red (33% → 55%) ───────────────────────
+    // Only the highlight words animate. They go from white to red one by one
+    // while the user keeps scrolling. Plain words stay white.
+    const highlightTl = gsap.timeline({ paused: true });
+
+    highlightTl.to(highlightEls, {
+      color:    '#cc3311',      // vivid red
+      duration: 0.4,
+      stagger:  { amount: 0.8, from: 'start' }, // left-to-right, one by one
+      ease:     'none',
+    });
+
+    const highlightTrigger = ScrollTrigger.create({
+      trigger:   section,
+      start:     '33% top',    // picks up exactly where Phase 1 ended
+      end:       '55% top',    // ends after 55% of 400vh
+      scrub:     true,         // ties the colour animation to scroll position
+      animation: highlightTl,
+    });
+
+    // ── Phase 3: physics crumble (fires at 85% progress) ────────────────────
+    // onUpdate + progress threshold works with sticky positioning — 'bottom X%'
+    // doesn't fire until after the section leaves the viewport (too late).
     let physicsFired = false;
+    let windFired    = false;
+
+    // physicsRefs will hold { bodies, Body, ground, engine, World } once
+    // Matter.js loads — the wind phase reads these to blow words away.
+    let physicsRefs = null;
 
     const fallTrigger = ScrollTrigger.create({
       trigger: section,
       start:   'top top',
       end:     'bottom bottom',
       onUpdate(self) {
+        // Phase 3: start the physics crumble at 85%
         if (self.progress >= 0.85 && !physicsFired) {
           physicsFired = true;
           runPhysics();
+        }
+        // Phase 4: blow words away with "wind" at 95%
+        if (self.progress >= 0.95 && !windFired && physicsRefs) {
+          windFired = true;
+          blowAway(physicsRefs);
         }
       },
     });
@@ -105,6 +152,7 @@ function KoykoMission() {
     // ── Physics setup ─────────────────────────────────────────────────────────
     // Called once when the progress threshold is crossed. Dynamically imports
     // Matter.js to keep it out of the initial bundle and avoid SSR issues.
+    // Only the HIGHLIGHT words get physics bodies — plain words stay in place.
     function runPhysics() {
       import('matter-js').then(({ Engine, Bodies, Body, World, Runner }) => {
         if (cancelled) return;
@@ -119,23 +167,19 @@ function KoykoMission() {
         const stickyH = sticky.offsetHeight;
 
         // Static ground at the bottom of the sticky viewport.
-        // Words pile up here rather than falling off-screen.
         const ground = Bodies.rectangle(
           stickyW / 2,      // centre x
-          stickyH + 30,     // just below the visible area
+          stickyH - 60,     // just below the visible area
           stickyW * 2,      // wide enough to catch every word
           60,
           { isStatic: true, label: 'ground' }
         );
         World.add(engine.world, ground);
 
-        // ── Snapshot all word positions BEFORE touching any styles ─────────
-        // We measure relative to the sticky container. position:sticky makes
-        // it a positioning context, so position:absolute children are placed
-        // relative to it — matching these measurements exactly.
-        const sr = sticky.getBoundingClientRect(); // top:0, left:0 while locked
+        // ── Snapshot ONLY highlight word positions BEFORE touching styles ──
+        const sr = sticky.getBoundingClientRect();
 
-        const snapshots = words.map(el => {
+        const snapshots = highlightEls.map(el => {
           const wr = el.getBoundingClientRect();
           return {
             el,
@@ -148,9 +192,18 @@ function KoykoMission() {
           };
         });
 
-        // ── Detach all words in one pass ───────────────────────────────────
-        // Done after all measurements to prevent earlier detaches from
-        // reflowing the layout and corrupting later measurements.
+        // ── Fade out plain (non-highlight) words ──────────────────────────
+        // They disappear as the red words start falling, leaving only
+        // the highlighted words visible at the bottom of the container.
+        gsap.to(plainEls, {
+          opacity:  0,
+          duration: 0.8,
+          stagger:  { amount: 0.4, from: 'random' },
+          ease:     'power2.out',
+        });
+
+        // ── Detach highlight words in one pass ────────────────────────────
+        // Plain words fade out — only red words fall.
         snapshots.forEach(({ el, left, top, width }) => {
           el.style.position = 'absolute';
           el.style.left     = `${left}px`;
@@ -160,35 +213,34 @@ function KoykoMission() {
           el.style.zIndex   = '2';
         });
 
-        // ── Create one rigid body per word ────────────────────────────────
+        // ── Create one rigid body per highlight word ─────────────────────
         const bodies = snapshots.map(({ el, cx, cy, width, height }) => {
-          // Store initial centre so the rAF loop can compute displacement
           el.dataset.cx = cx;
           el.dataset.cy = cy;
 
           const body = Bodies.rectangle(cx, cy, width, height, {
-            restitution: 0.25,  // slight bounce on landing
+            restitution: 0.25,
             friction:    0.4,
-            frictionAir: 0.02,  // air resistance keeps motion natural
+            frictionAir: 0.02,
           });
 
-          body.domEl = el; // attach DOM element for easy rAF loop access
+          body.domEl = el;
           World.add(engine.world, body);
           return body;
         });
 
         // ── Apply initial kick ─────────────────────────────────────────────
-        // Small random force so each word takes a unique path.
         bodies.forEach(body => {
           Body.applyForce(body, body.position, {
             x:  (Math.random() - 0.5) * 0.006,
-            y: -(Math.random()        * 0.008), // upward nudge
+            y: -(Math.random()        * 0.008),
           });
         });
 
+        // ── Store references so the wind phase can access them later ─────
+        physicsRefs = { bodies, Body, ground, engine, World };
+
         // ── Runner + rAF loop ──────────────────────────────────────────────
-        // Runner steps the engine at ~60fps. The rAF loop only reads positions
-        // and writes them to CSS — it does not step the engine itself.
         const runner = Runner.create();
         Runner.run(runner, engine);
 
@@ -219,10 +271,36 @@ function KoykoMission() {
       });
     }
 
+    // ── Phase 4: "wind" blows the piled words off-screen ──────────────────────
+    // Called at 95% scroll progress. Removes the ground so words aren't blocked,
+    // then applies a strong horizontal force to each body — like a gust of wind
+    // sweeping them to the right and slightly upward.
+    function blowAway({ bodies, Body, ground, engine, World }) {
+      // Remove the ground so words can fly freely off-screen
+      World.remove(engine.world, ground);
+
+      // Kill gravity so words don't fall — they should fly horizontally
+      engine.gravity.y = 0;
+
+      // Apply a powerful leftward "wind" force — blows everything off-screen
+      bodies.forEach(body => {
+        // Remove friction so nothing slows them down
+        body.frictionAir = 0;
+        body.friction    = 0;
+
+        Body.applyForce(body, body.position, {
+          x: -(0.25 + Math.random() * 0.05),    // very strong leftward blast
+          y:  (Math.random() - 0.5) * 0.01,     // slight random vertical scatter
+        });
+      });
+    }
+
     // ── Cleanup on unmount ────────────────────────────────────────────────────
     return () => {
       cancelled = true;
       fadeIn.kill();
+      highlightTl.kill();
+      highlightTrigger.kill();
       fallTrigger.kill();
       stopPhysics();
     };
@@ -235,12 +313,6 @@ function KoykoMission() {
       aria-label="Mission"
       ref={sectionRef}
     >
-      {/*
-        The sticky container locks all visible content to the viewport top
-        while the user scrolls through the section's 300vh of height.
-        position:sticky also makes it a positioning context, so the physics
-        phase can use position:absolute on words relative to this element.
-      */}
       {/* Tagline sits OUTSIDE the sticky container so it scrolls away
           normally before the body text locks into view. */}
       <p className="koyko-mission__tagline">
@@ -260,11 +332,15 @@ function KoykoMission() {
               <p key={pIdx}>
                 {paraWords.map((word, wIdx) => {
                   const i = PARA_OFFSETS[pIdx] + wIdx;
+                  // Mark highlight words with a data attribute so GSAP
+                  // can target them separately in Phase 2
+                  const highlight = isHighlightWord(word);
                   return (
                     <span
                       key={wIdx}
                       ref={el => { wordRefs.current[i] = el; }}
                       className="koyko-mission__word"
+                      data-highlight={highlight ? 'true' : undefined}
                     >
                       {word}{' '}
                     </span>

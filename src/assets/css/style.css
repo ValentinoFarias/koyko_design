@@ -219,7 +219,7 @@ body.run-reveal .block {
 /* Brand name — same style as the links but not interactive */
 .koyko-nav__logo {
   font-family: var(--font-sans);
-  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-size: 100%;
   font-weight: 400;
   letter-spacing: 0.08em;
   color: #000000;
@@ -227,7 +227,7 @@ body.run-reveal .block {
 
 .koyko-nav__link {
   font-family: var(--font-sans);
-  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-size: 100%;
   font-weight: 400;
   color: #000000;
   text-decoration: none;
@@ -270,6 +270,7 @@ body.run-reveal .block {
      "k o y k" wordmark on the left, logo centred, "DESIGN" bottom-right.
      The logo's head visually replaces the missing 'O' in "koyko". */
 .koyko-hero {
+  transform: scale(0.6);
   min-height: calc(100vh - 5rem);
   padding-top: clamp(5rem, 8vw, 9rem);      /* clears the fixed navbar */
   padding-bottom: clamp(2rem, 4vw, 3rem);
@@ -337,7 +338,7 @@ body.run-reveal .block {
    holds the content locked in the viewport. No padding here — the sticky
    container and its content handle all layout. */
 .koyko-mission {
-  height: 300vh;
+  height: 400vh;
   position: relative;
   background: #010000;
   color: #ffffff;
