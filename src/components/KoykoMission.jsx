@@ -74,11 +74,57 @@ function KoykoMission() {
 
     let cancelled    = false;
     let stopPhysics  = () => {};
+    let physicsRefs  = null;
+    let physicsBootId = 0;
 
     // ── Separate highlight words from plain words ───────────────────────────
     // data-highlight="true" was set in JSX on words that match HIGHLIGHT_WORDS
     const highlightEls = words.filter(el => el.dataset.highlight === 'true');
     const plainEls     = words.filter(el => el.dataset.highlight !== 'true');
+
+    function revealPlainWords() {
+      gsap.killTweensOf(plainEls);
+      gsap.to(plainEls, {
+        opacity:  1,
+        duration: 0.45,
+        stagger:  { amount: 0.2, from: 'random' },
+        overwrite:'auto',
+        ease:     'power2.out',
+      });
+    }
+
+    function normalizeMissionText() {
+      gsap.killTweensOf(highlightEls);
+      gsap.set(highlightEls, { clearProps: 'transform' });
+      restoreHighlightFlow();
+      revealPlainWords();
+    }
+
+    function restoreHighlightFlow() {
+      highlightEls.forEach(el => {
+        el.style.position = '';
+        el.style.left     = '';
+        el.style.top      = '';
+        el.style.width    = '';
+        el.style.margin   = '';
+        el.style.zIndex   = '';
+        el.style.removeProperty('--x');
+        el.style.removeProperty('--y');
+        el.style.removeProperty('--rotate');
+        el.removeAttribute('data-cx');
+        el.removeAttribute('data-cy');
+      });
+    }
+
+    function teardownPhysics() {
+      stopPhysics();
+      stopPhysics = () => {};
+      physicsRefs = null;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    }
 
     // ── Phase 1: scroll-scrubbed word fade-in (0% → 33%) ───────────────────
     // Words start invisible. GSAP timeline scrubbed to scroll so the user
@@ -127,22 +173,61 @@ function KoykoMission() {
     let physicsFired = false;
     let windFired    = false;
 
-    // physicsRefs will hold { bodies, Body, ground, engine, World } once
-    // Matter.js loads — the wind phase reads these to blow words away.
-    let physicsRefs = null;
-
     const fallTrigger = ScrollTrigger.create({
       trigger: section,
       start:   'top top',
       end:     'bottom bottom',
       onUpdate(self) {
-        // Phase 3: start the physics crumble at 85%
-        if (self.progress >= 0.85 && !physicsFired) {
+        // Scroll-up rewind from blown-away state:
+        // restore text + make red words fly back from the left.
+        if (self.direction === -1 && self.progress < 0.95 && windFired) {
+          physicsBootId += 1;
+          teardownPhysics();
+          normalizeMissionText();
+
+          const leftSpawn = -Math.max(sticky.offsetWidth * 0.85, 520);
+          gsap.killTweensOf(highlightEls);
+          gsap.fromTo(
+            highlightEls,
+            {
+              x:      () => leftSpawn - Math.random() * 180,
+              y:      () => (Math.random() - 0.5) * 22,
+              rotate: () => gsap.utils.random(-12, 12),
+            },
+            {
+              x:         0,
+              y:         0,
+              rotate:    0,
+              duration:  0.95,
+              stagger:   { amount: 0.45, from: 'start' },
+              overwrite: 'auto',
+              clearProps:'transform',
+              ease:      'power3.out',
+            }
+          );
+
+          windFired = false;
+          physicsFired = false;
+          return;
+        }
+
+        // Scroll-up before wind fired: just restore normal text flow.
+        if (self.direction === -1 && self.progress < 0.85 && physicsFired) {
+          physicsBootId += 1;
+          teardownPhysics();
+          normalizeMissionText();
+          windFired = false;
+          physicsFired = false;
+          return;
+        }
+
+        // Phase 3: start the physics crumble at 85% (downward scroll only)
+        if (self.direction === 1 && self.progress >= 0.85 && !physicsFired) {
           physicsFired = true;
           runPhysics();
         }
-        // Phase 4: blow words away with "wind" at 95%
-        if (self.progress >= 0.95 && !windFired && physicsRefs) {
+        // Phase 4: blow words away with "wind" at 95% (downward scroll only)
+        if (self.direction === 1 && self.progress >= 0.95 && !windFired && physicsRefs) {
           windFired = true;
           blowAway(physicsRefs);
         }
@@ -154,8 +239,9 @@ function KoykoMission() {
     // Matter.js to keep it out of the initial bundle and avoid SSR issues.
     // Only the HIGHLIGHT words get physics bodies — plain words stay in place.
     function runPhysics() {
+      const bootId = ++physicsBootId;
       import('matter-js').then(({ Engine, Bodies, Body, World, Runner }) => {
-        if (cancelled) return;
+        if (cancelled || !physicsFired || bootId !== physicsBootId) return;
 
         // Engine with slightly stronger gravity than the default (1.0)
         const engine     = Engine.create();
@@ -195,12 +281,17 @@ function KoykoMission() {
         // ── Fade out plain (non-highlight) words ──────────────────────────
         // They disappear as the red words start falling, leaving only
         // the highlighted words visible at the bottom of the container.
+        gsap.killTweensOf(plainEls);
         gsap.to(plainEls, {
           opacity:  0,
           duration: 0.8,
           stagger:  { amount: 0.4, from: 'random' },
+          overwrite:'auto',
           ease:     'power2.out',
         });
+
+        gsap.killTweensOf(highlightEls);
+        gsap.set(highlightEls, { clearProps: 'transform' });
 
         // ── Detach highlight words in one pass ────────────────────────────
         // Plain words fade out — only red words fall.
@@ -266,7 +357,10 @@ function KoykoMission() {
           Runner.stop(runner);
           World.clear(engine.world, false);
           Engine.clear(engine);
-          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
         };
       });
     }
@@ -302,7 +396,7 @@ function KoykoMission() {
       highlightTl.kill();
       highlightTrigger.kill();
       fallTrigger.kill();
-      stopPhysics();
+      teardownPhysics();
     };
   }, []);
 
