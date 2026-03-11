@@ -19,6 +19,16 @@ function KoykoNavbar() {
 
       {/* Smooth-scroll to the Contact section */}
       <a href="#contact" className="koyko-nav__link">c o n t a c t</a>
+
+      {/*
+        Decorative cross lines from the Figma "Navbar Deign" vector.
+        Two elements recreate the shape in pure CSS:
+          - koyko-nav__line-h: horizontal line along the navbar bottom, 75.6% wide
+          - koyko-nav__line-v: vertical line at that same x position, drops into the hero
+        75.6% = 1089px ÷ 1440px (the proportions taken directly from the Figma node).
+      */}
+      <span className="koyko-nav__line-h" aria-hidden="true" />
+      <span className="koyko-nav__line-v" aria-hidden="true" />
     </nav>
   );
 }

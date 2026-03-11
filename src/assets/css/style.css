@@ -1,23 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+JP:wght@100..900&display=swap');
 
+
 /* =============================================================================
-   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
-   Central source of truth for all reusable values across the site.
-   Update tokens here to propagate changes everywhere.
+   DESIGN TOKENS
+   All reusable values live here. Changing a token updates every component
+   that references it — so always prefer tokens over hardcoded values.
    ============================================================================= */
 
 :root {
-  /* ---- Typography ---- */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-  --font-alt:  'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-  --font-counter: 'Architects Daughter', 'Inter', system-ui, -apple-system, sans-serif;
-
-  --font-size-xs:   0.75rem;              /* 12px — labels, meta */
-  --font-size-sm:   0.85rem;              /* 13.6px — form labels, fine print */
-  --font-size-base: 1rem;                 /* 16px — body copy */
-  --font-size-lg:   1.05rem;              /* card titles */
-  --font-size-xl:   1.8rem;              /* section headings */
-  --font-size-2xl:  clamp(2.3rem, 4vw, 3rem); /* hero headline — fluid */
+  /* ---- Fonts ---- */
+  /* --font-sans  : primary UI font — Inter */
+  /* --font-alt   : Japanese-style editorial font — Noto Sans JP */
+  /* --font-counter: handwritten accent font — used on the landing counter */
+  --font-sans:    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-alt:     'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-counter: 'Architects Daughter', 'Inter', system-ui, sans-serif;
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -26,67 +23,41 @@
   --line-height-tight:  1.05;
   --line-height-normal: 1.7;
 
-  /* ---- Color Palette (Light Theme) ---- */
-  --color-bg:             #f7f3e2;              /* warm off-white canvas */
-  --color-bg-elevated:    #ffffff;              /* cards, modals, header */
-  --color-surface-subtle: #f0e9d4;              /* skeleton base, section tints */
-  --color-fg:             #000000;              /* primary text */
-  --color-fg-muted:       #5b5444;              /* secondary / supporting text */
-  --color-accent:         #99753f;              /* brand color — CTAs, links */
-  --color-accent-soft:    rgba(153, 117, 63, 0.14); /* tinted hover backgrounds */
-  --color-border-subtle:  rgba(0, 0, 0, 0.08);
-  --color-error:          #d72638;              /* form validation messages */
-
-  /* ---- Shadows ---- */
-  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.12); /* cards, elevated surfaces */
-  --shadow-card: 0 14px 30px rgba(0, 0, 0, 0.04); /* lighter card shadow */
-
-  /* ---- Spacing Scale ---- */
-  --space-xs:  0.35rem;
-  --space-sm:  0.75rem;
-  --space-md:  1.5rem;
-  --space-lg:  2.5rem;
-  --space-xl:  4rem;
-  --space-2xl: 5rem;
-
-  /* ---- Border Radius ---- */
-  --radius-sm:   0.85rem;  /* inputs */
-  --radius-md:   1.25rem;  /* cards */
-  --radius-lg:   1.5rem;   /* card containers / panels */
-  --radius-full: 999px;    /* pills — buttons, toggles, nav links */
+  /* ---- Colours (light theme) ---- */
+  /* Used by the landing page counter and page transitions */
+  --color-bg:             #f7f3e2;   /* warm off-white canvas */
+  --color-fg:             #000000;   /* primary text */
+  --color-fg-muted:       #5b5444;   /* secondary / supporting text */
+  --color-accent:         #99753f;   /* brand accent */
 
   /* ---- Transitions ---- */
   --transition-fast:   0.2s ease;
   --transition-normal: 0.25s ease;
   --transition-slow:   0.35s ease;
 
-  /* ---- Z-index Scale ---- */
-  --z-overlay: 9999; /* page transition curtain — always on top */
-  --z-header:    40; /* sticky header */
+  /* ---- Z-index ---- */
+  --z-overlay: 9999;  /* page transition curtain — must sit above everything */
+  --z-header:    40;  /* fixed navbar */
 }
 
-/* Dark theme token overrides.
-   Applied automatically when HomePage.jsx sets <html data-theme="dark">.
-   Only tokens that differ from the light theme are listed here. */
+/* Dark-mode overrides.
+   Only the tokens that actually change between themes are listed here.
+   The landing-page counter reads --color-fg, so it respects this too. */
 html[data-theme='dark'] {
-  --color-bg:             #050510;
-  --color-bg-elevated:    #10101c;
-  --color-surface-subtle: #151526;
-  --color-fg:             #f9f9ff;
-  --color-fg-muted:       #a2a2c5;
-  --color-accent:         #7b7bff;
-  --color-accent-soft:    rgba(123, 123, 255, 0.16);
-  --color-border-subtle:  rgba(249, 249, 255, 0.06);
-  --shadow-soft:          0 22px 55px rgba(0, 0, 0, 0.65);
+  --color-bg:       #050510;
+  --color-fg:       #f9f9ff;
+  --color-fg-muted: #a2a2c5;
+  --color-accent:   #7b7bff;
 }
 
 
 /* =============================================================================
-   BASE / GLOBAL RESET
-   Minimal foundational styles applied to the document root and body.
+   BASE RESET
+   Minimal global styles. Avoid putting component logic here.
    ============================================================================= */
 
 html {
+  /* Native smooth-scrolling for anchor links (e.g. #contact, #packages) */
   scroll-behavior: smooth;
 }
 
@@ -94,24 +65,21 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
-  /* Used by page-transition logic to fade the body during route changes */
+  /* The page-transition JS fades the body opacity during route changes */
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 
 /* =============================================================================
-   LANDING PAGE  (LandingPage.jsx)
-   Intro / splash screen served at route "/".
-   Visual order: animated percentage counter → centred Lottie logo animation.
+   LANDING PAGE  (/  →  LandingPage.jsx)
+   Splash screen shown on first visit.
+   Structure: animated percentage counter on the left, Lottie logo in the centre.
+   GSAP drives the counter from "0%" to "100%" over 3 seconds, then
+   auto-navigates to /home.
    ============================================================================= */
 
-/* ===== Landing Counter =====
-   GSAP animates the text content from "0%" to "100%" over 3 seconds.
-   Rendered in a centered 2-column grid next to the logo and rotated 270°
-   so digits read vertically while staying aligned with the logo centerline.
-   font-family is declared with the literal stack (not just the variable) because
-   lottie-player.js (a Lit web component) injects global styles at runtime that
-   can override inherited and variable-referenced font declarations. */
+/* Three-column grid: [counter] [logo] [empty].
+   The extra 1fr column on the right balances the layout optically. */
 main .landing-layout {
   min-height: 100vh;
   display: grid;
@@ -121,6 +89,7 @@ main .landing-layout {
   padding-inline: clamp(1rem, 4vw, 3rem);
 }
 
+/* The Lottie logo sits in the centre column */
 main .landing-logo-slot {
   grid-column: 2;
   display: flex;
@@ -128,29 +97,30 @@ main .landing-logo-slot {
   justify-content: center;
 }
 
+/* Counter sits in the left column, rotated 270° so digits read vertically.
+   font-family uses the literal stack (not just the variable) because
+   lottie-player.js injects global styles that can override variable references. */
 main .landing-counter {
   grid-column: 1;
   justify-self: end;
   margin-right: clamp(1.5rem, 6vw, 4.5rem);
-  position: static;
   transform: rotate(270deg);
   transform-origin: center;
   display: inline-block;
-  width: 4ch; /* reserve width for "100%" so text updates do not shift position */
+  width: 4ch;              /* reserve space for "100%" — prevents layout shift */
   text-align: right;
   white-space: nowrap;
   line-height: 1;
-  font-family: var(--font-counter);
+  font-family: 'Architects Daughter', 'Inter', system-ui, sans-serif;
   font-size: 4rem;
   font-weight: var(--font-weight-normal);
   color: var(--color-fg);
-  font-variant-numeric: tabular-nums; /* fixed-width digits prevent layout shift */
+  font-variant-numeric: tabular-nums;  /* fixed-width digits */
   pointer-events: none;
 }
 
-/* ===== Landing Logo Animation =====
-   Wraps the <lottie-player> custom element. The player manages its own
-   internal canvas; we set fixed dimensions and center it on screen. */
+/* Wrapper for the <lottie-player> web component.
+   Fixed dimensions so the player doesn't collapse before the animation loads. */
 .logoMain {
   width: 500px;
   height: 500px;
@@ -158,44 +128,42 @@ main .landing-counter {
   justify-content: center;
   align-items: center;
   margin: auto;
-  transform: translateY(-1px); /* optical alignment — corrects a 1px visual offset */
+  transform: translateY(-1px);  /* 1px optical correction for the Lottie canvas */
   cursor: pointer;
 }
 
 
 /* =============================================================================
    PAGE TRANSITION OVERLAY  (TransitionOverlay.jsx + pageTransitions.js)
-   A full-screen curtain rendered above all content (z-index: --z-overlay).
-   Ten blocks arranged in two rows of five animate scaleY via GSAP to produce
-   a split-wipe effect when navigating between "/" and "/home".
+   A full-screen black curtain that sweeps across the viewport when navigating
+   between routes. GSAP animates scaleX on .block to create the wipe effect.
    ============================================================================= */
 
-/* Fixed overlay container — pointer-events: none so it never blocks interaction */
+/* Fixed container — pointer-events:none so it never blocks user interaction */
 .transitionContainer {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100dvh; /* dvh accounts for collapsible mobile browser chrome */
+  height: 100dvh;        /* dvh = accounts for collapsible mobile browser chrome */
   z-index: var(--z-overlay);
   pointer-events: none;
 }
 
-/* Single full-screen block that sweeps horizontally (scaleX).
-   GSAP sets transformOrigin to 'left' on enter and 'right' on exit,
-   producing the hyperactive block reveal effect. */
+/* The curtain block itself — starts collapsed (scaleX: 0).
+   GSAP sets transformOrigin to 'left' on enter and 'right' on exit. */
 .block {
   width: 100%;
   height: 100%;
   background-color: #000000;
   transform: scaleX(0);
-  transform-origin: left; /* default; GSAP overrides per animation */
+  transform-origin: left;
   visibility: hidden;
-  will-change: transform; /* promote to compositor layer for smooth GSAP tweens */
+  will-change: transform;   /* promote to GPU layer for smooth GSAP tweens */
 }
 
-/* On the landing page, body receives .run-reveal so the block starts fully
-   visible and GSAP sweeps it off-screen on first load. */
+/* On the landing page, <body> gets .run-reveal so the curtain starts fully
+   visible and GSAP sweeps it away on first load. */
 body.run-reveal .block {
   transform: scaleX(1);
   visibility: visible;
@@ -203,774 +171,18 @@ body.run-reveal .block {
 
 
 /* =============================================================================
-   HOMEPAGE – APP WRAPPER & TOP-LEVEL LAYOUT  (HomePage.jsx)
-   Root wrapper that carries the themed gradient background and
-   the main content offset below the sticky header.
+   HOMEPAGE  (/home  →  HomePage.jsx  →  Koyko* components)
+   All classes are prefixed with .koyko- to avoid collisions.
+
+   Font mapping from Figma:
+     Hiragino Kaku Gothic Std W8  →  Noto Sans JP, weight 800
+     Hiragino Kaku Gothic ProN W3 →  Noto Sans JP, weight 300
+     Inter Regular                →  Inter, weight 400  (--font-sans)
    ============================================================================= */
 
-/* ===== App Wrapper =====
-   Dual radial gradient overlaid on --color-bg creates a subtle ambient glow.
-   The gradient colors are intentionally theme-agnostic (they read well on both
-   light and dark backgrounds). */
-.app {
-  background:
-    radial-gradient(circle at top left,  rgba(91, 91, 255, 0.12), transparent 55%),
-    radial-gradient(circle at bottom right, rgba(255, 111, 145, 0.16), transparent 60%),
-    var(--color-bg);
-  color: var(--color-fg);
-  min-height: 100vh;
-}
-
-/* Pushes page content below the sticky header (height ≈ 5rem) */
-.layout-main {
-  padding-top: 5rem;
-}
-
-
-/* =============================================================================
-   HOMEPAGE – SHARED SECTION UTILITIES
-   Applied to every <section> on the homepage for consistent spacing and layout.
-   ============================================================================= */
-
-.section {
-  padding: var(--space-xl) var(--space-md);
-  /* Prevents sticky header from obscuring the section anchor when scrolled-to */
-  scroll-margin-top: 6rem;
-}
-
-/* Constrains section content to the design's max readable width */
-.section__inner {
-  max-width: 1120px;
-  margin: 0 auto;
-}
-
-.section__title {
-  font-size: var(--font-size-xl);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin: 0 0 0.75rem;
-}
-
-.section__lead {
-  margin: 0 0 var(--space-md);
-  font-size: var(--font-size-base);
-  color: var(--color-fg-muted);
-}
-
-.section__body {
-  margin: 0 0 1rem;
-  color: var(--color-fg-muted);
-  line-height: var(--line-height-normal);
-}
-
-.section__header {
-  margin-bottom: 2.5rem;
-}
-
-/* Small uppercase label displayed above section headings for visual hierarchy */
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: var(--font-size-xs);
-  color: var(--color-fg-muted);
-  margin-bottom: 0.5rem;
-}
-
-/* Generic inline hyperlink — used in the Contact aside */
-.link-inline {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-
-.link-inline:hover,
-.link-inline:focus-visible {
-  text-decoration: underline;
-}
-
-
-/* =============================================================================
-   HOMEPAGE – HEADER / NAVIGATION  (Header.jsx)
-   Sticky top bar: logo, desktop nav links, theme toggle, mobile hamburger.
-   ============================================================================= */
-
-/* ===== Site Header ===== */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  backdrop-filter: blur(16px); /* frosted-glass effect behind the header */
-  background: color-mix(in srgb, var(--color-bg-elevated) 88%, transparent 12%);
-  border-bottom: 1px solid var(--color-border-subtle);
-  transition:
-    box-shadow    var(--transition-normal),
-    background    var(--transition-normal),
-    border-color  var(--transition-normal);
-}
-
-/* Shadow class toggled by JS when window.scrollY exceeds ~10px */
-.site-header--scrolled {
-  box-shadow: var(--shadow-soft);
-}
-
-.site-header__inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0.9rem var(--space-md);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-}
-
-.site-header__logo {
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  text-decoration: none;
-  color: var(--color-fg);
-}
-
-/* ===== Desktop Navigation List ===== */
-
-.nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: none; /* base state — overridden by the desktop modifier below */
-}
-
-/* Hidden by default; revealed via media query at the bottom of this file */
-.nav-list--desktop {
-  display: none;
-}
-
-/* Nav links are <button> elements for proper keyboard and screen-reader support */
-.nav-list__link {
-  background: none;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  color: var(--color-fg-muted);
-  font-size: 0.9rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  transition:
-    background-color var(--transition-fast),
-    color            var(--transition-fast);
-}
-
-.nav-list__link:hover,
-.nav-list__link:focus-visible {
-  outline: none;
-  background-color: var(--color-accent-soft);
-  color: var(--color-fg);
-}
-
-/* ===== Header Action Buttons (theme toggle + mobile hamburger) ===== */
-
-.site-header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.theme-toggle {
-  border-radius: var(--radius-full);
-  width: 2.2rem;
-  height: 2.2rem;
-  border: 1px solid var(--color-border-subtle);
-  background: var(--color-bg-elevated);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
-/* Hamburger icon — hidden via media query at the bottom of this file */
-.menu-toggle {
-  border-radius: var(--radius-full);
-  width: 2.4rem;
-  height: 2.4rem;
-  border: 1px solid var(--color-border-subtle);
-  background: var(--color-bg-elevated);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-}
-
-.menu-toggle__bar {
-  width: 1.1rem;
-  height: 2px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-fg);
-}
-
-/* ===== Mobile Navigation Drawer ===== */
-
-/* Collapsed by default; max-height transition creates a slide-down open effect.
-   Hidden entirely on desktop via media query at the bottom of this file. */
-.mobile-nav {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height var(--transition-slow);
-  background: var(--color-bg-elevated);
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.mobile-nav--open {
-  max-height: 260px;
-}
-
-.mobile-nav__list {
-  list-style: none;
-  margin: 0;
-  padding: 0.75rem var(--space-md) var(--space-md);
-}
-
-.mobile-nav__item + .mobile-nav__item {
-  margin-top: 0.3rem;
-}
-
-.mobile-nav__link {
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 0.55rem 0;
-  font-size: 0.9rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  color: var(--color-fg-muted);
-}
-
-
-/* =============================================================================
-   HOMEPAGE – BUTTONS  (Hero.jsx, ContactSection.jsx)
-   Shared button styles used across the homepage.
-   ============================================================================= */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-full);
-  border: 1px solid transparent;
-  padding: var(--space-sm) 1.3rem;
-  font-size: 0.95rem;
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    background-color var(--transition-fast),
-    color            var(--transition-fast),
-    box-shadow       var(--transition-fast),
-    border-color     var(--transition-fast);
-}
-
-/* Solid accent-filled button — primary call to action */
-.btn--primary {
-  background: var(--color-accent);
-  color: #ffffff;
-  box-shadow: 0 10px 26px rgba(91, 91, 255, 0.34);
-}
-
-.btn--primary:hover,
-.btn--primary:focus-visible {
-  outline: none;
-  box-shadow: 0 14px 32px rgba(91, 91, 255, 0.45);
-}
-
-/* Outlined transparent button — secondary call to action */
-.btn--ghost {
-  border-color: var(--color-border-subtle);
-  background: transparent;
-  color: var(--color-fg);
-}
-
-.btn--ghost:hover,
-.btn--ghost:focus-visible {
-  outline: none;
-  background: var(--color-accent-soft);
-}
-
-
-/* =============================================================================
-   HOMEPAGE – HERO SECTION  (Hero.jsx)
-   Full-width intro: typewriter headline, subtitle, CTA buttons, decorative orb.
-   ============================================================================= */
-
-.section-hero {
-  padding-top: var(--space-xl);
-}
-
-/* Two-column grid — text on the left, decorative visual on the right.
-   Collapses to a single column on mobile; expands via media query below. */
-.section-hero__inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr);
-  align-items: center;
-  gap: var(--space-lg);
-}
-
-.section-hero__title {
-  font-size: var(--font-size-2xl);
-  line-height: var(--line-height-tight);
-  margin: 0 0 0.75rem;
-}
-
-/* Blinking pipe character appended to the typewriter headline */
-.section-hero__cursor {
-  color: var(--color-accent);
-  margin-left: 0.1em;
-  animation: cursor-blink 1s steps(2, start) infinite;
-}
-
-@keyframes cursor-blink {
-  0%,    50%   { opacity: 1; }
-  50.01%, 100% { opacity: 0; }
-}
-
-.section-hero__subtitle {
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
-  max-width: 34rem;
-  color: var(--color-fg-muted);
-}
-
-.section-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  margin-top: 1.6rem;
-}
-
-/* Decorative orb — hidden on mobile, revealed via media query below */
-.section-hero__visual {
-  display: none;
-  justify-content: center;
-}
-
-/* ===== Hero Orbit Decoration =====
-   A gradient sphere with a dashed inner ring and two floating dot "planets". */
-.hero-orbit {
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  position: relative;
-  background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.25), transparent 55%),
-    radial-gradient(circle at 70% 80%, rgba(91, 91, 255, 0.5),   transparent 60%);
-  box-shadow: var(--shadow-soft);
-}
-
-.hero-orbit__ring {
-  position: absolute;
-  inset: 16%;
-  border-radius: 50%;
-  border: 1px dashed rgba(255, 255, 255, 0.45);
-}
-
-.hero-orbit__planet {
-  position: absolute;
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-.hero-orbit__planet--primary {
-  width: 34px;
-  height: 34px;
-  top: 18%;
-  right: 12%;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
-}
-
-.hero-orbit__planet--secondary {
-  width: 22px;
-  height: 22px;
-  bottom: 18%;
-  left: 8%;
-  opacity: 0.75;
-}
-
-
-/* =============================================================================
-   HOMEPAGE – ABOUT SECTION  (AboutSection.jsx)
-   Bio text with a three-column key/value grid inside a card container.
-   ============================================================================= */
-
-/* Card container with gradient background and soft shadow.
-   Padding increases via media query below. */
-.section-about__inner {
-  border-radius: var(--radius-lg);
-  padding: 2.1rem 1.8rem;
-  background: linear-gradient(135deg, var(--color-bg-elevated), var(--color-surface-subtle));
-  box-shadow: var(--shadow-soft);
-}
-
-/* Three-column info grid — stacks on mobile, expands via media query below */
-.section-about__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.1rem;
-  margin-top: 1.75rem;
-}
-
-.section-about__item {
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.section-about__label {
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--color-fg-muted);
-  margin-bottom: 0.2rem;
-}
-
-.section-about__value {
-  font-size: 0.9rem;
-}
-
-
-/* =============================================================================
-   HOMEPAGE – PROJECTS SECTION  (ProjectsSection.jsx)
-   Three-column project card grid with a shimmer skeleton loading state.
-   ============================================================================= */
-
-/* ===== Project Card Grid =====
-   Single column on mobile; three columns via media query below. */
-.projects-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-md);
-}
-
-.project-card {
-  border-radius: var(--radius-md);
-  padding: 1.6rem 1.4rem;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-subtle);
-  box-shadow: var(--shadow-card);
-}
-
-.project-card__title {
-  font-size: var(--font-size-lg);
-  margin: 0 0 0.6rem;
-}
-
-.project-card__description {
-  font-size: 0.9rem;
-  color: var(--color-fg-muted);
-  margin: 0 0 0.8rem;
-}
-
-.project-card__meta {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--color-fg-muted);
-}
-
-/* ===== Skeleton Loading State =====
-   Displayed with aria-busy while projects are simulating an async fetch.
-   An animated shimmer gradient sweeps left-to-right across each placeholder card. */
-.projects-skeleton {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-md);
-}
-
-.projects-skeleton__card {
-  height: 170px;
-  border-radius: var(--radius-md);
-  /* Animated gradient sweeps left-to-right to simulate content loading */
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-subtle),
-    var(--color-bg-elevated),
-    var(--color-surface-subtle)
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%   { background-position:  200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-
-/* =============================================================================
-   HOMEPAGE – SERVICES SECTION  (ServicesSection.jsx)
-   Three-column card grid listing the studio's offered services.
-   ============================================================================= */
-
-/* Single column on mobile; three columns via media query below */
-.services-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.4rem;
-}
-
-.service-card {
-  border-radius: var(--radius-md);
-  padding: 1.6rem 1.4rem;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-subtle);
-}
-
-.service-card__title {
-  margin: 0 0 0.45rem;
-  font-size: var(--font-size-base);
-}
-
-.service-card__description {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--color-fg-muted);
-}
-
-
-/* =============================================================================
-   HOMEPAGE – CONTACT SECTION  (ContactSection.jsx)
-   Form with inline client-side validation and a sidebar aside.
-   ============================================================================= */
-
-/* Card container matching the About section treatment */
-.section-contact__inner {
-  border-radius: var(--radius-lg);
-  padding: 2.2rem 1.8rem;
-  background: linear-gradient(135deg, var(--color-bg-elevated), var(--color-surface-subtle));
-  box-shadow: var(--shadow-soft);
-}
-
-/* Two-column layout: form left, aside right.
-   Stacked on mobile; side-by-side via media query below. */
-.section-contact__grid {
-  display: block;
-}
-
-/* ===== Contact Form Fields ===== */
-
-.contact-form__field {
-  margin-bottom: 1.2rem;
-}
-
-.contact-form__label {
-  display: block;
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-xs);
-}
-
-.contact-form__input {
-  width: 100%;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-subtle);
-  padding: 0.7rem 0.8rem;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.88);
-}
-
-/* Dark mode needs a darker input background since the default is near-white */
-html[data-theme='dark'] .contact-form__input {
-  background: rgba(4, 4, 16, 0.9);
-}
-
-/* Allow the textarea to grow vertically but not horizontally */
-.contact-form__input--textarea {
-  resize: vertical;
-}
-
-/* Inline error shown below a field when validation fails */
-.contact-form__error {
-  color: var(--color-error);
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-}
-
-/* Success message rendered after the form is successfully submitted */
-.contact-form__success {
-  margin-top: var(--space-sm);
-  font-size: 0.9rem;
-  color: var(--color-fg);
-}
-
-/* Full-width on mobile; auto-width via media query below */
-.contact-form__submit {
-  width: 100%;
-}
-
-
-/* =============================================================================
-   HOMEPAGE – FOOTER  (Footer.jsx)
-   Minimal footer with copyright notice and quick-link navigation.
-   ============================================================================= */
-
-.site-footer {
-  padding: 2rem var(--space-md) 3rem;
-}
-
-/* Stacked on mobile; side-by-side via media query below */
-.site-footer__inner {
-  max-width: 1120px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  border-top: 1px solid var(--color-border-subtle);
-  padding-top: 1.4rem;
-}
-
-.site-footer__copy {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--color-fg-muted);
-}
-
-.site-footer__nav {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.site-footer__link {
-  font-size: 0.8rem;
-  text-decoration: none;
-  color: var(--color-fg-muted);
-}
-
-.site-footer__link:hover,
-.site-footer__link:focus-visible {
-  text-decoration: underline;
-}
-
-
-/* =============================================================================
-   RESPONSIVE — MEDIA QUERIES
-   All breakpoint overrides collected here, ordered smallest → largest.
-   Each block is labelled with the component it targets for easy scanning.
-   ============================================================================= */
-
-/* -----------------------------------------------------------------------------
-   600px — Contact form submit button
-   Full-width on mobile becomes auto-width once there is enough horizontal room.
-   ----------------------------------------------------------------------------- */
-@media (min-width: 600px) {
-  .contact-form__submit {
-    width: auto;
-  }
-}
-
-/* -----------------------------------------------------------------------------
-   640px — Footer
-   Footer copy and nav links switch from stacked column to a single row.
-   ----------------------------------------------------------------------------- */
-@media (min-width: 640px) {
-  .site-footer__inner {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-/* -----------------------------------------------------------------------------
-   768px — Section padding / About / Header navigation
-   ----------------------------------------------------------------------------- */
-@media (min-width: 768px) {
-  /* Section — increase vertical padding on wider viewports */
-  .section {
-    padding: var(--space-2xl) 3rem;
-  }
-
-  /* Header — show the desktop nav list, hide the hamburger and mobile drawer */
-  .nav-list--desktop {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .menu-toggle {
-    display: none;
-  }
-
-  .mobile-nav {
-    display: none;
-  }
-
-  /* About — more generous card padding on wider viewports */
-  .section-about__inner {
-    padding: 2.5rem 2.3rem;
-  }
-
-  /* About grid — expand from 1 column to 3 columns */
-  .section-about__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* -----------------------------------------------------------------------------
-   840px — Projects / Services / Skeleton
-   Three-column grid layouts unlock on wider viewports.
-   ----------------------------------------------------------------------------- */
-@media (min-width: 840px) {
-  /* Projects — switch from 1 column to 3 */
-  .projects-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* Projects skeleton — match the real grid so placeholders align correctly */
-  .projects-skeleton {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* Services — switch from 1 column to 3 */
-  .services-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* -----------------------------------------------------------------------------
-   900px — Hero / Contact
-   Hero reveals its decorative orb column; Contact switches to a side-by-side layout.
-   ----------------------------------------------------------------------------- */
-@media (min-width: 900px) {
-  /* Hero — two-column layout: text (wider) + decorative orb */
-  .section-hero__inner {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  }
-
-  /* Hero — show the decorative orbit visual (hidden on mobile) */
-  .section-hero__visual {
-    display: flex;
-  }
-
-  /* Contact — two-column layout: form (wider) + aside */
-  .section-contact__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
-    gap: 2.2rem;
-    align-items: flex-start;
-  }
-}
-
-
-/* =============================================================================
-   KOYKO HOMEPAGE — FIGMA REDESIGN  (HomePage.jsx)
-   All classes prefixed with .koyko- to avoid collisions with existing styles.
-   Follows the "KyokoWebsite" Figma design (node 3-5) exactly.
-   Fonts: Inter (--font-sans) for navbar/body, Noto Sans JP (--font-alt) for
-   editorial headings — Noto Sans JP weight 800 maps to Hiragino Kaku Gothic W8,
-   weight 300 maps to Hiragino Kaku Gothic ProN W3.
-   ============================================================================= */
 
 /* ---- Page wrapper --------------------------------------------------------- */
-/* White canvas that fills the viewport; clips horizontal marquee overflow */
+/* White canvas. overflow-x:hidden clips the marquee track at the viewport edge */
 .koyko-page {
   background: #ffffff;
   color: #000000;
@@ -979,9 +191,11 @@ html[data-theme='dark'] .contact-form__input {
   font-family: var(--font-sans);
 }
 
+
 /* ---- Navbar --------------------------------------------------------------- */
-/* Fixed translucent bar — three items spread across the full width.
-   backdrop-filter creates the frosted-glass effect as the user scrolls. */
+/* Fixed bar pinned to the top. Three items spread with space-between:
+   "k o y k o" (left) | "p a c k a g e s" (centre) | "c o n t a c t" (right)
+   backdrop-filter gives a frosted-glass effect when content scrolls beneath. */
 .koyko-nav {
   position: fixed;
   top: 0;
@@ -996,7 +210,7 @@ html[data-theme='dark'] .contact-form__input {
   backdrop-filter: blur(10px);
 }
 
-/* Brand name — same font as nav links but not a link */
+/* Brand name — same style as the links but not interactive */
 .koyko-nav__logo {
   font-family: var(--font-sans);
   font-size: clamp(1rem, 1.7vw, 1.5rem);
@@ -1019,33 +233,56 @@ html[data-theme='dark'] .contact-form__input {
   opacity: 0.55;
 }
 
+/* Decorative cross lines — recreated from the Figma "Navbar Deign" vector.
+   75.6% = 1089px ÷ 1440px (exact ratio from the Figma node dimensions).
+   line-h: horizontal rule along the navbar bottom, stopping at 75.6% width.
+   line-v: vertical line at that x-position, tall enough to bleed into the hero.
+   pointer-events:none so neither line ever intercepts clicks. */
+.koyko-nav__line-h {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 75.6%;
+  height: 3px;
+  background: #000000;
+  pointer-events: none;
+}
+
+.koyko-nav__line-v {
+  position: absolute;
+  top: 0;
+  left: 60%;   /* 60% is the x-position of the vertical line in the Figma design */
+  width: 3px;
+  height: 100px;   /* extends below the navbar into the hero section */
+  background: #000000;
+  pointer-events: none;
+}
+
+
 /* ---- Hero ----------------------------------------------------------------- */
-/* Full-viewport editorial section.
-   Two sub-rows:
-     1. .koyko-hero__inner  — wordmark (left) + logo illustration (right)
-     2. .koyko-hero__bottom — gold dot (left) + "D E S I G N" label (right) */
+/* Full-viewport editorial section — two flex rows:
+     Row 1 (.koyko-hero__inner):  "k o y k" wordmark (left) + logo image (right)
+     Row 2 (.koyko-hero__bottom): gold dot (left) + "D E S I G N" label (right) */
 .koyko-hero {
   min-height: calc(100vh - 5rem);
-  /* Push content below the fixed navbar */
-  padding-top: clamp(5rem, 8vw, 9rem);
+  padding-top: clamp(5rem, 8vw, 9rem);      /* clears the fixed navbar */
   padding-bottom: clamp(2rem, 4vw, 3rem);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-/* Upper row: wordmark and logo share the full width with no gap */
+/* Row 1: align bottom edges so the text baseline meets the logo's foot */
 .koyko-hero__inner {
   display: flex;
-  align-items: flex-end;   /* align bottom edges so text baseline meets logo foot */
+  align-items: flex-end;
   padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
-/* "k o y k" — Inter Regular, very large, fluid sizing */
+/* "k o y k" — Inter Regular, fluid 4rem → 8rem */
 .koyko-hero__wordmark {
   font-family: var(--font-sans);
   font-weight: 400;
-  /* clamp: 4rem on mobile → 8rem at 1440px */
   font-size: clamp(4rem, 8.9vw, 8rem);
   letter-spacing: 0.04em;
   line-height: 1;
@@ -1056,7 +293,7 @@ html[data-theme='dark'] .contact-form__input {
   padding-left: clamp(0.5rem, 2vw, 1rem);
 }
 
-/* Logo wrapper takes all remaining space and centres the image */
+/* Logo wrapper takes the remaining space and centres the image horizontally */
 .koyko-hero__logo-wrap {
   flex: 1;
   display: flex;
@@ -1064,14 +301,14 @@ html[data-theme='dark'] .contact-form__input {
   align-items: flex-end;
 }
 
-/* The Koyko bird/figure illustration — scales fluidly with the viewport */
+/* Koyko bird/figure illustration — fluid width via clamp */
 .koyko-hero__logo {
   width: clamp(160px, 28.5vw, 410px);
   height: auto;
   display: block;
 }
 
-/* Lower row: decorative dot on the left, "DESIGN" text on the right */
+/* Row 2: decorative dot on the left, "DESIGN" label on the right */
 .koyko-hero__bottom {
   display: flex;
   align-items: center;
@@ -1080,13 +317,13 @@ html[data-theme='dark'] .contact-form__input {
   margin-top: clamp(1rem, 2vw, 2rem);
 }
 
-/* Small gold circle — decorative, aria-hidden */
+/* Small gold circle — aria-hidden, purely visual */
 .koyko-hero__gold-dot {
   width: clamp(16px, 2.8vw, 40px);
   height: auto;
 }
 
-/* "D  E  S  I  G  N" — Noto Sans JP W3 (light), matches Figma's ProN W3 */
+/* "D  E  S  I  G  N" — Noto Sans JP W3 (light weight), spaced letters */
 .koyko-hero__design-label {
   font-family: var(--font-alt);
   font-weight: 300;
@@ -1096,30 +333,38 @@ html[data-theme='dark'] .contact-form__input {
   margin: 0;
 }
 
+
 /* ---- Mission -------------------------------------------------------------- */
 /* Full-bleed dark section.
-   A faint texture image sits at opacity 0.11 behind all text. */
+   overflow is NOT hidden here — we need falling words to be visible outside
+   the text container.  The bg image has its own wrapper with overflow:hidden. */
 .koyko-mission {
   background: #010000;
   color: #ffffff;
-  position: relative;
-  overflow: hidden;
+  position: relative;   /* positioning context for absolute word spans */
   padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 4vw, 3.5rem);
 }
 
-/* Texture overlay — z-index 0, kept behind content (z-index 1) */
-.koyko-mission__bg {
+/* Wrapper that clips the faint texture image without clipping the words.
+   position:absolute + inset:0 makes it fill the section exactly. */
+.koyko-mission__bg-wrap {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Background texture image — fills its wrapper at low opacity */
+.koyko-mission__bg {
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0.11;
-  pointer-events: none;
-  z-index: 0;
+  display: block;
 }
 
-/* Content wrapper — sits above the bg image */
+/* Content sits above the bg image */
 .koyko-mission__content {
   position: relative;
   z-index: 1;
@@ -1127,7 +372,7 @@ html[data-theme='dark'] .contact-form__input {
   margin: 0 auto;
 }
 
-/* "Let's create the home of your work." — centered sub-heading */
+/* "Let's create the home of your work." — centred tagline */
 .koyko-mission__tagline {
   font-family: var(--font-alt);
   font-weight: 800;
@@ -1137,7 +382,7 @@ html[data-theme='dark'] .contact-form__input {
   margin: 0 0 clamp(2rem, 4vw, 4rem);
 }
 
-/* Body copy — Noto Sans JP W8 (bold), generous line-height for readability */
+/* Five body paragraphs — Noto Sans JP W8, generous line-height */
 .koyko-mission__body {
   font-family: var(--font-alt);
   font-weight: 800;
@@ -1150,56 +395,76 @@ html[data-theme='dark'] .contact-form__input {
   margin: 0 0 1.4rem;
 }
 
+/* Remove bottom margin from the last paragraph to avoid extra whitespace */
 .koyko-mission__body p:last-child {
   margin-bottom: 0;
 }
 
+/* Individual word spans — the physics animation targets these.
+   display:inline-block is required for CSS transform to work on inline text.
+   The three CSS custom properties are written each frame by the RAF loop in
+   KoykoMission.jsx and default to 0 so words sit normally before physics fires.
+   will-change tells the browser to promote each word to its own GPU layer,
+   which keeps the 60fps physics loop smooth. */
+.koyko-mission__word {
+  display: inline-block;
+  /* white-space: pre preserves the trailing space character rendered after each
+     word in the JSX ({word}{' '}). Without this, inline-block collapses whitespace
+     and words appear glued together with no gaps. */
+  white-space: pre;
+  transform: translate(var(--x, 0px), var(--y, 0px)) rotate(var(--rotate, 0rad));
+  will-change: transform, opacity;
+}
+
+
 /* ---- Features Marquee ----------------------------------------------------- */
-/* Horizontally scrolling ticker.
-   Three identical text spans fill the track; the animation moves −33.33%
-   (one span) then snaps back, creating a seamless infinite loop. */
+/* Continuously scrolling ticker strip.
+   How the seamless loop works: three identical text spans are placed in a flex
+   row. The animation moves the track −33.33% (exactly one span width), then
+   snaps back to 0 — the user never sees the seam. */
 .koyko-features {
   background: #ffffff;
-  overflow: hidden;
+  overflow: hidden;         /* clips the track at the viewport edges */
   padding: clamp(0.8rem, 1.2vw, 1.2rem) 0;
   border-bottom: 2px solid #000000;
 }
 
-/* Flex row wider than the viewport; animation drives it left */
+/* Flex row — wider than the viewport so content scrolls off screen */
 .koyko-features__track {
   display: flex;
   white-space: nowrap;
   animation: koyko-marquee 22s linear infinite;
 }
 
-/* Each span is one full copy of the marquee text */
+/* Each span is one full copy of the marquee text.
+   padding-right creates the visible gap between loop repetitions. */
 .koyko-features__text {
   font-family: var(--font-alt);
   font-weight: 800;
-  /* Fluid: 2.5rem on mobile → 6rem on wide screens */
   font-size: clamp(2.5rem, 6.7vw, 6rem);
   color: #000000;
-  /* Padding-right creates visible space between loop repetitions */
   padding-right: clamp(2rem, 3vw, 3rem);
   flex-shrink: 0;
 }
 
-/* Move exactly one-third of the total track width → seamless snap */
+/* Moving −33.33% shifts exactly one span, producing the seamless loop */
 @keyframes koyko-marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-33.333%); }
 }
 
-/* Respect the OS-level "reduce motion" accessibility setting */
+/* Pause the animation for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .koyko-features__track {
     animation: none;
   }
 }
 
+
 /* ---- Portfolio ------------------------------------------------------------ */
 /* Right-aligned featured project screenshot.
-   The item container clips any overflow from the image. */
+   The .koyko-portfolio__item container clips the image so only part shows,
+   matching the cropped look in the Figma. */
 .koyko-portfolio {
   background: #ffffff;
   padding: clamp(2rem, 3vw, 3rem) 0;
@@ -1209,13 +474,12 @@ html[data-theme='dark'] .contact-form__input {
   min-height: clamp(300px, 40vw, 600px);
 }
 
-/* Clipping wrapper — width matches the Figma proportions (~50% of page) */
+/* Clipping wrapper — ~50% of page width, matching the Figma proportions */
 .koyko-portfolio__item {
   width: clamp(220px, 50vw, 723px);
   overflow: hidden;
 }
 
-/* Portfolio screenshot — covers its container, cropped if needed */
 .koyko-portfolio__img {
   width: 100%;
   height: 100%;
@@ -1223,8 +487,9 @@ html[data-theme='dark'] .contact-form__input {
   display: block;
 }
 
+
 /* ---- Designed With Love --------------------------------------------------- */
-/* Large editorial heading — left-aligned, Noto Sans JP W8 */
+/* Single large editorial heading — Noto Sans JP W8, fluid 3rem → 6rem */
 .koyko-designed {
   background: #ffffff;
   padding: clamp(4rem, 7vw, 8rem) clamp(2rem, 4.5vw, 4.5rem);
@@ -1233,7 +498,6 @@ html[data-theme='dark'] .contact-form__input {
 .koyko-designed__heading {
   font-family: var(--font-alt);
   font-weight: 800;
-  /* Fluid: 3rem → 6rem */
   font-size: clamp(3rem, 6.7vw, 6rem);
   color: #000000;
   margin: 0;
@@ -1241,25 +505,28 @@ html[data-theme='dark'] .contact-form__input {
   max-width: 1200px;
 }
 
+
 /* ---- Divider -------------------------------------------------------------- */
-/* Full-bleed 2px horizontal rule between "Designed" section and Contact */
+/* 2px horizontal rule between the "Designed With Love" and Contact sections.
+   margin keeps it from touching the viewport edges. */
 .koyko-divider {
   border: none;
   border-top: 2px solid #000000;
   margin: 0 clamp(1rem, 2vw, 1.5rem);
 }
 
+
 /* ---- Contact -------------------------------------------------------------- */
-/* Three vertical elements:
-     1. Small "{contact}" label — top-left
-     2. Large right-aligned heading
-     3. Circular arrow link — bottom-left */
+/* Three stacked elements:
+     1. "{contact}" label — small, top-left
+     2. Heading — large, right-aligned
+     3. Circular arrow link — bottom-left, links to email */
 .koyko-contact {
   background: #ffffff;
   padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 4vw, 3.5rem);
 }
 
-/* Small decorative label — curly braces are intentional (Figma design) */
+/* "{contact}" — curly braces are intentional, taken from the Figma design */
 .koyko-contact__label {
   font-family: var(--font-alt);
   font-weight: 800;
@@ -1268,7 +535,7 @@ html[data-theme='dark'] .contact-form__input {
   margin: 0 0 clamp(1rem, 2vw, 2rem);
 }
 
-/* "READY TO TALK ABOUT YOUR PROJECT?" — right-aligned, very large */
+/* "READY TO TALK ABOUT YOUR PROJECT?" — right-aligned, fluid 2.2rem → 6rem */
 .koyko-contact__heading {
   font-family: var(--font-alt);
   font-weight: 800;
@@ -1279,7 +546,7 @@ html[data-theme='dark'] .contact-form__input {
   line-height: 1.05;
 }
 
-/* Circular mailto button — border drawn via CSS; image inside is the arrow */
+/* Circle drawn via CSS (border-radius + border); arrow image sits inside */
 .koyko-contact__arrow-btn {
   display: inline-flex;
   align-items: center;
@@ -1289,7 +556,9 @@ html[data-theme='dark'] .contact-form__input {
   border-radius: 50%;
   border: 2px solid #000000;
   text-decoration: none;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    transform         var(--transition-fast);
 }
 
 .koyko-contact__arrow-btn:hover {
@@ -1297,29 +566,29 @@ html[data-theme='dark'] .contact-form__input {
   transform: scale(1.04);
 }
 
-/* The arrow graphic fills ~60% of the circle */
+/* Arrow icon fills ~60% of the circle diameter */
 .koyko-contact__arrow-icon {
   width: 60%;
   height: auto;
 }
 
+
 /* ---- Footer --------------------------------------------------------------- */
 /* Four-column grid on desktop:
-     logo | 2px divider | email col | social col
-   A "Back to top >" button spans all columns in row 2. */
+     [logo] [2px divider] [email col] [social col]
+   A "Back to top >" button spans all columns in a second row. */
 .koyko-footer {
   background: #ffffff;
   border-top: 2px solid #000000;
   padding: clamp(2rem, 4vw, 4rem) clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 2vw, 2rem);
   display: grid;
-  /* auto = logo width, 2px = divider, rest = text columns */
   grid-template-columns: auto 2px auto auto;
   grid-template-rows: auto auto;
   gap: clamp(1.5rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
   align-items: start;
 }
 
-/* Logo column — scaled-down Koyko mark */
+/* Logo column */
 .koyko-footer__logo-col {
   grid-column: 1;
   grid-row: 1;
@@ -1331,7 +600,7 @@ html[data-theme='dark'] .contact-form__input {
   display: block;
 }
 
-/* 2px vertical separator — stretches to match the tallest adjacent column */
+/* 2px vertical separator — align-self:stretch makes it fill the tallest column */
 .koyko-footer__vdivider {
   grid-column: 2;
   grid-row: 1;
@@ -1350,7 +619,7 @@ html[data-theme='dark'] .contact-form__input {
   gap: 0.3rem;
 }
 
-/* Social / messaging column */
+/* Social / messaging column (Whatsapp, Telegram) */
 .koyko-footer__social-col {
   grid-column: 4;
   grid-row: 1;
@@ -1359,7 +628,7 @@ html[data-theme='dark'] .contact-form__input {
   gap: 0.3rem;
 }
 
-/* Bold label (e.g. "hello") */
+/* Bold label — e.g. "hello" above the email address */
 .koyko-footer__label {
   font-family: var(--font-sans);
   font-weight: 700;
@@ -1368,7 +637,7 @@ html[data-theme='dark'] .contact-form__input {
   display: block;
 }
 
-/* Regular-weight text and anchor links */
+/* Regular-weight text and mailto links */
 .koyko-footer__value {
   font-family: var(--font-sans);
   font-weight: 400;
@@ -1382,7 +651,7 @@ a.koyko-footer__value:hover {
   text-decoration: underline;
 }
 
-/* Light-weight "Ask for Valentino" note beneath social links */
+/* Light-weight "Ask for Valentino" note */
 .koyko-footer__social-note {
   font-family: var(--font-sans);
   font-weight: 300;
@@ -1392,9 +661,9 @@ a.koyko-footer__value:hover {
   margin-top: 0.2rem;
 }
 
-/* "Back to top >" — spans all four footer columns, right-aligned */
+/* "Back to top >" — grid-column: 1 / -1 spans all four columns */
 .koyko-footer__back-to-top {
-  grid-column: 1 / -1;   /* span from first to last column */
+  grid-column: 1 / -1;
   grid-row: 2;
   justify-self: end;
   background: none;
@@ -1412,11 +681,16 @@ a.koyko-footer__value:hover {
   opacity: 0.55;
 }
 
-/* ---- Koyko responsive overrides ------------------------------------------ */
 
-/* Small screens (≤ 640px): stack everything vertically */
+/* =============================================================================
+   RESPONSIVE OVERRIDES
+   Collected at the bottom so breakpoints are easy to scan in one place.
+   ============================================================================= */
+
+/* Mobile (≤ 640px) ---------------------------------------------------------- */
 @media (max-width: 640px) {
-  /* Hero: stack logo above wordmark so logo is always prominent */
+
+  /* Hero: stack logo above wordmark so the illustration stays prominent */
   .koyko-hero__inner {
     flex-direction: column-reverse;
     align-items: center;
@@ -1431,7 +705,7 @@ a.koyko-footer__value:hover {
     padding: 0 clamp(1rem, 4vw, 2rem);
   }
 
-  /* Footer: single-column stack */
+  /* Footer: collapse to a single column */
   .koyko-footer {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
@@ -1439,7 +713,7 @@ a.koyko-footer__value:hover {
 
   .koyko-footer__logo-col    { grid-column: 1; grid-row: 1; }
 
-  /* Horizontal divider replaces the vertical one on mobile */
+  /* Vertical divider becomes a horizontal rule on mobile */
   .koyko-footer__vdivider {
     grid-column: 1;
     grid-row: 2;
@@ -1452,4 +726,5 @@ a.koyko-footer__value:hover {
   .koyko-footer__contact-col { grid-column: 1; grid-row: 3; }
   .koyko-footer__social-col  { grid-column: 1; grid-row: 4; }
   .koyko-footer__back-to-top { grid-column: 1; grid-row: 5; justify-self: end; }
+
 }
