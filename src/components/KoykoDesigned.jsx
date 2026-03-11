@@ -12,7 +12,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
-const ROLLING_WORDS = ['LOVE', 'COFFEE', 'OBSETION', 'HATE'];
+const ROLLING_WORDS = ['LOVE', 'COFFEE', 'OBSESSION', 'HATE'];
 const DISPLAY_WORDS = [...ROLLING_WORDS, ROLLING_WORDS[0]]; // cloned first word for seamless loop
 const ROLL_TIMING = {
   move:      1.2, // seconds for one vertical roll transition

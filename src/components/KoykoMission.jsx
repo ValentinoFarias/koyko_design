@@ -410,7 +410,7 @@ function KoykoMission() {
       {/* Tagline sits OUTSIDE the sticky container so it scrolls away
           normally before the body text locks into view. */}
       <p className="koyko-mission__tagline">
-        WHERE YOUR HEART LIVES
+        A WEBSITE IS A PLACE
       </p>
 
       <div className="koyko-mission__sticky" ref={stickyRef}>
