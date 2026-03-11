@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "rm -rf .next-dev && next dev",
+    "dev:fast": "next dev",
+    "dev:fresh": "rm -rf .next-dev && next dev",
+    "clean": "rm -rf .next .next-dev",
     "build": "next build",
     "start": "next start"
   },

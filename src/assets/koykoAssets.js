@@ -16,3 +16,4 @@ export const PORTFOLIO   = '/assets/images/portfolio.png';
 export const GOLD_DOT    = '/assets/images/gold-dot.png';
 // ARROW is the left-arrow icon; the circle border is drawn via CSS in KoykoContact
 export const ARROW       = '/assets/images/arrow.png';
+export const ARROW_HOVER = '/assets/images/vale8Pix.png';

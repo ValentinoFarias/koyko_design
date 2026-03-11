@@ -10,7 +10,7 @@
 //
 // Section anchor id="contact" is targeted by the "c o n t a c t" nav link.
 
-import { ARROW } from '../assets/koykoAssets';
+import { ARROW_HOVER } from '../assets/koykoAssets';
 
 function KoykoContact() {
   return (
@@ -33,11 +33,17 @@ function KoykoContact() {
         className="koyko-contact__arrow-btn"
         aria-label="Start your project — send an email to hello@koykodesign.com"
       >
+        <span
+          aria-hidden="true"
+          className="koyko-contact__arrow-default-mark"
+        >
+          X
+        </span>
         <img
-          src={ARROW}
+          src={ARROW_HOVER}
           alt=""
-          aria-hidden="true"    // label on the <a> is sufficient for screen readers
-          className="koyko-contact__arrow-icon"
+          aria-hidden="true"
+          className="koyko-contact__arrow-icon koyko-contact__arrow-icon--hover"
         />
       </a>
     </section>

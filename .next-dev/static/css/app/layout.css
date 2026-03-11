@@ -1,0 +1,827 @@
+/*!**********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./src/assets/css/style.css ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************/
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+JP:wght@100..900&display=swap');
+
+
+/* =============================================================================
+   DESIGN TOKENS
+   All reusable values live here. Changing a token updates every component
+   that references it — so always prefer tokens over hardcoded values.
+   ============================================================================= */
+
+:root {
+  /* ---- Fonts ---- */
+  /* --font-sans  : primary UI font — Inter */
+  /* --font-alt   : Japanese-style editorial font — Noto Sans JP */
+  /* --font-counter: handwritten accent font — used on the landing counter */
+  --font-sans:    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-alt:     'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-counter: 'Architects Daughter', 'Inter', system-ui, sans-serif;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold:   700;
+
+  --line-height-tight:  1.05;
+  --line-height-normal: 1.7;
+
+  /* ---- Colours (light theme) ---- */
+  /* Used by the landing page counter and page transitions */
+  --color-bg:             #f7f3e2;   /* warm off-white canvas */
+  --color-fg:             #000000;   /* primary text */
+  --color-fg-muted:       #5b5444;   /* secondary / supporting text */
+  --color-accent:         #99753f;   /* brand accent */
+
+  /* ---- Transitions ---- */
+  --transition-fast:   0.2s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow:   0.35s ease;
+
+  /* ---- Z-index ---- */
+  --z-overlay: 9999;  /* page transition curtain — must sit above everything */
+  --z-header:    40;  /* fixed navbar */
+}
+
+/* Dark-mode overrides.
+   Only the tokens that actually change between themes are listed here.
+   The landing-page counter reads --color-fg, so it respects this too. */
+html[data-theme='dark'] {
+  --color-bg:       #050510;
+  --color-fg:       #f9f9ff;
+  --color-fg-muted: #a2a2c5;
+  --color-accent:   #7b7bff;
+}
+
+
+/* =============================================================================
+   BASE RESET
+   Minimal global styles. Avoid putting component logic here.
+   ============================================================================= */
+
+html {
+  /* Native smooth-scrolling for anchor links (e.g. #contact, #packages) */
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  /* The page-transition JS fades the body opacity during route changes */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+
+/* =============================================================================
+   LANDING PAGE  (/  →  LandingPage.jsx)
+   Splash screen shown on first visit.
+   Structure: animated percentage counter on the left, Lottie logo in the centre.
+   GSAP drives the counter from "0%" to "100%" over 3 seconds, then
+   auto-navigates to /home.
+   ============================================================================= */
+
+/* Three-column grid: [counter] [logo] [empty].
+   The extra 1fr column on the right balances the layout optically. */
+main .landing-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+/* The Lottie logo sits in the centre column */
+main .landing-logo-slot {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Counter sits in the left column, rotated 270° so digits read vertically.
+   font-family uses the literal stack (not just the variable) because
+   lottie-player.js injects global styles that can override variable references. */
+main .landing-counter {
+  grid-column: 1;
+  justify-self: end;
+  margin-right: clamp(1.5rem, 6vw, 4.5rem);
+  transform: rotate(270deg);
+  transform-origin: center;
+  display: inline-block;
+  width: 4ch;              /* reserve space for "100%" — prevents layout shift */
+  text-align: right;
+  white-space: nowrap;
+  line-height: 1;
+  font-family: 'Architects Daughter', 'Inter', system-ui, sans-serif;
+  font-size: 4rem;
+  font-weight: var(--font-weight-normal);
+  color: var(--color-fg);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;  /* fixed-width digits */
+  pointer-events: none;
+}
+
+/* Wrapper for the <lottie-player> web component.
+   Fixed dimensions so the player doesn't collapse before the animation loads. */
+.logoMain {
+  width: 500px;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  transform: translateY(-1px);  /* 1px optical correction for the Lottie canvas */
+  cursor: pointer;
+}
+
+
+/* =============================================================================
+   PAGE TRANSITION OVERLAY  (TransitionOverlay.jsx + pageTransitions.js)
+   A full-screen black curtain that sweeps across the viewport when navigating
+   between routes. GSAP animates scaleX on .block to create the wipe effect.
+   ============================================================================= */
+
+/* Fixed container — pointer-events:none so it never blocks user interaction */
+.transitionContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;        /* dvh = accounts for collapsible mobile browser chrome */
+  z-index: var(--z-overlay);
+  pointer-events: none;
+}
+
+/* The curtain block itself — starts collapsed (scaleX: 0).
+   GSAP sets transformOrigin to 'left' on enter and 'right' on exit. */
+.block {
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  transform: scaleX(0);
+  transform-origin: left;
+  visibility: hidden;
+  will-change: transform;   /* promote to GPU layer for smooth GSAP tweens */
+}
+
+/* On the landing page, <body> gets .run-reveal so the curtain starts fully
+   visible and GSAP sweeps it away on first load. */
+body.run-reveal .block {
+  transform: scaleX(1);
+  visibility: visible;
+}
+
+
+/* =============================================================================
+   HOMEPAGE  (/home  →  HomePage.jsx  →  Koyko* components)
+   All classes are prefixed with .koyko- to avoid collisions.
+
+   Font mapping from Figma:
+     Hiragino Kaku Gothic Std W8  →  Noto Sans JP, weight 800
+     Hiragino Kaku Gothic ProN W3 →  Noto Sans JP, weight 300
+     Inter Regular                →  Inter, weight 400  (--font-sans)
+   ============================================================================= */
+
+
+/* ---- Page wrapper --------------------------------------------------------- */
+/* White canvas.
+   overflow-x: clip (NOT hidden) clips the marquee track at the viewport edge
+   without creating a "scroll container". overflow:hidden would silently break
+   position:sticky on any descendant because sticky sticks inside its nearest
+   scroll-container ancestor — if the page wrapper IS that container, the browser
+   can resolve it incorrectly and disable the lock. clip gives identical visual
+   clipping without that side-effect. */
+.koyko-page {
+  background: #ffffff;
+  color: #000000;
+  min-height: 100vh;
+  overflow-x: clip;
+  font-family: var(--font-sans);
+}
+
+
+/* ---- Navbar --------------------------------------------------------------- */
+/* Fixed bar pinned to the top. Three items spread with space-between:
+   "k o y k o" (left) | "p a c k a g e s" (centre) | "c o n t a c t" (right)
+   backdrop-filter gives a frosted-glass effect when content scrolls beneath. */
+.koyko-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem clamp(2rem, 4vw, 3.5rem);
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+}
+
+/* Brand name — same style as the links but not interactive */
+.koyko-nav__logo {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #000000;
+}
+
+.koyko-nav__link {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  font-weight: 400;
+  color: #000000;
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  transition: opacity var(--transition-fast);
+}
+
+.koyko-nav__link:hover {
+  opacity: 0.55;
+}
+
+/* Decorative cross lines — recreated from the Figma "Navbar Deign" vector.
+   75.6% = 1089px ÷ 1440px (exact ratio from the Figma node dimensions).
+   line-h: horizontal rule along the navbar bottom, stopping at 75.6% width.
+   line-v: vertical line at that x-position, tall enough to bleed into the hero.
+   pointer-events:none so neither line ever intercepts clicks. */
+.koyko-nav__line-h {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 75.6%;
+  height: 3px;
+  background: #000000;
+  pointer-events: none;
+}
+
+.koyko-nav__line-v {
+  position: absolute;
+  top: 0;
+  left: 60%;   /* 60% is the x-position of the vertical line in the Figma design */
+  width: 3px;
+  height: 100px;   /* extends below the navbar into the hero section */
+  background: #000000;
+  pointer-events: none;
+}
+
+
+/* ---- Hero ----------------------------------------------------------------- */
+/* Full-viewport editorial section — overlapping layout:
+     "k o y k" wordmark on the left, logo centred, "DESIGN" bottom-right.
+     The logo's head visually replaces the missing 'O' in "koyko". */
+.koyko-hero {
+  transform: scale(0.6);
+  min-height: calc(100vh - 5rem);
+  padding-top: clamp(5rem, 8vw, 9rem);      /* clears the fixed navbar */
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Stage — positioning context for the overlapping elements */
+.koyko-hero__stage {
+  position: relative;
+  width: 100%;
+  /* Height matches the logo aspect ratio — fluid from ~380px to ~550px */
+  height: clamp(380px, 50vw, 600px);
+}
+
+/* "k o y k" — Inter Regular, positioned left & top-aligned with logo head.
+   The text sits so the last letter 'k' ends just before the logo, and
+   the logo's head reads as the 'O' completing "koyko". */
+.koyko-hero__wordmark {
+  position: absolute;
+  /* Vertically align with the top of the logo (where the head is) */
+  top: 10%;
+  left: 15%;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 8.9vw, 8rem);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #000000;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Koyko bird/figure illustration — centred in the stage */
+.koyko-hero__logo {
+  position: absolute;
+  /* Centre horizontally */
+  left: 55%;
+  transform: translateX(-50%);
+  top: 0;
+  /* Fluid width matching the Figma proportions (~410px at 1440px viewport) */
+  width: clamp(180px, 28.5vw, 410px);
+  height: auto;
+  display: block;
+}
+
+/* "D  E  S  I  G  N" — positioned at the bottom-right of the stage,
+   sitting just below where the logo's body ends */
+.koyko-hero__design-label {
+  position: absolute;
+  bottom: 10%;
+  right: 8%;
+  font-family: var(--font-alt);
+  font-weight: 300;
+  font-size: clamp(1.2rem, 3.3vw, 3rem);
+  letter-spacing: 0.15em;
+  color: #000000;
+  margin: 0;
+}
+
+
+/* ---- Mission -------------------------------------------------------------- */
+/* 300vh tall so there is ~200vh of scroll room while the sticky container
+   holds the content locked in the viewport. No padding here — the sticky
+   container and its content handle all layout. */
+.koyko-mission {
+  height: 400vh;
+  position: relative;
+  background: #010000;
+  color: #ffffff;
+}
+
+/* Sticky container — locks the visible content to the viewport top while
+   the user scrolls through the full 300vh section.
+   position:sticky also acts as a positioning context, so the physics phase
+   can use position:absolute on word spans relative to this element. */
+.koyko-mission__sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: clip;    /* clips falling words without creating a scroll container (which breaks sticky) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Background texture fills the sticky container.
+   position:absolute + inset:0 is now relative to the sticky layer. */
+.koyko-mission__bg-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Background texture image — fills its wrapper at low opacity */
+.koyko-mission__bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.05;  /* very subtle texture */
+  display: block;
+  transform: scale(1.0);  /* slight zoom to hide any edges in the texture */
+  transform-origin: center;
+}
+
+/* Content sits above the bg image inside the sticky container */
+.koyko-mission__content {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  width: 100%;
+  padding: clamp(2rem, 4vw, 3.5rem); /* side breathing room (section no longer has padding) */
+}
+
+/* Tagline — sits OUTSIDE the sticky container in the normal document flow.
+   It scrolls away naturally before the body text locks into view. */
+.koyko-mission__tagline {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(5rem, 1.7vw, 1.5rem);
+  text-align: center;
+  color: #ffffff;
+  padding: clamp(2rem, 6vh, 5rem) clamp(2rem, 4vw, 3.5rem);
+  margin: 0;
+}
+
+/* Five body paragraphs — Noto Sans JP W8, generous line-height */
+.koyko-mission__body {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(0.85rem, 1.7vw, 1.5rem);
+  line-height: 1.75;
+  color: #ffffff;
+}
+
+.koyko-mission__body p {
+  margin: 0 0 1.4rem;
+}
+
+/* Remove bottom margin from the last paragraph to avoid extra whitespace */
+.koyko-mission__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Individual word spans — the physics animation targets these.
+   display:inline-block is required for CSS transform to work on inline text.
+   The three CSS custom properties are written each frame by the RAF loop in
+   KoykoMission.jsx and default to 0 so words sit normally before physics fires.
+   will-change tells the browser to promote each word to its own GPU layer,
+   which keeps the 60fps physics loop smooth. */
+.koyko-mission__word {
+  display: inline-block;
+  /* white-space: pre preserves the trailing space character rendered after each
+     word in the JSX ({word}{' '}). Without this, inline-block collapses whitespace
+     and words appear glued together with no gaps. */
+  white-space: pre;
+  transform: translate(var(--x, 0px), var(--y, 0px)) rotate(var(--rotate, 0rad));
+  will-change: transform, opacity;
+}
+
+
+/* ---- Features Marquee ----------------------------------------------------- */
+/* Continuously scrolling ticker strip.
+   How the seamless loop works: three identical text spans are placed in a flex
+   row. The animation moves the track −33.33% (exactly one span width), then
+   snaps back to 0 — the user never sees the seam. */
+.koyko-features {
+  background: #ffffff;
+  overflow: hidden;         /* clips the track at the viewport edges */
+  padding: clamp(0.8rem, 1.2vw, 1.2rem) 0;
+  border-bottom: 2px solid #000000;
+}
+
+/* Flex row — wider than the viewport so content scrolls off screen */
+.koyko-features__track {
+  display: flex;
+  white-space: nowrap;
+  animation: koyko-marquee 22s linear infinite;
+}
+
+/* Each span is one full copy of the marquee text.
+   padding-right creates the visible gap between loop repetitions. */
+.koyko-features__text {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 6.7vw, 6rem);
+  color: #000000;
+  padding-right: clamp(2rem, 3vw, 3rem);
+  flex-shrink: 0;
+}
+
+/* Moving −33.33% shifts exactly one span, producing the seamless loop */
+@keyframes koyko-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+
+/* Pause the animation for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .koyko-features__track {
+    animation: none;
+  }
+}
+
+
+/* ---- Portfolio ------------------------------------------------------------ */
+/* Right-aligned featured project screenshot.
+   The .koyko-portfolio__item container clips the image so only part shows,
+   matching the cropped look in the Figma. */
+.koyko-portfolio {
+  background: #ffffff;
+  padding: clamp(2rem, 3vw, 3rem) 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+  min-height: clamp(300px, 40vw, 600px);
+}
+
+/* Clipping wrapper — ~50% of page width, matching the Figma proportions */
+.koyko-portfolio__item {
+  width: clamp(220px, 50vw, 723px);
+  overflow: hidden;
+}
+
+.koyko-portfolio__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+/* ---- Designed With Love --------------------------------------------------- */
+/* Single large editorial heading — Noto Sans JP W8, fluid 3rem → 6rem */
+.koyko-designed {
+  background: #ffffff;
+  padding: clamp(4rem, 7vw, 8rem) clamp(2rem, 4.5vw, 4.5rem);
+}
+
+.koyko-designed__heading {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(3rem, 6.7vw, 6rem);
+  color: #000000;
+  margin: 0;
+  line-height: 1.05;
+  max-width: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.16em;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.koyko-designed__lead {
+  white-space: nowrap;
+}
+
+.koyko-designed__word-viewport {
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 1em;
+  min-width: 10ch;
+  width: 10ch;
+  overflow: hidden;
+  vertical-align: baseline;
+}
+
+.koyko-designed__word-track {
+  display: block;
+  will-change: transform;
+}
+
+.koyko-designed__word {
+  display: block;
+}
+
+
+/* ---- Divider -------------------------------------------------------------- */
+/* 2px horizontal rule between the "Designed With Love" and Contact sections.
+   margin keeps it from touching the viewport edges. */
+.koyko-divider {
+  border: none;
+  border-top: 2px solid #000000;
+  margin: 0 clamp(1rem, 2vw, 1.5rem);
+}
+
+
+/* ---- Contact -------------------------------------------------------------- */
+/* Three stacked elements:
+     1. "{contact}" label — small, top-left
+     2. Heading — large, right-aligned
+     3. Circular arrow link — bottom-left, links to email */
+.koyko-contact {
+  background: #ffffff;
+  padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 4vw, 3.5rem);
+}
+
+/* "{contact}" — curly braces are intentional, taken from the Figma design */
+.koyko-contact__label {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  color: #000000;
+  margin: 0 0 clamp(1rem, 2vw, 2rem);
+}
+
+/* "READY TO TALK ABOUT YOUR PROJECT?" — right-aligned, fluid 2.2rem → 6rem */
+.koyko-contact__heading {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 6.7vw, 6rem);
+  color: #000000;
+  text-align: right;
+  margin: 0 0 clamp(2rem, 4vw, 4rem);
+  line-height: 1.05;
+}
+
+/* Circle drawn via CSS (border-radius + border); arrow image sits inside */
+.koyko-contact__arrow-btn {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: clamp(80px, 22.5vw, 200px);
+  height: clamp(80px, 22.5vw, 200px);
+  border-radius: 50%;
+  border: 2px solid #000000;
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    transform         var(--transition-fast);
+}
+
+.koyko-contact__arrow-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.04);
+}
+
+/* Arrow icon fills ~60% of the circle diameter */
+.koyko-contact__arrow-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  transition:
+    opacity   var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.koyko-contact__arrow-default-mark {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-sans);
+  font-size: clamp(2.1rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  color: #000000;
+  opacity: 1;
+  transition:
+    opacity   var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.koyko-contact__arrow-icon--hover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+.koyko-contact__arrow-btn:hover .koyko-contact__arrow-default-mark,
+.koyko-contact__arrow-btn:focus-visible .koyko-contact__arrow-default-mark {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.koyko-contact__arrow-btn:hover .koyko-contact__arrow-icon--hover,
+.koyko-contact__arrow-btn:focus-visible .koyko-contact__arrow-icon--hover {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+/* ---- Footer --------------------------------------------------------------- */
+/* Four-column grid on desktop:
+     [logo] [2px divider] [email col] [social col]
+   A "Back to top >" button spans all columns in a second row. */
+.koyko-footer {
+  background: #ffffff;
+  border-top: 2px solid #000000;
+  padding: clamp(2rem, 4vw, 4rem) clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 2vw, 2rem);
+  display: grid;
+  grid-template-columns: auto 2px auto auto;
+  grid-template-rows: auto auto;
+  grid-gap: clamp(1.5rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
+  gap: clamp(1.5rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+/* Logo column */
+.koyko-footer__logo-col {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.koyko-footer__logo {
+  width: clamp(50px, 8.5vw, 123px);
+  height: auto;
+  display: block;
+}
+
+/* 2px vertical separator — align-self:stretch makes it fill the tallest column */
+.koyko-footer__vdivider {
+  grid-column: 2;
+  grid-row: 1;
+  background: #000000;
+  width: 2px;
+  align-self: stretch;
+  min-height: clamp(60px, 8vw, 120px);
+}
+
+/* Email contact column */
+.koyko-footer__contact-col {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Social / messaging column (Whatsapp, Telegram) */
+.koyko-footer__social-col {
+  grid-column: 4;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Bold label — e.g. "hello" above the email address */
+.koyko-footer__label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(0.9rem, 2.2vw, 2rem);
+  color: #000000;
+  display: block;
+}
+
+/* Regular-weight text and mailto links */
+.koyko-footer__value {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(0.8rem, 1.7vw, 1.5rem);
+  color: #000000;
+  text-decoration: none;
+  display: block;
+}
+
+a.koyko-footer__value:hover {
+  text-decoration: underline;
+}
+
+/* Light-weight "Ask for Valentino" note */
+.koyko-footer__social-note {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(0.8rem, 1.7vw, 1.5rem);
+  color: #000000;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+/* "Back to top >" — grid-column: 1 / -1 spans all four columns */
+.koyko-footer__back-to-top {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  color: #000000;
+  transition: opacity var(--transition-fast);
+}
+
+.koyko-footer__back-to-top:hover {
+  opacity: 0.55;
+}
+
+
+/* =============================================================================
+   RESPONSIVE OVERRIDES
+   Collected at the bottom so breakpoints are easy to scan in one place.
+   ============================================================================= */
+
+/* Mobile (≤ 640px) ---------------------------------------------------------- */
+@media (max-width: 640px) {
+
+  /* Hero: on mobile, shrink the stage and adjust wordmark position */
+  .koyko-hero__stage {
+    height: clamp(300px, 70vw, 420px);
+  }
+
+  .koyko-hero__wordmark {
+    top: clamp(20px, 5vw, 50px);
+    left: clamp(0.5rem, 3vw, 1.5rem);
+    font-size: clamp(2.2rem, 10vw, 4rem);
+  }
+
+  /* Footer: collapse to a single column */
+  .koyko-footer {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .koyko-footer__logo-col    { grid-column: 1; grid-row: 1; }
+
+  /* Vertical divider becomes a horizontal rule on mobile */
+  .koyko-footer__vdivider {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    height: 2px;
+    min-height: 2px;
+    align-self: auto;
+  }
+
+  .koyko-footer__contact-col { grid-column: 1; grid-row: 3; }
+  .koyko-footer__social-col  { grid-column: 1; grid-row: 4; }
+  .koyko-footer__back-to-top { grid-column: 1; grid-row: 5; justify-self: end; }
+
+}
+
