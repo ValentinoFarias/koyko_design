@@ -11,7 +11,7 @@
 //   import { LOGO, MISSION_BG } from '../assets/koykoAssets';
 
 export const LOGO        = '/assets/images/logo.png';
-export const MISSION_BG  = '/assets/images/mission-bg.png';
+export const MISSION_BG  = '/assets/images/machiMission.jpg';
 export const PORTFOLIO   = '/assets/images/portfolio.png';
 export const GOLD_DOT    = '/assets/images/gold-dot.png';
 // ARROW is the left-arrow icon; the circle border is drawn via CSS in KoykoContact

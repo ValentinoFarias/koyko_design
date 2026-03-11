@@ -373,8 +373,10 @@ body.run-reveal .block {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.11;
+  opacity: 0.05;  /* very subtle texture */
   display: block;
+  transform: scale(1.0);  /* slight zoom to hide any edges in the texture */
+  transform-origin: center;
 }
 
 /* Content sits above the bg image inside the sticky container */

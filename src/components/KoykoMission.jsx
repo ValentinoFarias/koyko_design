@@ -155,7 +155,7 @@ function KoykoMission() {
     highlightTl.to(highlightEls, {
       color:    '#cc3311',      // vivid red
       duration: 0.4,
-      stagger:  { amount: 0.8, from: 'start' }, // left-to-right, one by one
+      stagger:  0, 
       ease:     'none',
     });
 
@@ -227,7 +227,7 @@ function KoykoMission() {
           runPhysics();
         }
         // Phase 4: blow words away with "wind" at 95% (downward scroll only)
-        if (self.direction === 1 && self.progress >= 0.95 && !windFired && physicsRefs) {
+        if (self.direction === 1 && self.progress >= 0.97 && !windFired && physicsRefs) {
           windFired = true;
           blowAway(physicsRefs);
         }
