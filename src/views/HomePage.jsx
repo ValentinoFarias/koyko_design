@@ -1,67 +1,47 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import Header from '../components/Header';
-import Hero from '../components/Hero';
-import AboutSection from '../components/AboutSection';
-import ProjectsSection from '../components/ProjectsSection';
-import ServicesSection from '../components/ServicesSection';
-import ContactSection from '../components/ContactSection';
-import Footer from '../components/Footer';
+// HomePage — /home route
+//
+// This view is a thin orchestrator: it imports each section as its own
+// component and renders them in page order. All visual logic lives in
+// the individual Koyko* components under src/components/.
+//
+// Page order (top → bottom):
+//   1. KoykoNavbar    — fixed top nav bar
+//   2. KoykoHero      — full-viewport hero with wordmark + logo
+//   3. KoykoMission   — dark brand-story section
+//   4. KoykoFeatures  — scrolling ticker strip
+//   5. KoykoPortfolio — right-aligned project screenshot
+//   6. KoykoDesigned  — "DESIGNED WITH LOVE" heading
+//   7. <hr>           — thin divider between designed and contact
+//   8. KoykoContact   — CTA section with email arrow button
+//   9. KoykoFooter    — logo + contact info + back-to-top
+
+import KoykoNavbar   from '../components/KoykoNavbar';
+import KoykoHero     from '../components/KoykoHero';
+import KoykoMission  from '../components/KoykoMission';
+import KoykoFeatures from '../components/KoykoFeatures';
+import KoykoPortfolio from '../components/KoykoPortfolio';
+import KoykoDesigned from '../components/KoykoDesigned';
+import KoykoContact  from '../components/KoykoContact';
+import KoykoFooter   from '../components/KoykoFooter';
 
 function HomePage() {
-  const [theme, setTheme] = useState('light');
-
-  // Initialize theme from localStorage or prefers-color-scheme
-  useEffect(() => {
-    const savedTheme = window.localStorage.getItem('theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      setTheme(savedTheme);
-      document.documentElement.dataset.theme = savedTheme;
-      return;
-    }
-
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = prefersDark ? 'dark' : 'light';
-    setTheme(initialTheme);
-    document.documentElement.dataset.theme = initialTheme;
-  }, []);
-
-  // Update root data attribute when theme changes
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
-
-  const scrollToSection = useCallback((id) => {
-    const element = document.getElementById(id);
-    if (!element) return;
-
-    const headerOffset = 80;
-    const rect = element.getBoundingClientRect();
-    const offsetTop = rect.top + window.scrollY - headerOffset;
-
-    window.scrollTo({ top: offsetTop, behavior: 'smooth' });
-  }, []);
-
   return (
-    <div className={`app app--theme-${theme}`}>
-      <Header theme={theme} onToggleTheme={toggleTheme} onNavClick={scrollToSection} />
-      <main className="layout-main" aria-label="Main content">
-        <Hero
-          onPrimaryAction={() => scrollToSection('portfolio')}
-          onSecondaryAction={() => scrollToSection('contact')}
-        />
-        <AboutSection />
-        <ProjectsSection />
-        <ServicesSection />
-        <ContactSection />
-      </main>
-      <Footer />
+    // koyko-page: white canvas, overflow-x hidden (contains the marquee)
+    <div className="koyko-page">
+      <KoykoNavbar />
+      <KoykoHero />
+      <KoykoMission />
+      <KoykoFeatures />
+      <KoykoPortfolio />
+      <KoykoDesigned />
+
+      {/* Thin 2px horizontal rule between "Designed With Love" and Contact */}
+      <hr className="koyko-divider" />
+
+      <KoykoContact />
+      <KoykoFooter />
     </div>
   );
 }

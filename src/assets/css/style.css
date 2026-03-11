@@ -958,3 +958,498 @@ html[data-theme='dark'] .contact-form__input {
     align-items: flex-start;
   }
 }
+
+
+/* =============================================================================
+   KOYKO HOMEPAGE — FIGMA REDESIGN  (HomePage.jsx)
+   All classes prefixed with .koyko- to avoid collisions with existing styles.
+   Follows the "KyokoWebsite" Figma design (node 3-5) exactly.
+   Fonts: Inter (--font-sans) for navbar/body, Noto Sans JP (--font-alt) for
+   editorial headings — Noto Sans JP weight 800 maps to Hiragino Kaku Gothic W8,
+   weight 300 maps to Hiragino Kaku Gothic ProN W3.
+   ============================================================================= */
+
+/* ---- Page wrapper --------------------------------------------------------- */
+/* White canvas that fills the viewport; clips horizontal marquee overflow */
+.koyko-page {
+  background: #ffffff;
+  color: #000000;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+}
+
+/* ---- Navbar --------------------------------------------------------------- */
+/* Fixed translucent bar — three items spread across the full width.
+   backdrop-filter creates the frosted-glass effect as the user scrolls. */
+.koyko-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem clamp(2rem, 4vw, 3.5rem);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+/* Brand name — same font as nav links but not a link */
+.koyko-nav__logo {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #000000;
+}
+
+.koyko-nav__link {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-weight: 400;
+  color: #000000;
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  transition: opacity var(--transition-fast);
+}
+
+.koyko-nav__link:hover {
+  opacity: 0.55;
+}
+
+/* ---- Hero ----------------------------------------------------------------- */
+/* Full-viewport editorial section.
+   Two sub-rows:
+     1. .koyko-hero__inner  — wordmark (left) + logo illustration (right)
+     2. .koyko-hero__bottom — gold dot (left) + "D E S I G N" label (right) */
+.koyko-hero {
+  min-height: calc(100vh - 5rem);
+  /* Push content below the fixed navbar */
+  padding-top: clamp(5rem, 8vw, 9rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Upper row: wordmark and logo share the full width with no gap */
+.koyko-hero__inner {
+  display: flex;
+  align-items: flex-end;   /* align bottom edges so text baseline meets logo foot */
+  padding: 0 clamp(1rem, 3vw, 2rem);
+}
+
+/* "k o y k" — Inter Regular, very large, fluid sizing */
+.koyko-hero__wordmark {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  /* clamp: 4rem on mobile → 8rem at 1440px */
+  font-size: clamp(4rem, 8.9vw, 8rem);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #000000;
+  margin: 0;
+  flex-shrink: 0;
+  align-self: flex-end;
+  padding-left: clamp(0.5rem, 2vw, 1rem);
+}
+
+/* Logo wrapper takes all remaining space and centres the image */
+.koyko-hero__logo-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* The Koyko bird/figure illustration — scales fluidly with the viewport */
+.koyko-hero__logo {
+  width: clamp(160px, 28.5vw, 410px);
+  height: auto;
+  display: block;
+}
+
+/* Lower row: decorative dot on the left, "DESIGN" text on the right */
+.koyko-hero__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+  margin-top: clamp(1rem, 2vw, 2rem);
+}
+
+/* Small gold circle — decorative, aria-hidden */
+.koyko-hero__gold-dot {
+  width: clamp(16px, 2.8vw, 40px);
+  height: auto;
+}
+
+/* "D  E  S  I  G  N" — Noto Sans JP W3 (light), matches Figma's ProN W3 */
+.koyko-hero__design-label {
+  font-family: var(--font-alt);
+  font-weight: 300;
+  font-size: clamp(1.2rem, 3.3vw, 3rem);
+  letter-spacing: 0.15em;
+  color: #000000;
+  margin: 0;
+}
+
+/* ---- Mission -------------------------------------------------------------- */
+/* Full-bleed dark section.
+   A faint texture image sits at opacity 0.11 behind all text. */
+.koyko-mission {
+  background: #010000;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 4vw, 3.5rem);
+}
+
+/* Texture overlay — z-index 0, kept behind content (z-index 1) */
+.koyko-mission__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.11;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Content wrapper — sits above the bg image */
+.koyko-mission__content {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* "Let's create the home of your work." — centered sub-heading */
+.koyko-mission__tagline {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(0.9rem, 1.7vw, 1.5rem);
+  text-align: center;
+  color: #ffffff;
+  margin: 0 0 clamp(2rem, 4vw, 4rem);
+}
+
+/* Body copy — Noto Sans JP W8 (bold), generous line-height for readability */
+.koyko-mission__body {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(0.85rem, 1.7vw, 1.5rem);
+  line-height: 1.75;
+  color: #ffffff;
+}
+
+.koyko-mission__body p {
+  margin: 0 0 1.4rem;
+}
+
+.koyko-mission__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Features Marquee ----------------------------------------------------- */
+/* Horizontally scrolling ticker.
+   Three identical text spans fill the track; the animation moves −33.33%
+   (one span) then snaps back, creating a seamless infinite loop. */
+.koyko-features {
+  background: #ffffff;
+  overflow: hidden;
+  padding: clamp(0.8rem, 1.2vw, 1.2rem) 0;
+  border-bottom: 2px solid #000000;
+}
+
+/* Flex row wider than the viewport; animation drives it left */
+.koyko-features__track {
+  display: flex;
+  white-space: nowrap;
+  animation: koyko-marquee 22s linear infinite;
+}
+
+/* Each span is one full copy of the marquee text */
+.koyko-features__text {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  /* Fluid: 2.5rem on mobile → 6rem on wide screens */
+  font-size: clamp(2.5rem, 6.7vw, 6rem);
+  color: #000000;
+  /* Padding-right creates visible space between loop repetitions */
+  padding-right: clamp(2rem, 3vw, 3rem);
+  flex-shrink: 0;
+}
+
+/* Move exactly one-third of the total track width → seamless snap */
+@keyframes koyko-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+
+/* Respect the OS-level "reduce motion" accessibility setting */
+@media (prefers-reduced-motion: reduce) {
+  .koyko-features__track {
+    animation: none;
+  }
+}
+
+/* ---- Portfolio ------------------------------------------------------------ */
+/* Right-aligned featured project screenshot.
+   The item container clips any overflow from the image. */
+.koyko-portfolio {
+  background: #ffffff;
+  padding: clamp(2rem, 3vw, 3rem) 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+  min-height: clamp(300px, 40vw, 600px);
+}
+
+/* Clipping wrapper — width matches the Figma proportions (~50% of page) */
+.koyko-portfolio__item {
+  width: clamp(220px, 50vw, 723px);
+  overflow: hidden;
+}
+
+/* Portfolio screenshot — covers its container, cropped if needed */
+.koyko-portfolio__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- Designed With Love --------------------------------------------------- */
+/* Large editorial heading — left-aligned, Noto Sans JP W8 */
+.koyko-designed {
+  background: #ffffff;
+  padding: clamp(4rem, 7vw, 8rem) clamp(2rem, 4.5vw, 4.5rem);
+}
+
+.koyko-designed__heading {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  /* Fluid: 3rem → 6rem */
+  font-size: clamp(3rem, 6.7vw, 6rem);
+  color: #000000;
+  margin: 0;
+  line-height: 1.05;
+  max-width: 1200px;
+}
+
+/* ---- Divider -------------------------------------------------------------- */
+/* Full-bleed 2px horizontal rule between "Designed" section and Contact */
+.koyko-divider {
+  border: none;
+  border-top: 2px solid #000000;
+  margin: 0 clamp(1rem, 2vw, 1.5rem);
+}
+
+/* ---- Contact -------------------------------------------------------------- */
+/* Three vertical elements:
+     1. Small "{contact}" label — top-left
+     2. Large right-aligned heading
+     3. Circular arrow link — bottom-left */
+.koyko-contact {
+  background: #ffffff;
+  padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 4vw, 3.5rem);
+}
+
+/* Small decorative label — curly braces are intentional (Figma design) */
+.koyko-contact__label {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  color: #000000;
+  margin: 0 0 clamp(1rem, 2vw, 2rem);
+}
+
+/* "READY TO TALK ABOUT YOUR PROJECT?" — right-aligned, very large */
+.koyko-contact__heading {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 6.7vw, 6rem);
+  color: #000000;
+  text-align: right;
+  margin: 0 0 clamp(2rem, 4vw, 4rem);
+  line-height: 1.05;
+}
+
+/* Circular mailto button — border drawn via CSS; image inside is the arrow */
+.koyko-contact__arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(80px, 22.5vw, 200px);
+  height: clamp(80px, 22.5vw, 200px);
+  border-radius: 50%;
+  border: 2px solid #000000;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.koyko-contact__arrow-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.04);
+}
+
+/* The arrow graphic fills ~60% of the circle */
+.koyko-contact__arrow-icon {
+  width: 60%;
+  height: auto;
+}
+
+/* ---- Footer --------------------------------------------------------------- */
+/* Four-column grid on desktop:
+     logo | 2px divider | email col | social col
+   A "Back to top >" button spans all columns in row 2. */
+.koyko-footer {
+  background: #ffffff;
+  border-top: 2px solid #000000;
+  padding: clamp(2rem, 4vw, 4rem) clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 2vw, 2rem);
+  display: grid;
+  /* auto = logo width, 2px = divider, rest = text columns */
+  grid-template-columns: auto 2px auto auto;
+  grid-template-rows: auto auto;
+  gap: clamp(1.5rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+/* Logo column — scaled-down Koyko mark */
+.koyko-footer__logo-col {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.koyko-footer__logo {
+  width: clamp(50px, 8.5vw, 123px);
+  height: auto;
+  display: block;
+}
+
+/* 2px vertical separator — stretches to match the tallest adjacent column */
+.koyko-footer__vdivider {
+  grid-column: 2;
+  grid-row: 1;
+  background: #000000;
+  width: 2px;
+  align-self: stretch;
+  min-height: clamp(60px, 8vw, 120px);
+}
+
+/* Email contact column */
+.koyko-footer__contact-col {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Social / messaging column */
+.koyko-footer__social-col {
+  grid-column: 4;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Bold label (e.g. "hello") */
+.koyko-footer__label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(0.9rem, 2.2vw, 2rem);
+  color: #000000;
+  display: block;
+}
+
+/* Regular-weight text and anchor links */
+.koyko-footer__value {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(0.8rem, 1.7vw, 1.5rem);
+  color: #000000;
+  text-decoration: none;
+  display: block;
+}
+
+a.koyko-footer__value:hover {
+  text-decoration: underline;
+}
+
+/* Light-weight "Ask for Valentino" note beneath social links */
+.koyko-footer__social-note {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(0.8rem, 1.7vw, 1.5rem);
+  color: #000000;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+/* "Back to top >" — spans all four footer columns, right-aligned */
+.koyko-footer__back-to-top {
+  grid-column: 1 / -1;   /* span from first to last column */
+  grid-row: 2;
+  justify-self: end;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  color: #000000;
+  transition: opacity var(--transition-fast);
+}
+
+.koyko-footer__back-to-top:hover {
+  opacity: 0.55;
+}
+
+/* ---- Koyko responsive overrides ------------------------------------------ */
+
+/* Small screens (≤ 640px): stack everything vertically */
+@media (max-width: 640px) {
+  /* Hero: stack logo above wordmark so logo is always prominent */
+  .koyko-hero__inner {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+
+  .koyko-hero__wordmark {
+    align-self: flex-start;
+    padding-left: clamp(1rem, 4vw, 2rem);
+  }
+
+  .koyko-hero__bottom {
+    padding: 0 clamp(1rem, 4vw, 2rem);
+  }
+
+  /* Footer: single-column stack */
+  .koyko-footer {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .koyko-footer__logo-col    { grid-column: 1; grid-row: 1; }
+
+  /* Horizontal divider replaces the vertical one on mobile */
+  .koyko-footer__vdivider {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    height: 2px;
+    min-height: 2px;
+    align-self: auto;
+  }
+
+  .koyko-footer__contact-col { grid-column: 1; grid-row: 3; }
+  .koyko-footer__social-col  { grid-column: 1; grid-row: 4; }
+  .koyko-footer__back-to-top { grid-column: 1; grid-row: 5; justify-self: end; }
+}
