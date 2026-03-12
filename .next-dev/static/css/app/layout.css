@@ -543,22 +543,93 @@ body.run-reveal .block {
   background: #ffffff;
   padding: clamp(2rem, 3vw, 3rem) 0;
   display: flex;
-  justify-content: flex-end;
-  overflow: hidden;
-  min-height: clamp(300px, 40vw, 600px);
+  justify-content: center;   /* centre the logo horizontally */
+  align-items: center;       /* centre the logo vertically */
+  height: clamp(200px, 30vw, 400px);  /* fixed height — won't change on flip */
+  margin-top: 120px;
 }
 
-/* Clipping wrapper — ~50% of page width, matching the Figma proportions */
+/* Logo wrapper — stacks logo and name vertically, centred */
 .koyko-portfolio__item {
-  width: clamp(220px, 50vw, 723px);
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
 }
 
+/* Info column — wraps the name + description so they stay grouped
+   when the layout flips from column to row */
+.koyko-portfolio__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;          /* centred in initial vertical layout */
+  gap: 0.75rem;
+}
+
+/* In expanded layout, left-align the info column */
+.koyko-portfolio__item--expanded .koyko-portfolio__info {
+  align-items: flex-start;
+  align-self: center;           /* vertically centre against the logo */
+}
+
+/* Project name below the logo — bold Inter, large, tight tracking */
+.koyko-portfolio__name {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  margin-top: -4rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #000000;
+  margin: 0;
+  text-align: center;
+  scale: 0.6;
+}
+
+/* Logo image — sized directly with width so layout space matches visual size.
+   scale: 0.5 was removed because CSS scale shrinks the visual but keeps the
+   full original space in the layout, creating a large invisible gap. */
 .koyko-portfolio__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: clamp(100px, 20vw, 250px);
+  height: auto;
   display: block;
+  cursor: pointer;              /* hint that clicking does something */
+}
+
+/* ---- Expanded state (after clicking the logo) ----
+   Flip plugin toggles this class, switching from vertical stack to horizontal row.
+   The logo sits left, the name + description sit right in their own column. */
+.koyko-portfolio__item--expanded {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+/* In expanded state the name left-aligns instead of centring */
+.koyko-portfolio__item--expanded .koyko-portfolio__name {
+  text-align: left;
+  scale: 1;                     /* restore full size when expanded */
+}
+
+/* Description text — hidden initially, GSAP fades it in after the flip.
+   Sits below the name in the right-hand column. */
+.koyko-portfolio__desc {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-fg-muted, #5b5444);
+  margin: 0;
+  max-width: 38ch;
+  /* Hidden state — GSAP animates opacity → 1 and y → 0 */
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+/* In expanded mode, name + description stack vertically on the right */
+.koyko-portfolio__item--expanded .koyko-portfolio__name,
+.koyko-portfolio__item--expanded .koyko-portfolio__desc {
+  text-align: left;
 }
 
 
