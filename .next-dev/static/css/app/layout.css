@@ -108,7 +108,7 @@ main .landing-counter {
   display: inline-block;
   white-space: nowrap;
   line-height: 1;
-  font-family: 'Noto Sans JP', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 4rem;
   font-weight: 200;
   color: var(--color-fg);
@@ -375,6 +375,16 @@ body.run-reveal .block {
   letter-spacing: 0.15em;
   color: #000000;
   margin: 0;
+}
+
+/* Physics-enabled letters (D and E) — inline-block so CSS transform works.
+   transform-origin at bottom-center matches the Matter.js hinge point,
+   so the letter swings around its bottom edge like a pendulum. */
+.koyko-hero__physics-letter {
+  display: inline-block;
+  transform-origin: bottom center;
+  cursor: pointer;                   /* hint that hovering does something */
+  will-change: transform;            /* GPU-accelerate the rotation */
 }
 
 

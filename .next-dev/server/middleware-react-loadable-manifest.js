@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"components/KoykoMission.jsx -> matter-js\":{\"id\":\"components/KoykoMission.jsx -> matter-js\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_matter-js_build_matter_js.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{\"components/KoykoMission.jsx -> matter-js\":{\"id\":\"components/KoykoMission.jsx -> matter-js\",\"files\":[]}}"
