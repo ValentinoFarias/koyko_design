@@ -661,6 +661,20 @@ body.run-reveal .block {
   line-height: 1.05;
 }
 
+/* Clip window around each word — overflow:hidden hides the word while
+   it sits below (yPercent: 100), creating the curtain reveal effect. */
+.koyko-contact__word-clip {
+  display: inline-block;     /* inline-block so overflow:hidden works */
+  overflow: hidden;
+  vertical-align: top;       /* keep words aligned to the text baseline */
+  margin-right: 0.3em;       /* space between words (replaces normal whitespace) */
+}
+
+/* The actual word text — GSAP moves this from yPercent:100 → 0 */
+.koyko-contact__word-inner {
+  display: inline-block;     /* needs block-level box so yPercent works */
+}
+
 /* Circle drawn via CSS (border-radius + border); arrow image sits inside */
 .koyko-contact__arrow-btn {
   display: inline-flex;
@@ -766,6 +780,7 @@ body.run-reveal .block {
      [logo] [2px divider] [email col] [social col]
    A "Back to top >" button spans all columns in a second row. */
 .koyko-footer {
+  position: relative;         /* anchor for the absolutely-positioned trail image */
   background: #ffffff;
   border-top: 2px solid #000000;
   padding: clamp(2rem, 4vw, 4rem) clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 2vw, 2rem);
@@ -775,6 +790,7 @@ body.run-reveal .block {
   grid-gap: clamp(1.5rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
   gap: clamp(1.5rem, 3vw, 3rem) clamp(2rem, 4vw, 4rem);
   align-items: start;
+  overflow: hidden;           /* clip the trail image at the footer edges */
 }
 
 /* Logo column */
@@ -787,6 +803,7 @@ body.run-reveal .block {
   width: clamp(50px, 8.5vw, 123px);
   height: auto;
   display: block;
+  margin-left: clamp(4rem, 10vw, 10rem);   /* nudge the logo to the right */
 }
 
 /* 2px vertical separator — align-self:stretch makes it fill the tallest column */
@@ -815,6 +832,21 @@ body.run-reveal .block {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  /* No overflow:hidden — the trail image is larger than this small column */
+}
+
+/* Mouse-trail image — appended to <footer> (not the social col) so it isn't
+   clipped. Centering is done via GSAP xPercent/yPercent — no CSS transform
+   here because GSAP would overwrite it when animating x/y. */
+.koyko-footer__trail-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(100px, 15vw, 200px);
+  height: auto;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 4px;
 }
 
 /* Bold label — e.g. "hello" above the email address */
