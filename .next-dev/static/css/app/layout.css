@@ -237,11 +237,41 @@ body.run-reveal .block {
   color: #000000;
   text-decoration: none;
   letter-spacing: 0.08em;
-  transition: opacity var(--transition-fast);
+  /* No opacity hover — replaced by the GSAP letter-roll animation */
 }
 
-.koyko-nav__link:hover {
-  opacity: 0.55;
+/* Wrapper that holds all the letter spans in a row */
+.koyko-nav__word {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+/* One letter — acts as a clipping window.
+   overflow: hidden hides whichever copy is currently out of frame.
+   height: 1em clips to exactly one character tall. */
+.koyko-nav__letter {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.15em;       /* full letter height — nothing gets chopped */
+  vertical-align: top;
+  /* 3px fade at the top creates a dead zone that hides any sub-pixel letter peek */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 3px);
+  mask-image:         linear-gradient(to bottom, transparent 0px, black 3px);
+}
+
+/* The track holds two identical copies of the letter stacked vertically.
+   GSAP animates yPercent: -50 on hover, which moves it up by 1.1em (one slot height),
+   hiding the first copy and revealing the second. */
+.koyko-nav__letter-track {
+  display: flex;
+  flex-direction: column;
+}
+
+.koyko-nav__letter-track > span {
+  display: block;
+  height: 1.1em;   /* must match .koyko-nav__letter height exactly — keeps clip in sync */
+  line-height: 1.1;
+  flex-shrink: 0; /* prevent flex from squishing the letter height */
 }
 
 /* Decorative cross lines — recreated from the Figma "Navbar Deign" vector.
@@ -555,6 +585,19 @@ body.run-reveal .block {
 
 .koyko-designed__word {
   display: block;
+  position: relative; /* needed so the tagline SVG can be positioned inside it */
+}
+
+/* Red tagline SVG — floats absolutely over the "HATE" word.
+   GSAP controls opacity and scale; CSS just sets size and placement. */
+.koyko-designed__tagline {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%); /* vertically center over the word */
+  width: 50%;                  /* adjust this to make it bigger or smaller */
+  height: auto;
+  pointer-events: none;        /* don't block clicks/hover on the word */
 }
 
 
@@ -620,8 +663,8 @@ body.run-reveal .block {
   transform: scale(1.04);
 }
 
-/* Arrow icon fills ~60% of the circle diameter */
-.koyko-contact__arrow-icon {
+/* Avatar fills ~60% of the circle diameter — hidden by default, shown on hover */
+.koyko-contact__avatar {
   position: absolute;
   inset: 0;
   margin: auto;
@@ -650,7 +693,7 @@ body.run-reveal .block {
     transform var(--transition-fast);
 }
 
-.koyko-contact__arrow-icon--hover {
+.koyko-contact__avatar--hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -665,12 +708,38 @@ body.run-reveal .block {
   transform: scale(0.9);
 }
 
-.koyko-contact__arrow-btn:hover .koyko-contact__arrow-icon--hover,
-.koyko-contact__arrow-btn:focus-visible .koyko-contact__arrow-icon--hover {
+.koyko-contact__arrow-btn:hover .koyko-contact__avatar--hover,
+.koyko-contact__arrow-btn:focus-visible .koyko-contact__avatar--hover {
   opacity: 1;
   transform: scale(1);
 }
 
+/* Flex row: places the circle button and arrow image side by side, vertically centered */
+.koyko-contact__row {
+  display: flex;
+  align-items: center;  /* vertically centers both items on the same line */
+  gap: 1.5rem;          /* space between the button and the arrow */
+  position: relative;   /* positioning context for the arrow absolute inside the button */
+}
+
+/* Arrow image sits to the right of the circle button */
+.koyko-contact-arrow-down {
+  position: absolute;
+  left: 200px;  /* positions the arrow to the right of the circle button */
+  top: 0px;
+  width: 400px;  /* fixed width for the arrow image */
+  height: auto;
+  margin-left: 100px;
+
+  /* Hidden by default — revealed when the circle button is hovered */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* + means "the element immediately after this one" — targets the arrow when button is hovered */
+.koyko-contact__arrow-btn:hover + .koyko-contact-arrow-down {
+  opacity: 1;
+}
 
 /* ---- Footer --------------------------------------------------------------- */
 /* Four-column grid on desktop:

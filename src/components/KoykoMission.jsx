@@ -153,7 +153,7 @@ function KoykoMission() {
     const highlightTl = gsap.timeline({ paused: true });
 
     highlightTl.to(highlightEls, {
-      color:    '#cc3311',      // vivid red
+      color:    '#79FF4F',      // vivid greenish highlight colour
       duration: 0.4,
       stagger:  0, 
       ease:     'none',

@@ -10,7 +10,7 @@
 //
 // Section anchor id="contact" is targeted by the "c o n t a c t" nav link.
 
-import { ARROW_HOVER } from '../assets/koykoAssets';
+import { AVATAR, ARROW_CONTACT } from '../assets/koykoAssets';
 
 function KoykoContact() {
   return (
@@ -27,25 +27,33 @@ function KoykoContact() {
         READY TO TALK ABOUT<br />YOUR PROJECT?
       </h2>
 
-      {/* Circular mailto link — CSS draws the circle; image is the arrow inside */}
-      <a
-        href="mailto:hello@koykodesign.com"
-        className="koyko-contact__arrow-btn"
-        aria-label="Start your project — send an email to hello@koykodesign.com"
-      >
-        <span
-          aria-hidden="true"
-          className="koyko-contact__arrow-default-mark"
+      {/* Row: circle button on the left, arrow image to its right, side by side */}
+      <div className="koyko-contact__row">
+        <a
+          href="mailto:hello@koykodesign.com"
+          className="koyko-contact__arrow-btn"
+          aria-label="Start your project — send an email to hello@koykodesign.com"
         >
-          X
-        </span>
+          <span
+            aria-hidden="true"
+            className="koyko-contact__arrow-default-mark"
+          >
+            X
+          </span>
+          <img
+            src={AVATAR}
+            alt="Caricature avatar of Valentino"
+            aria-hidden="true"
+            className="koyko-contact__avatar koyko-contact__avatar--hover"
+          />
+        </a>
         <img
-          src={ARROW_HOVER}
-          alt=""
+          src={ARROW_CONTACT}
+          alt="Arrow pointing right toward the button"
           aria-hidden="true"
-          className="koyko-contact__arrow-icon koyko-contact__arrow-icon--hover"
+          className="koyko-contact-arrow-down"
         />
-      </a>
+      </div>
     </section>
   );
 }

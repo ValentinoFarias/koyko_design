@@ -14,6 +14,6 @@ export const LOGO        = '/assets/images/logo.png';
 export const MISSION_BG  = '/assets/images/machiMission.jpg';
 export const PORTFOLIO   = '/assets/images/portfolio.png';
 export const GOLD_DOT    = '/assets/images/gold-dot.png';
-// ARROW is the left-arrow icon; the circle border is drawn via CSS in KoykoContact
-export const ARROW       = '/assets/images/arrow.png';
-export const ARROW_HOVER = '/assets/images/vale8Pix.png';
+// AVATAR is a caricature of Valentino — revealed inside the circle button on hover
+export const AVATAR = '/assets/images/vale8Pix.png';
+export const ARROW_CONTACT = '/assets/images/arrowContact.png';
