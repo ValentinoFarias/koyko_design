@@ -97,26 +97,37 @@ main .landing-logo-slot {
   justify-content: center;
 }
 
-/* Counter sits in the left column, rotated 270° so digits read vertically.
-   font-family uses the literal stack (not just the variable) because
+/* Shared counter styles — number lives in column 1 (left), % lives in column 3 (right).
+   Both are rotated 270° so they read vertically along their edge.
+   font-family uses the literal stack (not a CSS variable) because
    lottie-player.js injects global styles that can override variable references. */
 main .landing-counter {
-  grid-column: 1;
-  justify-self: end;
-  margin-right: clamp(1.5rem, 6vw, 4.5rem);
-  transform: rotate(270deg);
-  transform-origin: center;
   display: inline-block;
-  width: 4ch;              /* reserve space for "100%" — prevents layout shift */
-  text-align: right;
   white-space: nowrap;
   line-height: 1;
-  font-family: 'Architects Daughter', 'Inter', system-ui, sans-serif;
+  font-family: 'Noto Sans JP', system-ui, sans-serif;
   font-size: 4rem;
-  font-weight: var(--font-weight-normal);
+  font-weight: 200;
   color: var(--color-fg);
-  font-variant-numeric: tabular-nums;  /* fixed-width digits */
   pointer-events: none;
+  transform: rotate(270deg);
+  transform-origin: center;
+}
+
+/* Number — left edge of the screen */
+main .landing-counter--number {
+  grid-column: 1;
+  justify-self: start;           /* hug the left edge */
+  margin-left: clamp(1rem, 4vw, 3rem);
+  text-align: right;
+  width: 3ch;                    /* reserve space for "100" — prevents layout shift */
+}
+
+/* Percent sign — right edge of the screen */
+main .landing-counter--percent {
+  grid-column: 3;
+  justify-self: end;             /* hug the right edge */
+  margin-right: clamp(1rem, 4vw, 3rem);
 }
 
 /* Wrapper for the <lottie-player> web component.
@@ -221,7 +232,7 @@ body.run-reveal .block {
   font-family: var(--font-sans);
   font-size: 100%;
   font-weight: 400;
-  letter-spacing: 0.08em;
+  letter-spacing: 1em;
   color: #000000;
 }
 
@@ -231,7 +242,7 @@ body.run-reveal .block {
   font-weight: 400;
   color: #000000;
   text-decoration: none;
-  letter-spacing: 0.08em;
+  letter-spacing: 1em;
   /* No opacity hover — replaced by the GSAP letter-roll animation */
 }
 

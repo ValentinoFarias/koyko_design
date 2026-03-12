@@ -106,15 +106,15 @@ function NavLink({ href, label, displayText }) {
   return <RollingText href={href} label={label} displayText={displayText} className="koyko-nav__link" />;
 }
 
-function NavBrand({ displayText, label }) {
-  return <RollingText label={label} displayText={displayText} className="koyko-nav__logo" />;
+function NavBrand({ href, displayText, label }) {
+  return <RollingText href={href} label={label} displayText={displayText} className="koyko-nav__logo" />;
 }
 
 function KoykoNavbar() {
   return (
     <nav className="koyko-nav" aria-label="Main navigation">
-      {/* Brand name — not a link, but still gets the letter-roll on hover */}
-      <NavBrand displayText="k o y k o" label="koyko" />
+      {/* Brand name — clicking it navigates back to the Landing page (route "/") */}
+      <NavBrand href="/" displayText="k o y k o" label="Go to home page" />
 
       <NavLink href="#packages" label="packages" displayText="p a c k a g e s" />
       <NavLink href="#contact"  label="contact"  displayText="c o n t a c t" />

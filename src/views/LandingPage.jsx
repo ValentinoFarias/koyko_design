@@ -7,12 +7,21 @@ import TransitionLink from '../components/TransitionLink.jsx';
 import { setupInitialRevealIfNeeded, animateTransition } from '../assets/anim/pageTransitions.js';
 
 function LandingPage() {
-  const counterRef = useRef(null);
+  // Two refs: one for the number (left edge), one for the % sign (right edge)
+  const counterNumberRef = useRef(null);
+  const counterPercentRef = useRef(null);
   const router = useRouter(); // used to navigate programmatically after the counter finishes
 
   useEffect(() => {
-    document.body.classList.add('run-reveal');
-    setupInitialRevealIfNeeded();
+    // Only play the initial block-reveal on the very first visit to the site.
+    // If the user navigates back to '/' from the navbar, skip it — no animation.
+    const isFirstVisit = !sessionStorage.getItem('koyko-visited');
+
+    if (isFirstVisit) {
+      sessionStorage.setItem('koyko-visited', 'true');
+      document.body.classList.add('run-reveal');
+      setupInitialRevealIfNeeded();
+    }
 
     return () => {
       document.body.classList.remove('run-reveal');
@@ -31,8 +40,9 @@ function LandingPage() {
         duration: 3,
         ease: 'power1.inOut',
         onUpdate: () => {
-          if (counterRef.current) {
-            counterRef.current.textContent = Math.round(obj.value) + '%';
+          // Update only the number — the % sign is a separate static element
+          if (counterNumberRef.current) {
+            counterNumberRef.current.textContent = Math.round(obj.value);
           }
         },
         // When the counter reaches 100, wait 1 second, then fire the
@@ -51,7 +61,8 @@ function LandingPage() {
   return (
     <main>
       <div className="landing-layout">
-        <div ref={counterRef} className="landing-counter">0%</div>
+        {/* Number on the left edge, % sign on the right edge */}
+        <div ref={counterNumberRef} className="landing-counter landing-counter--number">0</div>
         <div className="landing-logo-slot">
           <TransitionLink to="/home" className="logo-link d-inline-block">
             <lottie-player
@@ -63,6 +74,7 @@ function LandingPage() {
             ></lottie-player>
           </TransitionLink>
         </div>
+        <div ref={counterPercentRef} className="landing-counter landing-counter--percent">%</div>
       </div>
     </main>
   );
