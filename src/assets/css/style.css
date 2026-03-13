@@ -1382,29 +1382,238 @@ a.koyko-footer__value:hover {
 /* =============================================================================
    RESPONSIVE OVERRIDES
    Collected at the bottom so breakpoints are easy to scan in one place.
+   Ordered smallest → largest: mobile (≤ 640px), tablet (≤ 1024px).
    ============================================================================= */
+
+
+/* Tablet (≤ 1024px) --------------------------------------------------------- */
+@media (max-width: 1024px) {
+
+  /* ---- Landing ---- */
+  /* Shrink the Lottie logo so it doesn't overflow on tablets */
+  .logoMain {
+    width: 360px;
+    height: 360px;
+  }
+
+  /* ---- Navbar ---- */
+  /* Tighten letter-spacing so links don't overflow */
+  .koyko-nav {
+    padding: 1rem clamp(1rem, 3vw, 2rem);
+  }
+
+  .koyko-nav__logo,
+  .koyko-nav__link {
+    font-size: 85%;
+    letter-spacing: 0.5em;
+  }
+
+  /* Hide the decorative cross lines — they overlap content on narrow screens */
+  .koyko-nav__line-h,
+  .koyko-nav__line-v {
+    display: none;
+  }
+
+  /* ---- Hero ---- */
+  .koyko-hero__logo {
+    width: clamp(160px, 30vw, 300px);
+  }
+
+  /* ---- Portfolio ---- */
+  .koyko-portfolio {
+    margin-top: 60px;
+  }
+
+  /* ---- Designed ---- */
+  /* Allow the heading to wrap on narrower screens */
+  .koyko-designed__heading {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  /* ---- Contact section ---- */
+  /* Scale down the arrow image that appears on hover */
+  .koyko-contact-arrow-down {
+    left: 140px;
+    width: 250px;
+    margin-left: 40px;
+  }
+
+  /* ---- Packages page ---- */
+  /* Reduce fixed padding for tablet */
+  .koyko-packages__hero {
+    padding: 120px 32px 40px;
+  }
+
+  .koyko-table {
+    padding: 0 32px 60px;
+  }
+
+  .koyko-table__hosting {
+    padding: 0 32px 60px;
+  }
+
+  /* Shrink the large package names and prices so they fit in columns */
+  .koyko-table__features-label {
+    font-size: 32px;
+  }
+
+  .koyko-table__name {
+    font-size: 28px;
+  }
+
+  .koyko-table__price {
+    font-size: 28px;
+  }
+
+  .koyko-table__feat-name {
+    font-size: 16px;
+  }
+
+  .koyko-table__cell {
+    padding: 14px 6px;
+  }
+
+  /* Hosting card — less internal padding */
+  .koyko-hosting__card {
+    padding: 28px 24px;
+  }
+}
+
 
 /* Mobile (≤ 640px) ---------------------------------------------------------- */
 @media (max-width: 640px) {
 
-  /* Hero: on mobile, shrink the stage and adjust wordmark position */
+  /* ---- Landing ---- */
+  /* Shrink the Lottie logo further for phones */
+  .logoMain {
+    width: 260px;
+    height: 260px;
+  }
+
+  /* Smaller counter text on mobile */
+  main .landing-counter {
+    font-size: 2.5rem;
+  }
+
+  /* ---- Navbar ---- */
+  /* Stack-friendly: smaller text, tighter spacing */
+  .koyko-nav {
+    padding: 0.8rem 1rem;
+  }
+
+  .koyko-nav__logo,
+  .koyko-nav__link {
+    font-size: 70%;
+    letter-spacing: 0.3em;
+  }
+
+  /* ---- Hero ---- */
   .koyko-hero__stage {
-    height: clamp(300px, 70vw, 420px);
+    height: clamp(260px, 65vw, 380px);
   }
 
   .koyko-hero__wordmark {
-    top: clamp(20px, 5vw, 50px);
-    left: clamp(0.5rem, 3vw, 1.5rem);
-    font-size: clamp(2.2rem, 10vw, 4rem);
+    top: 8%;
+    left: 5%;
+    font-size: clamp(2rem, 10vw, 3.5rem);
   }
 
-  /* Footer: collapse to a single column */
+  .koyko-hero__logo {
+    width: clamp(130px, 36vw, 220px);
+    left: 55%;
+  }
+
+  .koyko-hero__design-label {
+    font-size: clamp(1rem, 4.5vw, 1.6rem);
+    right: 5%;
+    bottom: 8%;
+  }
+
+  /* ---- Mission ---- */
+  .koyko-mission__content {
+    padding: clamp(1rem, 3vw, 2rem);
+  }
+
+  /* ---- Portfolio ---- */
+  .koyko-portfolio {
+    height: auto;
+    min-height: 200px;
+    margin-top: 40px;
+    padding: clamp(1.5rem, 3vw, 2rem) 1rem;
+  }
+
+  /* When expanded, stack vertically instead of side-by-side */
+  .koyko-portfolio__item--expanded {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .koyko-portfolio__item--expanded .koyko-portfolio__info {
+    align-items: center;
+  }
+
+  .koyko-portfolio__item--expanded .koyko-portfolio__name,
+  .koyko-portfolio__item--expanded .koyko-portfolio__desc {
+    text-align: center;
+  }
+
+  /* ---- Designed ---- */
+  .koyko-designed {
+    padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
+  }
+
+  .koyko-designed__heading {
+    font-size: clamp(1.8rem, 7vw, 3rem);
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  /* Shrink the rolling-word viewport to match the smaller heading */
+  .koyko-designed__word-viewport {
+    min-width: 6ch;
+    width: 6ch;
+  }
+
+  /* ---- Contact section ---- */
+  .koyko-contact {
+    padding: clamp(2rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  }
+
+  /* Left-align the heading on mobile for readability */
+  .koyko-contact__heading {
+    text-align: left;
+    font-size: clamp(1.8rem, 7vw, 3rem);
+  }
+
+  /* Shrink the circle button on small screens */
+  .koyko-contact__arrow-btn {
+    width: clamp(60px, 18vw, 100px);
+    height: clamp(60px, 18vw, 100px);
+  }
+
+  /* Hide the large arrow image on mobile — it overflows */
+  .koyko-contact-arrow-down {
+    display: none;
+  }
+
+  /* ---- Footer ---- */
+  /* Collapse to a single column */
   .koyko-footer {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    gap: 1.5rem;
   }
 
-  .koyko-footer__logo-col    { grid-column: 1; grid-row: 1; }
+  .koyko-footer__logo-col {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Centre the logo instead of pushing it right */
+  .koyko-footer__logo {
+    margin-left: 0;
+  }
 
   /* Vertical divider becomes a horizontal rule on mobile */
   .koyko-footer__vdivider {
@@ -1420,4 +1629,71 @@ a.koyko-footer__value:hover {
   .koyko-footer__social-col  { grid-column: 1; grid-row: 4; }
   .koyko-footer__back-to-top { grid-column: 1; grid-row: 5; justify-self: end; }
 
+  /* ---- Packages page ---- */
+  .koyko-packages__hero {
+    padding: 100px 16px 32px;
+  }
+
+  .koyko-table {
+    padding: 0 16px 40px;
+  }
+
+  /* Stack the 4-column grid into 1 column on mobile.
+     Each package becomes a full-width card stacked vertically. */
+  .koyko-table__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Hide the "Features" label — feature names appear inside each card */
+  .koyko-table__features-label {
+    font-size: 28px;
+    padding-bottom: 16px;
+  }
+
+  .koyko-table__name {
+    font-size: 24px;
+  }
+
+  .koyko-table__price {
+    font-size: 24px;
+  }
+
+  .koyko-table__header {
+    padding: 24px 12px 0;
+  }
+
+  /* Hosting section */
+  .koyko-table__hosting {
+    padding: 0 16px 40px;
+  }
+
+  .koyko-hosting__card {
+    padding: 20px 16px;
+  }
+
+  .koyko-table__hosting-title {
+    font-size: 24px;
+  }
+
+  /* Make the plan table scroll horizontally if it overflows */
+  .koyko-table__plans {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ---- Contact page ---- */
+  .koyko-contact-page {
+    padding: 100px 16px 60px;
+  }
+
+  .koyko-contact-page__card {
+    padding: 24px 16px;
+  }
+
+  /* Full-width submit button on mobile */
+  .koyko-contact-form__submit {
+    align-self: stretch;
+    text-align: center;
+  }
 }
