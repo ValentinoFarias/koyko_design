@@ -1390,10 +1390,15 @@ a.koyko-footer__value:hover {
 @media (max-width: 1024px) {
 
   /* ---- Landing ---- */
-  /* Shrink the Lottie logo so it doesn't overflow on tablets */
+  /* Make the Lottie logo fluid so it scales with the viewport */
   .logoMain {
-    width: 360px;
-    height: 360px;
+    width: clamp(200px, 45vw, 360px);
+    height: clamp(200px, 45vw, 360px);
+  }
+
+  /* Shrink the counter text proportionally */
+  main .landing-counter {
+    font-size: clamp(2rem, 4vw, 4rem);
   }
 
   /* ---- Navbar ---- */
@@ -1485,15 +1490,47 @@ a.koyko-footer__value:hover {
 @media (max-width: 640px) {
 
   /* ---- Landing ---- */
-  /* Shrink the Lottie logo further for phones */
-  .logoMain {
-    width: 260px;
-    height: 260px;
+  /* Stack the 3-column grid into a single centered column on phones.
+     The counter number sits above the logo, the % below it. */
+  main .landing-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 1rem;
+    padding-inline: 1rem;
   }
 
-  /* Smaller counter text on mobile */
+  /* Both counters sit in column 1 now and rotate back to horizontal */
   main .landing-counter {
-    font-size: 2.5rem;
+    transform: rotate(0deg);
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  main .landing-counter--number {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    margin-left: 0;
+    width: auto;
+  }
+
+  main .landing-counter--percent {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: center;
+    margin-right: 0;
+  }
+
+  /* Logo slot moves to the middle row */
+  main .landing-logo-slot {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* Fluid logo that fits any phone width */
+  .logoMain {
+    width: clamp(180px, 55vw, 280px);
+    height: clamp(180px, 55vw, 280px);
   }
 
   /* ---- Navbar ---- */
@@ -1634,35 +1671,72 @@ a.koyko-footer__value:hover {
     padding: 100px 16px 32px;
   }
 
+  .koyko-packages__intro {
+    font-size: 16px;
+  }
+
+  /* Allow the comparison grid to scroll horizontally on phones.
+     We keep the 4-column layout intact — collapsing to 1 column
+     would scatter headers and checkmarks into an unreadable list. */
   .koyko-table {
-    padding: 0 16px 40px;
+    padding: 0 0 40px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Stack the 4-column grid into 1 column on mobile.
-     Each package becomes a full-width card stacked vertically. */
+  /* Set a minimum width so columns don't get crushed — the user
+     swipes sideways to see all three packages. */
   .koyko-table__grid {
-    grid-template-columns: 1fr;
+    min-width: 700px;
+    padding: 0 16px;
   }
 
-  /* Hide the "Features" label — feature names appear inside each card */
+  /* Smaller font sizes so more content fits in view */
   .koyko-table__features-label {
-    font-size: 28px;
-    padding-bottom: 16px;
+    font-size: 22px;
+    padding-bottom: 12px;
   }
 
   .koyko-table__name {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .koyko-table__price {
-    font-size: 24px;
+    font-size: 20px;
+  }
+
+  .koyko-table__subtitle {
+    font-size: 11px;
   }
 
   .koyko-table__header {
-    padding: 24px 12px 0;
+    padding: 20px 8px 0;
   }
 
-  /* Hosting section */
+  .koyko-table__feat-name {
+    font-size: 14px;
+    padding-left: 12px;
+  }
+
+  .koyko-table__cell {
+    padding: 12px 4px;
+    font-size: 14px;
+  }
+
+  .koyko-table__pkg-header {
+    border-width: 3px;
+  }
+
+  .koyko-table__check {
+    border-left-width: 3px;
+    border-right-width: 3px;
+  }
+
+  .koyko-table__grid > .koyko-table__check:nth-last-child(-n+3) {
+    border-bottom-width: 3px;
+  }
+
+  /* ---- Hosting section ---- */
   .koyko-table__hosting {
     padding: 0 16px 40px;
   }
@@ -1672,7 +1746,20 @@ a.koyko-footer__value:hover {
   }
 
   .koyko-table__hosting-title {
-    font-size: 24px;
+    font-size: 22px;
+  }
+
+  .koyko-table__hosting-intro {
+    font-size: 15px;
+  }
+
+  .koyko-table__notes {
+    font-size: 14px;
+    padding-left: 16px;
+  }
+
+  .koyko-table__payment {
+    font-size: 14px;
   }
 
   /* Make the plan table scroll horizontally if it overflows */
@@ -1680,6 +1767,13 @@ a.koyko-footer__value:hover {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .koyko-table__plans th,
+  .koyko-table__plans td {
+    font-size: 14px;
+    padding: 10px 12px;
+    white-space: nowrap;
   }
 
   /* ---- Contact page ---- */
