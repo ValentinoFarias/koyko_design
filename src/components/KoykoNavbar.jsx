@@ -114,10 +114,10 @@ function KoykoNavbar() {
   return (
     <nav className="koyko-nav" aria-label="Main navigation">
       {/* Brand name — clicking it navigates back to the Landing page (route "/") */}
-      <NavBrand href="/" displayText="k o y k o" label="Go to home page" />
+      <NavBrand href="/home" displayText="k o y k o" label="Go to home page" />
 
-      <NavLink href="#packages" label="packages" displayText="p a c k a g e s" />
-      <NavLink href="#contact"  label="contact"  displayText="c o n t a c t" />
+      <NavLink href="/packages" label="packages" displayText="p a c k a g e s" />
+      <NavLink href="/contact"  label="contact"  displayText="c o n t a c t" />
 
       {/*
         Decorative cross lines from the Figma "Navbar Deign" vector.

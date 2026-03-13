@@ -137,13 +137,15 @@ function KoykoFooter() {
   return (
     <footer className="koyko-footer">
 
-      {/* ── Col 1: Logo ──────────────────────────────────────────── */}
+      {/* ── Col 1: Logo — clicking navigates to the home page ───── */}
       <div className="koyko-footer__logo-col">
-        <img
-          src={LOGO}
-          alt="Koyko Design"
-          className="koyko-footer__logo"
-        />
+        <a href="/home" aria-label="Go to home page">
+          <img
+            src={LOGO}
+            alt="Koyko Design"
+            className="koyko-footer__logo"
+          />
+        </a>
       </div>
 
       {/* ── Col 2: Vertical divider ───────────────────────────────── */}

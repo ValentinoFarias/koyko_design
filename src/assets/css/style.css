@@ -969,6 +969,417 @@ a.koyko-footer__value:hover {
 
 
 /* =============================================================================
+   PACKAGES PAGE  (Packages.jsx)
+   Page-level layout: centred column, consistent max-width and padding.
+   Hero header — eyebrow, title, and intro paragraph.
+   ============================================================================= */
+
+/* The koyko-page wrapper already fills the viewport.
+   A single inner container centres all page content in a column. */
+.koyko-packages__hero {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 140px 60px 60px;
+}
+
+/* Small spaced label above the title — "K O Y K O  D E S I G N  P A C K A G E S" */
+.koyko-packages__eyebrow {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+  color: #888;
+}
+
+/* Main page title */
+.koyko-packages__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.05;
+  margin: 0 0 24px;
+}
+
+/* Intro paragraph */
+.koyko-packages__intro {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.7;
+  max-width: 680px;
+  margin: 0;
+  color: #444;
+}
+
+
+/* =============================================================================
+   PACKAGES TABLE  (KoykoTable.jsx)
+   Comparison grid: "Features" column on the left, 3 package columns with
+   headers (name/price/subtitle) and checkmarks per feature row.
+   ============================================================================= */
+
+/* Outer section — centred column, consistent with the hero above */
+.koyko-table {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 60px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 4-column grid: features label | essential | premium | signature */
+.koyko-table__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ---- Header row ---- */
+
+/* Shared styles for all header cells */
+.koyko-table__header {
+  padding: 46px 20px 0;
+}
+
+/* "Features" label — top-left corner cell */
+.koyko-table__features-label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 48px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 24px;
+}
+
+/* Package header cells (name + price + subtitle + divider) */
+.koyko-table__pkg-header {
+  text-align: center;
+  border: 5px solid #000;
+  border-bottom: none;
+  background: #fff;
+  color: #000;
+}
+
+/* Dark variant — Premium column header */
+.koyko-table__pkg-header--dark {
+  background: #000;
+  color: #fff;
+}
+
+/* Package name (ESSENTIAL / PREMIUM / SIGNATURE) */
+.koyko-table__name {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1;
+  margin: 0;
+}
+
+/* Price (£700 / £1800 / £4000) */
+.koyko-table__price {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1;
+  margin-top: 16px;
+}
+
+/* Subtitle text under the price */
+.koyko-table__subtitle {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  margin-top: 32px;
+}
+
+/* Horizontal divider between subtitle and the first feature row */
+.koyko-table__divider {
+  width: 80%;
+  margin: 24px auto 0;
+  border: none;
+  border-top: 1px solid currentColor;
+}
+
+/* ---- Feature rows ---- */
+
+/* Shared cell styles — all cells in the feature rows */
+.koyko-table__cell {
+  font-family: var(--font-sans);
+  padding: 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Left column: feature name — left-aligned */
+.koyko-table__feat-name {
+  font-weight: 300;
+  font-size: 20px;
+  justify-content: flex-start;
+  padding-left: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Checkmark / dash cells under each package */
+.koyko-table__check {
+  font-size: 24px;
+  font-weight: 300;
+  border-left: 5px solid #000;
+  border-right: 5px solid #000;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+  color: #000;
+}
+
+/* Last row of checkmarks — thick bottom border to match the top/sides */
+.koyko-table__grid > .koyko-table__check:nth-last-child(-n+3) {
+  border-bottom: 5px solid #000;
+}
+
+/* Dark variant cells — Premium column body */
+.koyko-table__check--dark {
+  background: #000;
+  color: #fff;
+  border-bottom-color: #333;
+}
+
+/* ---- Hosting & Care Plans + Notes (below the comparison grid) ---- */
+
+/* Wrapper — centres the block and adds spacing above */
+/* KoykoHosting sits below KoykoTable — same max-width and padding as the rest of the page */
+.koyko-table__hosting {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 60px 100px;
+}
+
+/* Card wrapper — rounded border around each sub-section */
+.koyko-hosting__card {
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 40px 48px;
+  margin-bottom: 32px;
+}
+
+/* Section headings (HOSTING & CARE PLANS / NOTES) */
+.koyko-table__hosting-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 32px;
+  margin: 0 0 12px;
+}
+
+/* Thin coloured rule under each heading */
+.koyko-table__hosting-rule {
+  border: none;
+  border-top: 2px solid #c4a07a;
+  margin: 0 0 32px;
+}
+
+/* Intro paragraph above the plan table */
+.koyko-table__hosting-intro {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+
+/* Plan table — 3 columns with visible borders */
+.koyko-table__plans {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 32px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+}
+
+.koyko-table__plans th {
+  background: #000;
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 16px;
+}
+
+.koyko-table__plans td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+/* Italic disclaimer text under the plan table */
+.koyko-table__hosting-note {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  margin-bottom: 48px;
+  line-height: 1.6;
+}
+
+/* Notes bullet list */
+.koyko-table__notes {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.7;
+  padding-left: 20px;
+  list-style: '–  ';
+}
+
+.koyko-table__notes li {
+  margin-bottom: 12px;
+}
+
+/* Payment info paragraph between Notes and Add-ons */
+.koyko-table__payment {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 32px 0 48px;
+}
+
+
+/* =============================================================================
+   CONTACT PAGE  (Contact.jsx + KoykoContactForm.jsx)
+   Full-page contact form with header, fields, and submit button.
+   ============================================================================= */
+
+/* Page wrapper — centres content in a column below the navbar */
+.koyko-contact-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 140px 40px 100px;
+}
+
+/* Eyebrow label */
+.koyko-contact-page__eyebrow {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0 0 14px;
+}
+
+/* Page title */
+.koyko-contact-page__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.05;
+  margin: 0 0 16px;
+}
+
+/* Subtitle */
+.koyko-contact-page__subtitle {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  color: #555;
+  margin: 0 0 56px;
+  line-height: 1.6;
+}
+
+/* Card wrapping the form */
+.koyko-contact-page__card {
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 48px;
+}
+
+/* Form — stacks fields vertically */
+.koyko-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Each label + input pair */
+.koyko-contact-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Field label */
+.koyko-contact-form__label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+/* All inputs, select, and textarea share the same base style */
+.koyko-contact-form__input {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #000;
+  padding: 10px 0;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.koyko-contact-form__input:focus {
+  border-bottom-color: #555;
+}
+
+.koyko-contact-form__input::placeholder {
+  color: #bbb;
+}
+
+/* Textarea — no resize handle */
+.koyko-contact-form__textarea {
+  resize: none;
+}
+
+/* Select — remove default arrow on some browsers */
+.koyko-contact-form__select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Submit button — full-width black pill */
+.koyko-contact-form__submit {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: #000;
+  border: none;
+  padding: 16px 32px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.2s ease;
+  align-self: flex-start;
+}
+
+.koyko-contact-form__submit:hover {
+  background: #333;
+}
+
+/* Thank-you message shown after successful submission */
+.koyko-contact-form__thanks {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1.6;
+  padding: 40px 0;
+}
+
+
+/* =============================================================================
    RESPONSIVE OVERRIDES
    Collected at the bottom so breakpoints are easy to scan in one place.
    ============================================================================= */
