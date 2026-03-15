@@ -397,7 +397,7 @@ body.run-reveal .block {
    holds the content locked in the viewport. No padding here — the sticky
    container and its content handle all layout. */
 .koyko-mission {
-  height: 400vh;
+  height: 500vh;
   position: relative;
   background: #010000;
   color: #ffffff;
@@ -409,7 +409,7 @@ body.run-reveal .block {
    can use position:absolute on word spans relative to this element. */
 .koyko-mission__sticky {
   position: sticky;
-  top: 0;
+  top: 30px;  /* negative offset so the content starts just above the viewport and scrolls into view */
   height: 100vh;
   overflow: clip;    /* clips falling words without creating a scroll container (which breaks sticky) */
   display: flex;
