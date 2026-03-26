@@ -12,12 +12,11 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-// Resend client — reads the API key from environment variables so it's never
-// hardcoded in the source code
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request) {
   try {
+    // Initialise inside the handler so it runs at request time, not build time.
+    // This prevents build failures when the env var isn't set during CI.
+    const resend = new Resend(process.env.RESEND_API_KEY);
     // Parse the JSON body sent by the contact form
     const { name, email, project, message } = await request.json();
 
