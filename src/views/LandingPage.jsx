@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { gsap } from 'gsap';
 import TransitionLink from '../components/TransitionLink.jsx';
-import { setupInitialRevealIfNeeded, animateTransition } from '../assets/anim/pageTransitions.js';
+import { animateTransition } from '../assets/anim/pageTransitions.js';
 
 function LandingPage() {
   // Two refs: one for the number (left edge), one for the % sign (right edge)
@@ -13,19 +13,9 @@ function LandingPage() {
   const router = useRouter(); // used to navigate programmatically after the counter finishes
 
   useEffect(() => {
-    // Only play the initial block-reveal on the very first visit to the site.
-    // If the user navigates back to '/' from the navbar, skip it — no animation.
-    const isFirstVisit = !sessionStorage.getItem('koyko-visited');
-
-    if (isFirstVisit) {
-      sessionStorage.setItem('koyko-visited', 'true');
-      document.body.classList.add('run-reveal');
-      setupInitialRevealIfNeeded();
-    }
-
-    return () => {
-      document.body.classList.remove('run-reveal');
-    };
+    // Make sure the transition block is hidden when the landing page loads —
+    // no animation should play on initial load, only when navigating away.
+    gsap.set('.block', { visibility: 'hidden', scaleX: 0 });
   }, []);
 
   useEffect(() => {

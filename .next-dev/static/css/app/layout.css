@@ -184,12 +184,6 @@ main .landing-counter--percent {
   will-change: transform;   /* promote to GPU layer for smooth GSAP tweens */
 }
 
-/* On the landing page, <body> gets .run-reveal so the curtain starts fully
-   visible and GSAP sweeps it away on first load. */
-body.run-reveal .block {
-  transform: scaleX(1);
-  visibility: visible;
-}
 
 
 /* =============================================================================

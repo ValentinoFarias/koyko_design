@@ -15,6 +15,7 @@
 
 import { useRef, Fragment } from 'react';
 import gsap from 'gsap';
+import TransitionLink from './TransitionLink.jsx';
 
 // RollingText — shared letter-roll component used by both the brand and the nav links.
 //
@@ -72,19 +73,20 @@ function RollingText({ href, label, displayText, className }) {
     </span>
   );
 
-  // Render as <a> when href is given, otherwise as a plain <span>
+  // Render as TransitionLink when href is given — this triggers the block
+  // wipe animation before navigating instead of jumping straight to the route.
   if (href) {
     return (
-      <a
+      <TransitionLink
+        to={href}
         ref={ref}
-        href={href}
         className={className}
         aria-label={label}
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
       >
         {content}
-      </a>
+      </TransitionLink>
     );
   }
 
