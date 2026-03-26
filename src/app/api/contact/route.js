@@ -53,9 +53,10 @@ export async function POST(request) {
     return NextResponse.json({ success: true }, { status: 200 });
 
   } catch (error) {
+    // Log full error and return the real message so we can debug
     console.error('Contact form error:', error);
     return NextResponse.json(
-      { error: 'Failed to send message. Please try again.' },
+      { error: error?.message || String(error) },
       { status: 500 }
     );
   }
