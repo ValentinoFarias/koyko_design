@@ -1,3 +1,5 @@
 node_modules
 .next
 CLAUDE.md
+.env.local
+.env*.local

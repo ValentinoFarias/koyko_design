@@ -2,8 +2,8 @@
 //
 // Fields: Name, Email, Project type (select), Message, Submit button
 // Uses controlled inputs (useState) to track form values.
-// On submit, prevents default and logs the data — replace with an
-// API call or a service like Formspree/Resend when ready to go live.
+// On submit, POSTs to /api/contact which forwards the message to
+// hello@koykodesign.com via Resend.
 
 'use client';
 
@@ -20,16 +20,46 @@ function KoykoContactForm() {
   // Submitted state controls the thank-you message shown after sending
   const [submitted, setSubmitted] = useState(false);
 
+  // Error message shown if the API call fails
+  const [error, setError] = useState('');
+
+  // Loading state disables the button while the request is in flight
+  const [loading, setLoading] = useState(false);
+
   // Single handler updates whichever field changed
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    // TODO: replace console.log with an API call (e.g. Formspree, Resend)
-    console.log('Contact form submitted:', form);
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+
+    try {
+      // POST the form data to the Next.js API route
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        // Server returned an error — show it to the user
+        const data = await res.json();
+        setError(data.error || 'Something went wrong. Please try again.');
+        return;
+      }
+
+      // Success — show the thank-you screen
+      setSubmitted(true);
+
+    } catch {
+      // Network or unexpected error
+      setError('Could not send your message. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   // After submission show a simple thank-you note
@@ -108,9 +138,14 @@ function KoykoContactForm() {
         />
       </div>
 
-      {/* Submit */}
-      <button type="submit" className="koyko-contact-form__submit">
-        Send message
+      {/* Error message — shown only if the API call fails */}
+      {error && (
+        <p className="koyko-contact-form__error">{error}</p>
+      )}
+
+      {/* Submit — disabled while the request is in flight */}
+      <button type="submit" className="koyko-contact-form__submit" disabled={loading}>
+        {loading ? 'Sending…' : 'Send message'}
       </button>
 
     </form>

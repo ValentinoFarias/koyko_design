@@ -105,7 +105,7 @@ function KoykoContact() {
       {/* Row: circle button on the left, arrow image to its right, side by side */}
       <div className="koyko-contact__row">
         <a
-          href="mailto:hello@koykodesign.com"
+          href="mailto:valentinofariascarrion@gmail.com"
           className="koyko-contact__arrow-btn"
           aria-label="Start your project — send an email to hello@koykodesign.com"
         >
