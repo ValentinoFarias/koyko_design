@@ -17,8 +17,8 @@ function Packages() {
 
       {/* Page hero / intro */}
       <header className="koyko-packages__hero">
-        <p className="koyko-packages__eyebrow">K O Y K O &nbsp; D E S I G N &nbsp; P A C K A G E S</p>
-        <h1 className="koyko-packages__title">Pricing & Packages</h1>
+        <p className="koyko-packages__eyebrow">K O Y K O &nbsp; D E S I G N &nbsp; P L A N S</p>
+        <h1 className="koyko-packages__title">Pricing & Plans</h1>
         <p className="koyko-packages__intro">
           All projects are custom-coded — no templates, no subscriptions, no lock-in.
           You own the code outright on final payment. Prices below are starting points;

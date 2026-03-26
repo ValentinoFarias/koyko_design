@@ -640,6 +640,20 @@ body.run-reveal .block {
   text-align: left;
 }
 
+/* Portfolio project link — override browser default blue so it matches the dark theme.
+   display: block so margin-top pushes it below the description paragraph. */
+.koyko-portfolio__link {
+  display: block;
+  margin-top: 0.75rem;     /* space between description text and the link */
+  color: #000000;          /* black instead of browser-default blue */
+  text-decoration: underline;
+}
+
+/* Keep it black even after the user has visited the page */
+.koyko-portfolio__link:visited {
+  color: #000000;
+}
+
 
 /* ---- Designed With Love --------------------------------------------------- */
 /* Single large editorial heading — Noto Sans JP W8, fluid 3rem → 6rem */

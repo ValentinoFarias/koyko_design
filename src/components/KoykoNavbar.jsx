@@ -4,7 +4,7 @@
 //
 // Layout: three spaced-letter items spread with justify-content: space-between
 //   left   → "k o y k o" brand name (non-clickable span)
-//   center → "p a c k a g e s" anchor → #packages
+//   center → "p l a n s" anchor → /packages
 //   right  → "c o n t a c t" anchor  → #contact
 //
 // Stays on top of all content via z-index: --z-header and position: fixed.
@@ -116,7 +116,7 @@ function KoykoNavbar() {
       {/* Brand name — clicking it navigates back to the Landing page (route "/") */}
       <NavBrand href="/home" displayText="k o y k o" label="Go to home page" />
 
-      <NavLink href="/packages" label="packages" displayText="p a c k a g e s" />
+      <NavLink href="/packages" label="plans" displayText="p l a n s" />
       <NavLink href="/contact"  label="contact"  displayText="c o n t a c t" />
 
       {/*

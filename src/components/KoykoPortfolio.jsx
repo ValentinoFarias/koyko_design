@@ -106,12 +106,18 @@ function KoykoPortfolio() {
           </p>
 
           {/* Description — hidden initially (opacity:0, shifted down).
-              GSAP fades it in after the Flip animation completes. */}
-          <p ref={descRef} className="koyko-portfolio__desc">
-            A spaced repetition web application that helps users remember
-            information efficiently by reviewing cards at scientifically
-            optimized intervals.
-          </p>
+              GSAP fades in the whole block (text + link) after the Flip animation completes. */}
+          <div ref={descRef} className="koyko-portfolio__desc">
+            <p>
+              A spaced repetition web application that helps users remember
+              information efficiently by reviewing cards at scientifically
+              optimized intervals.
+            </p>
+            <a href="https://nerdeck-981cca01cede.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="koyko-portfolio__link">
+              NerDecks
+            </a>
+          </div>
+
         </div>
       </div>
     </section>
