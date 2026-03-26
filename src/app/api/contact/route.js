@@ -32,7 +32,7 @@ export async function POST(request) {
     // Send the email via Resend — returns { data, error }
     const { error: resendError } = await resend.emails.send({
       from: 'Koyko Contact Form <onboarding@resend.dev>', // change to your verified domain later
-      to: 'hello@koykodesign.com',
+      to: 'valentinofariascarrion@gmail.com',
       replyTo: email,                    // clicking Reply in the inbox goes to the visitor
       subject: `New enquiry from ${name} — ${project || 'General'}`,
       text: [
