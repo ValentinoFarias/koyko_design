@@ -1,6 +1,6 @@
 {
+  "/api/contact/route": "app/api/contact/route.js",
   "/page": "app/page.js",
-  "/packages/page": "app/packages/page.js",
   "/home/page": "app/home/page.js",
   "/contact/page": "app/contact/page.js"
 }
