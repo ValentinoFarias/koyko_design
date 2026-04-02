@@ -15,6 +15,7 @@ function KoykoContactForm() {
     email: '',
     project: '',
     message: '',
+    website: '', // honeypot — never shown to users; bots fill it and get silently rejected
   });
 
   // Submitted state controls the thank-you message shown after sending
@@ -74,6 +75,22 @@ function KoykoContactForm() {
 
   return (
     <form className="koyko-contact-form" onSubmit={handleSubmit} noValidate>
+
+      {/*
+        Honeypot field — visually hidden from real users via inline style.
+        Bots that auto-fill all inputs will fill this field, which causes
+        the server to silently discard the submission.
+      */}
+      <input
+        type="text"
+        name="website"
+        value={form.website}
+        onChange={handleChange}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
+      />
 
       {/* Name */}
       <div className="koyko-contact-form__field">

@@ -1,29 +1,43 @@
 // API route: POST /api/contact
 //
-// Receives the contact form data and sends an email to hello@koykodesign.com
-// using Resend (https://resend.com).
+// Receives the contact form data and sends an email via Resend.
 //
 // Requirements:
 //   1. Create a free account at resend.com
 //   2. Add your API key to .env.local → RESEND_API_KEY=re_xxxx
-//   3. Verify your sending domain in Resend (or use their onboarding@resend.dev
-//      address while testing)
+//   3. Add recipient address to .env.local → CONTACT_EMAIL=you@example.com
+//   4. Verify koykodesign.com as a sending domain in Resend dashboard
 
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
+// Simple email format check — prevents malformed replyTo headers
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(request) {
   try {
-    // Guard: fail early with a clear message if the env var is missing
+    // Guard: fail early with a clear message if env vars are missing
     if (!process.env.RESEND_API_KEY) {
       console.error('RESEND_API_KEY environment variable is not set');
       return NextResponse.json({ error: 'Server misconfiguration: API key missing.' }, { status: 500 });
     }
+    if (!process.env.CONTACT_EMAIL) {
+      console.error('CONTACT_EMAIL environment variable is not set');
+      return NextResponse.json({ error: 'Server misconfiguration: recipient address missing.' }, { status: 500 });
+    }
 
     // Initialise inside the handler so it runs at request time, not build time.
     const resend = new Resend(process.env.RESEND_API_KEY);
-    // Parse the JSON body sent by the contact form
-    const { name, email, project, message } = await request.json();
+
+    // Parse the JSON body sent by the contact form.
+    // `website` is a honeypot field — real users never see or fill it.
+    const { name, email, project, message, website } = await request.json();
+
+    // Honeypot check: if the hidden `website` field has a value, this is almost
+    // certainly a bot. Return a fake success so the bot doesn't know it was rejected.
+    if (website) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
 
     // Basic server-side validation — reject empty required fields
     if (!name || !email || !message) {
@@ -33,10 +47,21 @@ export async function POST(request) {
       );
     }
 
+    // Validate email format to prevent malformed replyTo headers
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 });
+    }
+
+    // Cap field lengths to prevent oversized payloads from reaching Resend
+    if (name.length > 100 || email.length > 254 || message.length > 5000) {
+      return NextResponse.json({ error: 'Input too long.' }, { status: 400 });
+    }
+
     // Send the email via Resend — returns { data, error }
+    // Requires koykodesign.com to be verified as a sending domain in Resend.
     const { error: resendError } = await resend.emails.send({
-      from: 'Koyko Contact Form <onboarding@resend.dev>', // change to your verified domain later
-      to: 'valentinofariascarrion@gmail.com',
+      from: 'Koyko Design <hello@koykodesign.com>',
+      to: process.env.CONTACT_EMAIL,     // kept out of source code in .env.local
       replyTo: email,                    // clicking Reply in the inbox goes to the visitor
       subject: `New enquiry from ${name} — ${project || 'General'}`,
       text: [
