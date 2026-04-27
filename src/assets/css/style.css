@@ -625,7 +625,9 @@ main .landing-counter--percent {
   color: var(--color-fg-muted, #5b5444);
   margin: 0;
   max-width: 38ch;
-  /* Hidden state — GSAP animates opacity → 1 and y → 0 */
+  /* Hidden state — display:none removes it from layout so all items take equal
+     space. GSAP sets display:block before fading in, and back to none after fading out. */
+  display: none;
   opacity: 0;
   transform: translateY(12px);
 }

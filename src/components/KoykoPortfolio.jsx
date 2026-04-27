@@ -20,7 +20,9 @@ import { KUMO_LOGO, NERDECKS_LOGO, SOCRATIC_JS_LOGO } from '../assets/koykoAsset
 // Register Flip plugin once at module level
 gsap.registerPlugin(Flip);
 
-function PortfolioItem({ id, logo, name, description, link, linkLabel }) {
+// logoStyle lets individual logos override the default width when the image
+// has more transparent/white padding than others, so all logos look the same size visually.
+function PortfolioItem({ id, logo, name, description, link, linkLabel, logoStyle }) {
   const itemRef = useRef(null);       // the flex container that changes layout
   const logoRef = useRef(null);       // the logo image
   const nameRef = useRef(null);       // the project name text
@@ -40,7 +42,8 @@ function PortfolioItem({ id, logo, name, description, link, linkLabel }) {
         duration: 0.8,
         ease: 'power2.inOut',
         onComplete: () => {
-          // Fade in the description after the flip settles
+          // Make desc visible in the layout before fading it in
+          gsap.set(descRef.current, { display: 'block' });
           gsap.to(descRef.current, {
             opacity: 1,
             y: 0,
@@ -58,6 +61,8 @@ function PortfolioItem({ id, logo, name, description, link, linkLabel }) {
         duration: 0.3,
         ease: 'power2.in',
         onComplete: () => {
+          // Remove desc from layout so it takes no space during the flip back
+          gsap.set(descRef.current, { display: 'none' });
           // Re-capture state after description is hidden
           const collapseState = Flip.getState([logoRef.current, nameRef.current]);
           setExpanded(false);
@@ -80,6 +85,7 @@ function PortfolioItem({ id, logo, name, description, link, linkLabel }) {
         src={logo}
         alt={`${name} logo`}
         className="koyko-portfolio__img"
+        style={logoStyle}
         data-flip-id={`${id}-logo`}
         onClick={handleClick}
       />
@@ -133,6 +139,7 @@ function KoykoPortfolio() {
         <PortfolioItem
           id="kumo-ramen"
           logo={KUMO_LOGO}
+          logoStyle={{ width: 'clamp(115px, 23vw, 288px)' }}
           name="Kumo Ramen"
           description="A portfolio website for a ramen restaurant."
           link="https://www.kumoramen.koykodesign.com/"
