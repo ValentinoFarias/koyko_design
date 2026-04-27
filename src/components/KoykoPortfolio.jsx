@@ -1,159 +1,185 @@
-// KoykoPortfolio — featured project showcase with Flip animation
+// KoykoPortfolio — portfolio showcase with swap animation.
 //
-// Initial layout:     [LOGO]
-//                    [NERDECKS]
+// Three logos sit side by side. Clicking a side logo swaps it to the
+// centre with a GSAP Flip animation; clicking the centre logo shows/hides
+// its project description below it.
 //
-// After clicking the logo, GSAP Flip rearranges to:
-//   [LOGO]   [NERDECKS]
-//            [description text fades in here]
-//
-// The Flip plugin captures positions before/after a CSS class toggle,
-// then animates between the two states automatically.
+// State is managed entirely here so siblings can react to each other's clicks.
 
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useLayoutEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { Flip } from 'gsap/dist/Flip';
 import { KUMO_LOGO, NERDECKS_LOGO, SOCRATIC_JS_LOGO } from '../assets/koykoAssets';
 
-// Register Flip plugin once at module level
 gsap.registerPlugin(Flip);
 
-// logoStyle lets individual logos override the default width when the image
-// has more transparent/white padding than others, so all logos look the same size visually.
-function PortfolioItem({ id, logo, name, description, link, linkLabel, logoStyle }) {
-  const itemRef = useRef(null);       // the flex container that changes layout
-  const logoRef = useRef(null);       // the logo image
-  const nameRef = useRef(null);       // the project name text
-  const descRef = useRef(null);       // the hidden description paragraph
-  const [expanded, setExpanded] = useState(false); // tracks if already flipped
-
-  const handleClick = useCallback(() => {
-    // 1. Capture positions BEFORE the layout change
-    const state = Flip.getState([logoRef.current, nameRef.current]);
-
-    if (!expanded) {
-      // ---- EXPAND: column → row ----
-      setExpanded(true);
-      itemRef.current.classList.add('koyko-portfolio__item--expanded');
-
-      Flip.from(state, {
-        duration: 0.8,
-        ease: 'power2.inOut',
-        onComplete: () => {
-          // Make desc visible in the layout before fading it in
-          gsap.set(descRef.current, { display: 'block' });
-          gsap.to(descRef.current, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            ease: 'power2.out',
-          });
-        },
-      });
-    } else {
-      // ---- COLLAPSE: row → column ----
-      // First hide the description, then flip back
-      gsap.to(descRef.current, {
-        opacity: 0,
-        y: 12,
-        duration: 0.3,
-        ease: 'power2.in',
-        onComplete: () => {
-          // Remove desc from layout so it takes no space during the flip back
-          gsap.set(descRef.current, { display: 'none' });
-          // Re-capture state after description is hidden
-          const collapseState = Flip.getState([logoRef.current, nameRef.current]);
-          setExpanded(false);
-          itemRef.current.classList.remove('koyko-portfolio__item--expanded');
-
-          Flip.from(collapseState, {
-            duration: 0.8,
-            ease: 'power2.inOut',
-          });
-        },
-      });
-    }
-  }, [expanded]);
-
-  return (
-    <div ref={itemRef} className="koyko-portfolio__item">
-      {/* Logo — clicking it triggers the Flip animation */}
-      <img
-        ref={logoRef}
-        src={logo}
-        alt={`${name} logo`}
-        className="koyko-portfolio__img"
-        style={logoStyle}
-        data-flip-id={`${id}-logo`}
-        onClick={handleClick}
-      />
-
-      {/* Right column — name stacks above description.
-          In the initial (column) layout both sit centred under the logo.
-          In expanded (row) layout they sit to the right of the logo. */}
-      <div className="koyko-portfolio__info">
-        <p
-          ref={nameRef}
-          className="koyko-portfolio__name"
-          data-flip-id={`${id}-name`}
-        >
-          {name}
-        </p>
-
-        {/* Description — hidden initially (opacity:0, shifted down).
-            GSAP fades in the whole block (text + link) after the Flip animation completes. */}
-        <div ref={descRef} className="koyko-portfolio__desc">
-          <p>{description}</p>
-          <a href={link} target="_blank" rel="noopener noreferrer" className="koyko-portfolio__link">
-            {linkLabel}
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Project data lives here so order changes don't lose any info
+const PROJECTS = [
+  {
+    id: 'nerdecks',
+    logo: NERDECKS_LOGO,
+    name: 'NERDECKS',
+    description:
+      'A spaced repetition web application that helps users remember information efficiently by reviewing cards at scientifically optimized intervals.',
+    link: 'https://nerdeck-981cca01cede.herokuapp.com/',
+    linkLabel: 'NerDecks',
+  },
+  {
+    id: 'kumo-ramen',
+    logo: KUMO_LOGO,
+    logoStyle: { width: 'clamp(115px, 23vw, 288px)' },
+    name: 'Kumo Ramen',
+    description: 'A portfolio website for a ramen restaurant.',
+    link: 'https://www.kumoramen.koykodesign.com/',
+    linkLabel: 'Kumo Ramen',
+  },
+  {
+    id: 'socratic-js',
+    logo: SOCRATIC_JS_LOGO,
+    name: 'socraticJS',
+    description: 'Socratic teacher to learn JavaScript',
+    link: 'https://socraticjs-6175a41ed31f.herokuapp.com/',
+    linkLabel: 'socraticJS',
+  },
+];
 
 function KoykoPortfolio() {
-  const sectionRef = useRef(null);     // the outer <section>
+  const listRef       = useRef(null);
+  const descRefs      = useRef({});          // { [id]: desc DOM element }
+  const flipStateRef  = useRef(null);        // Flip snapshot captured before React re-renders
+  const pendingIdRef  = useRef(null);        // id of logo to expand after Flip settles
+  const isAnimating   = useRef(false);       // guard — ignore clicks mid-animation
+
+  const [items,      setItems]      = useState(PROJECTS);  // visual order (left → right)
+  const [expandedId, setExpandedId] = useState(null);      // which desc is currently visible
+
+  // useLayoutEffect fires after the DOM update but BEFORE the browser paints.
+  // This is the right place for Flip.from — it sets transform overrides before
+  // the user sees the new positions, so the animation looks seamless.
+  useLayoutEffect(() => {
+    if (!flipStateRef.current) return;
+    const state = flipStateRef.current;
+    flipStateRef.current = null;
+
+    Flip.from(state, {
+      duration: 0.8,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        const id = pendingIdRef.current;
+        pendingIdRef.current = null;
+        if (!id) { isAnimating.current = false; return; }
+
+        // Fade in the description of the logo that just moved to centre.
+        // xPercent:-50 centres it over the left:50% anchor; y:12 is the slide-in start.
+        const desc = descRefs.current[id];
+        gsap.set(desc, { display: 'block', xPercent: -50, y: 12 });
+        gsap.to(desc, {
+          opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
+          onComplete: () => { isAnimating.current = false; },
+        });
+        setExpandedId(id);
+      },
+    });
+  }, [items]); // runs whenever items order changes
+
+  const handleLogoClick = useCallback((clickedId) => {
+    if (isAnimating.current) return;
+
+    const clickedIndex = items.findIndex(item => item.id === clickedId);
+    const isCenter     = clickedIndex === 1;
+
+    // Helper: fade out the current description, then run a callback
+    const hideDesc = (callback) => {
+      if (!expandedId) { callback(); return; }
+      const desc = descRefs.current[expandedId];
+      gsap.to(desc, {
+        opacity: 0, y: 12, duration: 0.3, ease: 'power2.in',
+        onComplete: () => { gsap.set(desc, { display: 'none' }); callback(); },
+      });
+    };
+
+    // --- Case 1: clicking the already-visible centre description → collapse ---
+    if (isCenter && expandedId === clickedId) {
+      isAnimating.current = true;
+      hideDesc(() => { setExpandedId(null); isAnimating.current = false; });
+      return;
+    }
+
+    // --- Case 2: clicking the centre logo (no description yet) → show desc ---
+    if (isCenter) {
+      isAnimating.current = true;
+      hideDesc(() => {
+        const desc = descRefs.current[clickedId];
+        gsap.set(desc, { display: 'block', xPercent: -50, y: 12 });
+        gsap.to(desc, {
+          opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
+          onComplete: () => { isAnimating.current = false; },
+        });
+        setExpandedId(clickedId);
+      });
+      return;
+    }
+
+    // --- Case 3: clicking a side logo → swap it with the centre, then show desc ---
+    isAnimating.current = true;
+
+    const doSwap = () => {
+      // Capture item div positions BEFORE React updates the DOM.
+      // Animating the whole item div (not the nested img) keeps the right
+      // logo completely untouched — Flip only moves divs whose position changed.
+      const itemEls = listRef.current.querySelectorAll('.koyko-portfolio__item');
+      flipStateRef.current = Flip.getState(itemEls);
+      pendingIdRef.current = clickedId;
+
+      setExpandedId(null);
+      setItems(prev => {
+        const next = [...prev];
+        // Always swap the clicked side logo with the centre (index 1)
+        if (clickedIndex === 0) {
+          [next[0], next[1]] = [next[1], next[0]];
+        } else {
+          [next[1], next[2]] = [next[2], next[1]];
+        }
+        return next;
+      });
+      // useLayoutEffect fires after the re-render and runs Flip.from
+    };
+
+    hideDesc(doSwap);
+  }, [items, expandedId]);
 
   return (
-    <section
-      ref={sectionRef}
-      className="koyko-portfolio"
-      id="packages"
-      aria-label="Portfolio"
-    >
-      {/* List of projects — each item keeps its own flip/expand state */}
-      <div className="koyko-portfolio__list">
-        <PortfolioItem
-          id="nerdecks"
-          logo={NERDECKS_LOGO}
-          name="NERDECKS"
-          description="A spaced repetition web application that helps users remember information efficiently by reviewing cards at scientifically optimized intervals."
-          link="https://nerdeck-981cca01cede.herokuapp.com/"
-          linkLabel="NerDecks"
-        />
-
-        <PortfolioItem
-          id="kumo-ramen"
-          logo={KUMO_LOGO}
-          logoStyle={{ width: 'clamp(115px, 23vw, 288px)' }}
-          name="Kumo Ramen"
-          description="A portfolio website for a ramen restaurant."
-          link="https://www.kumoramen.koykodesign.com/"
-          linkLabel="Kumo Ramen"
-        />
-
-        <PortfolioItem
-          id="socratic-js"
-          logo={SOCRATIC_JS_LOGO}
-          name="socraticJS"
-          description="Socratic teacher to learn JavaScript"
-          link="https://socraticjs-6175a41ed31f.herokuapp.com/"
-          linkLabel="socraticJS"
-        />
+    <section className="koyko-portfolio" id="packages" aria-label="Portfolio">
+      <div ref={listRef} className="koyko-portfolio__list">
+        {items.map((project) => (
+          <div key={project.id} className="koyko-portfolio__item" data-flip-id={project.id}>
+            <img
+              src={project.logo}
+              alt={`${project.name} logo`}
+              className="koyko-portfolio__img"
+              style={project.logoStyle}
+              onClick={() => handleLogoClick(project.id)}
+            />
+            <div className="koyko-portfolio__info">
+              <div
+                ref={el => { descRefs.current[project.id] = el; }}
+                className="koyko-portfolio__desc"
+              >
+                <p>{project.description}</p>
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="koyko-portfolio__link"
+                >
+                  {project.linkLabel}
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

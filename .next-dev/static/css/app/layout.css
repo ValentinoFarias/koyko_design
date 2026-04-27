@@ -553,18 +553,22 @@ main .landing-counter--percent {
 
 .koyko-portfolio__list {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(2rem, 4vw, 4rem);
+  flex-direction: row;          /* logos side by side horizontally */
+  justify-content: center;
+  align-items: flex-start;      /* tops aligned so expanded items don't shift vertically */
+  gap: clamp(2rem, 6vw, 6rem);
 }
 
-/* Logo wrapper — stacks logo and name vertically, centred */
+/* Logo wrapper — stacks logo vertically, centred.
+   position:relative makes it the containing block for the absolutely-positioned desc,
+   so the desc floats below the logo without contributing to section height. */
 .koyko-portfolio__item {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 1rem;
+  position: relative;
 }
 
 /* Info column — wraps the name + description so they stay grouped
@@ -605,42 +609,28 @@ main .landing-counter--percent {
   cursor: pointer;              /* hint that clicking does something */
 }
 
-/* ---- Expanded state (after clicking the logo) ----
-   Flip plugin toggles this class, switching from vertical stack to horizontal row.
-   The logo sits left, the name + description sit right in their own column. */
+/* Expanded state — layout stays column, description fades in below the logo */
 .koyko-portfolio__item--expanded {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: clamp(1.5rem, 3vw, 3rem);
+  gap: 1rem;
 }
 
-/* In expanded state the name left-aligns instead of centring */
-.koyko-portfolio__item--expanded .koyko-portfolio__name {
-  text-align: left;
-  scale: 1;                     /* restore full size when expanded */
-}
-
-/* Description text — hidden initially, GSAP fades it in after the flip.
-   Sits below the name in the right-hand column. */
+/* Description text — absolutely positioned below the logo so it never
+   affects the section height (KoykoDesigned stays put when it appears).
+   GSAP sets xPercent:-50 to centre it and y:12 as the slide-in start. */
 .koyko-portfolio__desc {
+  position: absolute;
+  top: 100%;           /* just below the item's bottom edge */
+  left: 50%;           /* GSAP applies xPercent:-50 to centre it */
+  width: clamp(160px, 21vw, 260px);
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  font-size: clamp(0.8rem, 1.1vw, 0.95rem);
   font-weight: 400;
   line-height: 1.6;
   color: var(--color-fg-muted, #5b5444);
   margin: 0;
-  max-width: 38ch;
-  /* Hidden state — display:none removes it from layout so all items take equal
-     space. GSAP sets display:block before fading in, and back to none after fading out. */
+  text-align: center;
   display: none;
   opacity: 0;
-  transform: translateY(12px);
-}
-
-/* In expanded mode, name + description stack vertically on the right */
-.koyko-portfolio__item--expanded .koyko-portfolio__name,
-.koyko-portfolio__item--expanded .koyko-portfolio__desc {
-  text-align: left;
 }
 
 /* Portfolio project link — override browser default blue so it matches the dark theme.
@@ -663,6 +653,7 @@ main .landing-counter--percent {
 .koyko-designed {
   background: #ffffff;
   padding: clamp(4rem, 7vw, 8rem) clamp(2rem, 4.5vw, 4.5rem);
+  margin-top: 10vh;   /* extra room so the portfolio description doesn't feel cramped */
 }
 
 .koyko-designed__heading {
@@ -1611,6 +1602,12 @@ a.koyko-footer__value:hover {
     min-height: 200px;
     margin-top: 40px;
     padding: clamp(1.5rem, 3vw, 2rem) 1rem;
+  }
+
+  /* Stack logos vertically again on small screens — not enough width for 3 side by side */
+  .koyko-portfolio__list {
+    flex-direction: column;
+    align-items: center;
   }
 
   /* Expanded state keeps the same row layout as desktop:
