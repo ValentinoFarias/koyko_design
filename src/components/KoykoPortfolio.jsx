@@ -15,7 +15,7 @@
 import { useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { Flip } from 'gsap/dist/Flip';
-import { KUMO_LOGO, NERDECKS_LOGO } from '../assets/koykoAssets';
+import { KUMO_LOGO, NERDECKS_LOGO, SOCRATIC_JS_LOGO } from '../assets/koykoAssets';
 
 // Register Flip plugin once at module level
 gsap.registerPlugin(Flip);
@@ -137,6 +137,15 @@ function KoykoPortfolio() {
           description="A portfolio website for a ramen restaurant."
           link="https://www.kumoramen.koykodesign.com/"
           linkLabel="Kumo Ramen"
+        />
+
+        <PortfolioItem
+          id="socratic-js"
+          logo={SOCRATIC_JS_LOGO}
+          name="socraticJS"
+          description="Socratic teacher to learn JavaScript"
+          link="https://socraticjs-6175a41ed31f.herokuapp.com/"
+          linkLabel="socraticJS"
         />
       </div>
     </section>

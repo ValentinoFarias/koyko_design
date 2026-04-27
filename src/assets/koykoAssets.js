@@ -15,6 +15,7 @@ export const MISSION_BG  = '/assets/images/machiMission.jpg';
 export const PORTFOLIO   = '/assets/images/portfolio.png';
 export const NERDECKS_LOGO = '/assets/images/logoNerdecks.png';
 export const KUMO_LOGO = '/assets/images/logoIOSkumo.png';
+export const SOCRATIC_JS_LOGO = '/assets/images/logoiconIOSSocraticJS.png';
 export const GOLD_DOT    = '/assets/images/gold-dot.png';
 // AVATAR is a caricature of Valentino — revealed inside the circle button on hover
 export const AVATAR = '/assets/images/vale8Pix.png';
