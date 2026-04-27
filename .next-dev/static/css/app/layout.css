@@ -547,8 +547,15 @@ main .landing-counter--percent {
   display: flex;
   justify-content: center;   /* centre the logo horizontally */
   align-items: center;       /* centre the logo vertically */
-  height: clamp(200px, 30vw, 400px);  /* fixed height — won't change on flip */
+  min-height: clamp(200px, 30vw, 400px);
   margin-top: 120px;
+}
+
+.koyko-portfolio__list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2rem, 4vw, 4rem);
 }
 
 /* Logo wrapper — stacks logo and name vertically, centred */
