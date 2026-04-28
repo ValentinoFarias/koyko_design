@@ -13,6 +13,7 @@
 import { Fragment } from 'react';
 
 // Package definitions — used to build the header of each column
+// badge: optional label shown at the top of the mobile card
 const PACKAGES = [
   {
     key: 'essential',
@@ -20,6 +21,7 @@ const PACKAGES = [
     price: '£1200',
     subtitle: 'For solo creatives who need a polished online presence',
     variant: 'light',
+    badge: null,
   },
   {
     key: 'premium',
@@ -27,6 +29,7 @@ const PACKAGES = [
     price: '£2400',
     subtitle: 'For established creatives and small businesses who want to level up',
     variant: 'dark',
+    badge: '★  MOST POPULAR',
   },
   {
     key: 'signature',
@@ -34,6 +37,7 @@ const PACKAGES = [
     price: '£5000+',
     subtitle: 'For those looking more than just a website — a full architectural experience',
     variant: 'light',
+    badge: null,
   },
 ];
 
@@ -110,6 +114,57 @@ function KoykoTable() {
               </div>
             ))}
           </Fragment>
+        ))}
+      </div>
+
+      {/* ====================================================
+          MOBILE CARD LAYOUT
+          Hidden on desktop (display:none in CSS).
+          Shown on screens ≤ 640px instead of the grid above.
+          Each package becomes its own stacked card so the user
+          can read everything without horizontal scrolling.
+          ==================================================== */}
+      <div className="koyko-table__cards">
+        {PACKAGES.map((pkg) => (
+          <div
+            key={pkg.key}
+            className={`koyko-table__card${
+              pkg.variant === 'dark' ? ' koyko-table__card--dark' : ''
+            }`}
+          >
+            {/* Optional "MOST POPULAR" badge — only renders when pkg.badge is set */}
+            {pkg.badge && (
+              <div className="koyko-table__card-badge">{pkg.badge}</div>
+            )}
+
+            {/* Card header: package name, price, and one-line description */}
+            <div className="koyko-table__card-header">
+              <h2 className="koyko-table__name">{pkg.name}</h2>
+              <p className="koyko-table__price">{pkg.price}</p>
+              <p className="koyko-table__subtitle">{pkg.subtitle}</p>
+            </div>
+
+            {/* Feature rows — each feature becomes a label + value line */}
+            <ul className="koyko-table__card-features">
+              {FEATURES.map((feat) => {
+                const value = feat[pkg.key];
+                return (
+                  <li
+                    key={feat.name}
+                    /* missing = false means the package doesn't include this feature */
+                    className={`koyko-table__card-feat${
+                      value === false ? ' koyko-table__card-feat--missing' : ''
+                    }`}
+                  >
+                    <span className="koyko-table__card-feat-name">{feat.name}</span>
+                    <span className="koyko-table__card-feat-value">
+                      {typeof value === 'string' ? value : value ? '✓' : '—'}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         ))}
       </div>
 

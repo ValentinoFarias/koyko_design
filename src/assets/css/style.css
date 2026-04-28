@@ -548,9 +548,9 @@ main .landing-counter--percent {
 
 .koyko-portfolio__list {
   display: flex;
-  flex-direction: row;          /* logos side by side horizontally */
+  flex-direction: row;       /* logos side by side horizontally */
   justify-content: center;
-  align-items: flex-start;      /* tops aligned so expanded items don't shift vertically */
+  align-items: center;       /* centres aligned so logos sit on the same horizontal axis */
   gap: clamp(2rem, 6vw, 6rem);
 }
 
@@ -1165,6 +1165,12 @@ a.koyko-footer__value:hover {
   border-bottom-color: #333;
 }
 
+/* Mobile card layout — rendered in JSX but hidden on desktop.
+   Shown only below 640px where the grid is hidden instead. */
+.koyko-table__cards {
+  display: none;
+}
+
 /* ---- Hosting & Care Plans + Notes (below the comparison grid) ---- */
 
 /* Wrapper — centres the block and adds spacing above */
@@ -1691,65 +1697,131 @@ a.koyko-footer__value:hover {
     font-size: 16px;
   }
 
-  /* Allow the comparison grid to scroll horizontally on phones.
-     We keep the 4-column layout intact — collapsing to 1 column
-     would scatter headers and checkmarks into an unreadable list. */
+  /* --- Packages table: switch from 4-column grid to stacked cards --- */
+
+  /* Remove horizontal scroll — the grid is hidden, cards take over */
   .koyko-table {
-    padding: 0 0 40px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 40px;
+    overflow-x: visible;
   }
 
-  /* Set a minimum width so columns don't get crushed — the user
-     swipes sideways to see all three packages. */
+  /* Hide the desktop comparison grid */
   .koyko-table__grid {
-    min-width: 700px;
-    padding: 0 16px;
+    display: none;
   }
 
-  /* Smaller font sizes so more content fits in view */
-  .koyko-table__features-label {
-    font-size: 22px;
-    padding-bottom: 12px;
+  /* Show the stacked card container */
+  .koyko-table__cards {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
-  .koyko-table__name {
-    font-size: 20px;
+  /* Each package card — cards share borders so they feel like one unit */
+  .koyko-table__card {
+    border: 3px solid #000;
+    background: #fff;
+    color: #000;
+    margin-bottom: -3px; /* collapse shared border between adjacent cards */
   }
 
-  .koyko-table__price {
-    font-size: 20px;
+  /* Premium card — dark/inverted */
+  .koyko-table__card--dark {
+    background: #000;
+    color: #fff;
   }
 
-  .koyko-table__subtitle {
+  /* "MOST POPULAR" badge strip at the very top of the card */
+  .koyko-table__card-badge {
+    background: #c4a07a;
+    color: #000;
+    font-family: var(--font-sans);
     font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-align: center;
+    padding: 8px 16px;
   }
 
-  .koyko-table__header {
-    padding: 20px 8px 0;
+  /* Card header: package name + price + one-line description */
+  .koyko-table__card-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   }
 
-  .koyko-table__feat-name {
+  /* Light card header divider */
+  .koyko-table__card--dark .koyko-table__card-header {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Inside the card, shrink the name to a label-style tag */
+  .koyko-table__card .koyko-table__name {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+
+  /* Price is the hero element of each card */
+  .koyko-table__card .koyko-table__price {
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0 0 12px;
+  }
+
+  /* Subtitle sits below the price at a quiet weight */
+  .koyko-table__card .koyko-table__subtitle {
+    font-size: 13px;
+    font-weight: 400;
+    margin: 0;
+    opacity: 0.65;
+  }
+
+  /* Feature rows list */
+  .koyko-table__card-features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Each feature: feature name on the left, value on the right */
+  .koyko-table__card-feat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-family: var(--font-sans);
+  }
+
+  /* Lighter divider inside dark cards */
+  .koyko-table__card--dark .koyko-table__card-feat {
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+  }
+
+  /* No divider on the last row — the card border closes it */
+  .koyko-table__card-feat:last-child {
+    border-bottom: none;
+  }
+
+  /* Features the package doesn't include are visually dimmed */
+  .koyko-table__card-feat--missing {
+    opacity: 0.28;
+  }
+
+  /* Feature label */
+  .koyko-table__card-feat-name {
     font-size: 14px;
-    padding-left: 12px;
+    font-weight: 400;
   }
 
-  .koyko-table__cell {
-    padding: 12px 4px;
+  /* Checkmark / dash / text value */
+  .koyko-table__card-feat-value {
     font-size: 14px;
-  }
-
-  .koyko-table__pkg-header {
-    border-width: 3px;
-  }
-
-  .koyko-table__check {
-    border-left-width: 3px;
-    border-right-width: 3px;
-  }
-
-  .koyko-table__grid > .koyko-table__check:nth-last-child(-n+3) {
-    border-bottom-width: 3px;
+    font-weight: 700;
+    text-align: right;
+    min-width: 52px;
   }
 
   /* ---- Hosting / Notes / Add-ons cards ---- */

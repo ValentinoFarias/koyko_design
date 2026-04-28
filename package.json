@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "rm -rf .next-dev && next dev",
-    "dev:fast": "next dev",
-    "dev:fresh": "rm -rf .next-dev && next dev",
+    "dev": "rm -rf .next-dev && next dev -H 0.0.0.0",
+    "dev:fast": "next dev -H 0.0.0.0",
+    "dev:fresh": "rm -rf .next-dev && next dev -H 0.0.0.0",
     "clean": "rm -rf .next .next-dev",
     "build": "next build",
     "start": "next start"
