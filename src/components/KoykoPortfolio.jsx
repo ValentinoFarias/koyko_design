@@ -1,21 +1,24 @@
 // KoykoPortfolio — portfolio showcase with swap animation.
 //
 // Three logos sit side by side. Clicking a side logo swaps it to the
-// centre with a GSAP Flip animation; clicking the centre logo shows/hides
-// its project description below it.
+// centre with a GSAP Flip animation; once the Flip completes, the page
+// transition wipe fires and the user is taken to /casestudies.
+// Clicking the centre logo skips straight to the page transition.
 //
 // State is managed entirely here so siblings can react to each other's clicks.
 
 'use client';
 
 import { useRef, useState, useLayoutEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { Flip } from 'gsap/dist/Flip';
+import { animateTransition } from '../assets/anim/pageTransitions';
 import { KUMO_LOGO, NERDECKS_LOGO, SOCRATIC_JS_LOGO } from '../assets/koykoAssets';
 
 gsap.registerPlugin(Flip);
 
-// Project data lives here so order changes don't lose any info
+// Project data — description/link kept here for future use on the CaseStudies page
 const PROJECTS = [
   {
     id: 'nerdecks',
@@ -46,18 +49,24 @@ const PROJECTS = [
 ];
 
 function KoykoPortfolio() {
-  const listRef       = useRef(null);
-  const descRefs      = useRef({});          // { [id]: desc DOM element }
-  const flipStateRef  = useRef(null);        // Flip snapshot captured before React re-renders
-  const pendingIdRef  = useRef(null);        // id of logo to expand after Flip settles
-  const isAnimating   = useRef(false);       // guard — ignore clicks mid-animation
+  const listRef          = useRef(null);
+  const flipStateRef     = useRef(null);   // Flip snapshot captured before React re-renders
+  const shouldNavigate   = useRef(false);  // tells useLayoutEffect to navigate after Flip
+  const isAnimating      = useRef(false);  // guard — ignore clicks mid-animation
 
-  const [items,      setItems]      = useState(PROJECTS);  // visual order (left → right)
-  const [expandedId, setExpandedId] = useState(null);      // which desc is currently visible
+  const [items, setItems] = useState(PROJECTS);
+  const router = useRouter();
+
+  // Triggers the page-wipe animation then pushes the new route.
+  const goToCaseStudies = useCallback(() => {
+    animateTransition().then(() => {
+      router.push('/casestudies');
+    });
+  }, [router]);
 
   // useLayoutEffect fires after the DOM update but BEFORE the browser paints.
-  // This is the right place for Flip.from — it sets transform overrides before
-  // the user sees the new positions, so the animation looks seamless.
+  // This is the right moment for Flip.from so the animation starts from the
+  // old positions seamlessly. After Flip completes, we navigate if flagged.
   useLayoutEffect(() => {
     if (!flipStateRef.current) return;
     const state = flipStateRef.current;
@@ -67,22 +76,15 @@ function KoykoPortfolio() {
       duration: 0.8,
       ease: 'power2.inOut',
       onComplete: () => {
-        const id = pendingIdRef.current;
-        pendingIdRef.current = null;
-        if (!id) { isAnimating.current = false; return; }
-
-        // Fade in the description of the logo that just moved to centre.
-        // xPercent:-50 centres it over the left:50% anchor; y:12 is the slide-in start.
-        const desc = descRefs.current[id];
-        gsap.set(desc, { display: 'block', xPercent: -50, y: 12 });
-        gsap.to(desc, {
-          opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
-          onComplete: () => { isAnimating.current = false; },
-        });
-        setExpandedId(id);
+        isAnimating.current = false;
+        // If this swap was triggered by a side-logo click, navigate now.
+        if (shouldNavigate.current) {
+          shouldNavigate.current = false;
+          goToCaseStudies();
+        }
       },
     });
-  }, [items]); // runs whenever items order changes
+  }, [items, goToCaseStudies]);
 
   const handleLogoClick = useCallback((clickedId) => {
     if (isAnimating.current) return;
@@ -90,65 +92,32 @@ function KoykoPortfolio() {
     const clickedIndex = items.findIndex(item => item.id === clickedId);
     const isCenter     = clickedIndex === 1;
 
-    // Helper: fade out the current description, then run a callback
-    const hideDesc = (callback) => {
-      if (!expandedId) { callback(); return; }
-      const desc = descRefs.current[expandedId];
-      gsap.to(desc, {
-        opacity: 0, y: 12, duration: 0.3, ease: 'power2.in',
-        onComplete: () => { gsap.set(desc, { display: 'none' }); callback(); },
-      });
-    };
-
-    // --- Case 1: clicking the already-visible centre description → collapse ---
-    if (isCenter && expandedId === clickedId) {
-      isAnimating.current = true;
-      hideDesc(() => { setExpandedId(null); isAnimating.current = false; });
-      return;
-    }
-
-    // --- Case 2: clicking the centre logo (no description yet) → show desc ---
+    // Centre logo clicked → skip the swap and go straight to case studies
     if (isCenter) {
-      isAnimating.current = true;
-      hideDesc(() => {
-        const desc = descRefs.current[clickedId];
-        gsap.set(desc, { display: 'block', xPercent: -50, y: 12 });
-        gsap.to(desc, {
-          opacity: 1, y: 0, duration: 0.5, ease: 'power2.out',
-          onComplete: () => { isAnimating.current = false; },
-        });
-        setExpandedId(clickedId);
-      });
+      goToCaseStudies();
       return;
     }
 
-    // --- Case 3: clicking a side logo → swap it with the centre, then show desc ---
-    isAnimating.current = true;
+    // Side logo clicked → swap it to centre, then navigate once Flip is done
+    isAnimating.current  = true;
+    shouldNavigate.current = true;
 
-    const doSwap = () => {
-      // Capture item div positions BEFORE React updates the DOM.
-      // Animating the whole item div (not the nested img) keeps the right
-      // logo completely untouched — Flip only moves divs whose position changed.
-      const itemEls = listRef.current.querySelectorAll('.koyko-portfolio__item');
-      flipStateRef.current = Flip.getState(itemEls);
-      pendingIdRef.current = clickedId;
+    // Capture positions BEFORE React updates the DOM
+    const itemEls = listRef.current.querySelectorAll('.koyko-portfolio__item');
+    flipStateRef.current = Flip.getState(itemEls);
 
-      setExpandedId(null);
-      setItems(prev => {
-        const next = [...prev];
-        // Always swap the clicked side logo with the centre (index 1)
-        if (clickedIndex === 0) {
-          [next[0], next[1]] = [next[1], next[0]];
-        } else {
-          [next[1], next[2]] = [next[2], next[1]];
-        }
-        return next;
-      });
-      // useLayoutEffect fires after the re-render and runs Flip.from
-    };
-
-    hideDesc(doSwap);
-  }, [items, expandedId]);
+    setItems(prev => {
+      const next = [...prev];
+      // Always swap the clicked side logo with the centre (index 1)
+      if (clickedIndex === 0) {
+        [next[0], next[1]] = [next[1], next[0]];
+      } else {
+        [next[1], next[2]] = [next[2], next[1]];
+      }
+      return next;
+    });
+    // useLayoutEffect fires after re-render and runs Flip.from
+  }, [items, goToCaseStudies]);
 
   return (
     <section className="koyko-portfolio" id="packages" aria-label="Portfolio">
@@ -162,22 +131,6 @@ function KoykoPortfolio() {
               style={project.logoStyle}
               onClick={() => handleLogoClick(project.id)}
             />
-            <div className="koyko-portfolio__info">
-              <div
-                ref={el => { descRefs.current[project.id] = el; }}
-                className="koyko-portfolio__desc"
-              >
-                <p>{project.description}</p>
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="koyko-portfolio__link"
-                >
-                  {project.linkLabel}
-                </a>
-              </div>
-            </div>
           </div>
         ))}
       </div>
