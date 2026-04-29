@@ -103,16 +103,21 @@ function KoykoStudies({ projectId }) {
         <div className="koyko-studies__gallery">
           {imagePairs.map((pair, rowIndex) => (
             <div key={rowIndex} className="koyko-studies__gallery-row">
-              {pair.map((src, imgIndex) =>
-                src ? (
+              {pair.map((src, imgIndex) => {
+                // The very first image is likely visible on load — keep it eager.
+                // Every other image is below the fold — defer with lazy loading
+                // so they don't block the initial page render.
+                const isFirstImage = rowIndex === 0 && imgIndex === 0;
+                return src ? (
                   <img
                     key={imgIndex}
                     src={src}
                     alt={`${study.title} — project image ${rowIndex * 2 + imgIndex + 1}`}
                     className="koyko-studies__img"
+                    loading={isFirstImage ? 'eager' : 'lazy'}
                   />
-                ) : null
-              )}
+                ) : null;
+              })}
             </div>
           ))}
         </div>
@@ -131,12 +136,14 @@ function KoykoStudies({ projectId }) {
           aria-label={`Go to ${prev.title}`}
         >
           {/* Preview image — hidden by default, revealed on hover via CSS */}
+          {/* Preview image — lazy loaded since it's only revealed on hover */}
           {prev.images[0] && (
             <img
               src={prev.images[0]}
               alt=""
               className="koyko-studies__nav-preview"
               aria-hidden="true"
+              loading="lazy"
             />
           )}
           <span className="koyko-studies__nav-inner">
@@ -157,6 +164,7 @@ function KoykoStudies({ projectId }) {
               alt=""
               className="koyko-studies__nav-preview"
               aria-hidden="true"
+              loading="lazy"
             />
           )}
           <span className="koyko-studies__nav-inner">

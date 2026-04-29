@@ -1544,12 +1544,14 @@ a.koyko-footer__value:hover {
   border-top: 2px solid #000000;
 }
 
-/* Each button takes exactly half the width */
+/* Each button takes exactly half the width.
+   min-height: 44px satisfies the minimum touch target size from the responsive skill. */
 .koyko-studies__nav-btn {
   position: relative;          /* positioning context for the floating preview */
   flex: 1;
   display: flex;
   align-items: center;
+  min-height: 44px;            /* touch target minimum — skill requirement */
   background: none;
   border: none;
   padding: clamp(2rem, 4vw, 3.5rem) clamp(2rem, 5vw, 5rem);
@@ -1573,13 +1575,17 @@ a.koyko-footer__value:hover {
 }
 
 /* Inner row — holds the arrow and the project name.
-   z-index: 1 keeps it above the preview image. */
+   z-index: 1 keeps it above the preview image.
+   overflow: hidden + min-width: 0 allow the label to truncate with ellipsis
+   when the project name is too long for a narrow button half. */
 .koyko-studies__nav-inner {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
   gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  overflow: hidden;
+  min-width: 0;                /* lets flex children shrink below their content size */
   pointer-events: none;        /* clicks pass through to the button */
 }
 
@@ -1593,16 +1599,12 @@ a.koyko-footer__value:hover {
   transition: transform var(--transition-fast);
 }
 
-/* Slide the arrows outward on hover to hint at direction */
-.koyko-studies__nav-btn--left:hover .koyko-studies__nav-arrow {
-  transform: translateX(-4px);
-}
+/* Arrow slide on hover is defined in @media (hover: hover) at the bottom of this file.
+   That way touch devices never get a flash of the animation when tapping. */
 
-.koyko-studies__nav-btn--right:hover .koyko-studies__nav-arrow {
-  transform: translateX(4px);
-}
-
-/* Project name — Noto Sans JP W8, large editorial style */
+/* Project name — Noto Sans JP W8, large editorial style.
+   white-space: nowrap + overflow: hidden + text-overflow: ellipsis ensures long
+   names like "SOCRATIC JS" don't break out of their half-width button on narrow screens. */
 .koyko-studies__nav-label {
   font-family: var(--font-alt);
   font-weight: 800;
@@ -1610,6 +1612,9 @@ a.koyko-footer__value:hover {
   color: #000000;
   line-height: 1;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Preview thumbnail — sits behind the text, revealed on hover.
@@ -1625,10 +1630,7 @@ a.koyko-footer__value:hover {
   pointer-events: none;
 }
 
-/* On hover, fade the image in at low opacity so the text stays legible */
-.koyko-studies__nav-btn:hover .koyko-studies__nav-preview {
-  opacity: 0.18;
-}
+/* Preview opacity on hover is defined in @media (hover: hover) at the bottom of this file. */
 
 
 /* =============================================================================
@@ -2134,6 +2136,12 @@ a.koyko-footer__value:hover {
   }
 
   /* ---- Case Studies page ---- */
+  /* Title: reduce the minimum so "SOCRATIC JS" etc. don't overflow at 320px.
+     The desktop minimum of 3.5rem is too large for a 320px viewport. */
+  .koyko-studies__title {
+    font-size: clamp(2rem, 11vw, 3.5rem);
+  }
+
   /* Stack info columns and gallery images in a single column on mobile */
   .koyko-studies__info {
     grid-template-columns: 1fr;
@@ -2182,5 +2190,40 @@ a.koyko-footer__value:hover {
   .koyko-contact-form__submit {
     align-self: stretch;
     text-align: center;
+  }
+}
+
+
+/* Pointer / hover devices only ------------------------------------------------ */
+/* @media (hover: hover) targets mice and trackpads — NOT touch screens.
+   Touch devices have (hover: none), so these rules never apply on phones.
+   This prevents the preview image and arrow slide from flashing briefly on tap. */
+@media (hover: hover) {
+  /* Slide the arrows outward on hover to hint at direction */
+  .koyko-studies__nav-btn--left:hover .koyko-studies__nav-arrow {
+    transform: translateX(-4px);
+  }
+
+  .koyko-studies__nav-btn--right:hover .koyko-studies__nav-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Fade the project preview image in at low opacity so the text stays legible */
+  .koyko-studies__nav-btn:hover .koyko-studies__nav-preview {
+    opacity: 0.18;
+  }
+}
+
+
+/* Reduced motion ---------------------------------------------------------------- */
+/* For users who have requested less animation in their OS settings.
+   Disables the arrow slide so nothing moves unexpectedly. */
+@media (prefers-reduced-motion: reduce) {
+  .koyko-studies__nav-arrow {
+    transition: none;
+  }
+
+  .koyko-studies__nav-preview {
+    transition: none;
   }
 }
