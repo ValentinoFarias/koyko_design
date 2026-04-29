@@ -398,13 +398,15 @@ main .landing-counter--percent {
 }
 
 /* Sticky container — locks the visible content to the viewport top while
-   the user scrolls through the full 300vh section.
+   the user scrolls through the full 500vh section.
    position:sticky also acts as a positioning context, so the physics phase
-   can use position:absolute on word spans relative to this element. */
+   can use position:absolute on word spans relative to this element.
+   dvh (dynamic viewport height) accounts for the iOS Safari address bar
+   shrinking/growing as the user scrolls — 100vh would be too tall on mobile. */
 .koyko-mission__sticky {
   position: sticky;
-  top: 30px;  /* negative offset so the content starts just above the viewport and scrolls into view */
-  height: 100vh;
+  top: 30px;
+  height: 100dvh;    /* dvh updates as browser chrome shows/hides — skill requirement */
   overflow: clip;    /* clips falling words without creating a scroll container (which breaks sticky) */
   display: flex;
   align-items: center;
@@ -1838,8 +1840,60 @@ a.koyko-footer__value:hover {
   }
 
   /* ---- Mission ---- */
+
+  /* 1. Compress the scroll room.
+        500vh = the user scrolls 5× their screen height through this section.
+        250vh halves that while keeping the same phase proportions — Phase 1
+        still covers 0-33%, physics still fires at 85%, wind at 97%. */
+  .koyko-mission {
+    height: 250vh;
+  }
+
+  /* 2. Fix the tagline.
+        The base clamp(5rem, 1.7vw, 1.5rem) has min > max, so CSS always
+        resolves to the minimum — 80px on every screen size. On iPhone that
+        fills nearly half the visible area before the sticky even kicks in.
+        This override scales it to a proper editorial size for phones. */
+  .koyko-mission__tagline {
+    font-size: clamp(1.4rem, 8vw, 2.2rem);
+    padding: 1rem clamp(1rem, 4vw, 1.5rem);
+  }
+
+  /* Shift text up by 2/3 of the original 159px gap.
+     align-items:center was placing text 159px from sticky top.
+     flex-start + 2rem padding ≈ 48px from top — keeps the black moment
+     but text appears much sooner after the tagline leaves. */
+  .koyko-mission__sticky {
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+
+  /* 3. Improve body text.
+        The base minimum of 0.85rem (13.6px) is too small for a phone.
+        Bump to 1rem (16px) minimum and tighten line-height slightly
+        so the two visible paragraphs sit more compactly. */
+  .koyko-mission__body {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    line-height: 1.6;
+  }
+
+  /* 4. Tighten the gap between paragraphs */
+  .koyko-mission__body p {
+    margin-bottom: 1rem;
+  }
+
+  /* 5. Hide paragraphs 4–5.
+        Three paragraphs fill the sticky viewport without leaving dead space
+        below. Paragraphs 4 and 5 are still hidden so the text doesn't overflow
+        100dvh and break the sticky animation. */
+  .koyko-mission__body p:nth-child(n+4) {
+    display: none;
+  }
+
+  /* 6. Tighter side padding — gives the text more room on a narrow screen */
   .koyko-mission__content {
-    padding: clamp(1rem, 3vw, 2rem);
+    padding: clamp(1rem, 5vw, 1.5rem);
   }
 
   /* ---- Portfolio ---- */
