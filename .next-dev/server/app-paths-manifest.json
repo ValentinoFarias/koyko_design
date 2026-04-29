@@ -1,6 +1,7 @@
 {
-  "/home/page": "app/home/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/casestudies/page": "app/casestudies/page.js",
+  "/casestudies/[id]/page": "app/casestudies/[id]/page.js",
   "/page": "app/page.js",
-  "/packages/page": "app/packages/page.js"
+  "/home/page": "app/home/page.js"
 }

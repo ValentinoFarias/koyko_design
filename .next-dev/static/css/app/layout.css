@@ -1410,6 +1410,238 @@ a.koyko-footer__value:hover {
 
 
 /* =============================================================================
+   CASE STUDIES PAGE  (CaseStudies.jsx / KoykoStudies.jsx)
+   Renders one "entry" per project from src/data/caseStudies.js.
+   Layout per entry:
+     1. Large title  (Noto Sans JP W8)
+     2. Thin horizontal rule
+     3. Three info columns: services | project link | overview
+     4. Image gallery  (3 rows × 2 images)
+   Entries are stacked vertically, separated by a bottom border.
+   ============================================================================= */
+
+/* Outer section — sits below the fixed navbar, white canvas */
+.koyko-studies {
+  background: #ffffff;
+  padding-top: clamp(6rem, 10vw, 9rem);   /* clears the fixed navbar */
+  padding-bottom: clamp(4rem, 6vw, 6rem);
+}
+
+/* One full case study block — bottom border visually separates projects */
+.koyko-studies__entry {
+  padding: clamp(3rem, 5vw, 5rem) clamp(2rem, 5vw, 5rem);
+  border-bottom: 2px solid #000000;
+}
+
+/* Remove the border from the very last entry so it doesn't double up with the footer border */
+.koyko-studies__entry:last-child {
+  border-bottom: none;
+}
+
+/* Large editorial project title — Noto Sans JP W8, same as the homepage heavy headings */
+.koyko-studies__title {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(3.5rem, 10vw, 8rem);
+  line-height: 1;
+  color: #000000;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+  letter-spacing: -0.01em;
+}
+
+/* Thin rule between title and the info columns — matches the nav decorative lines */
+.koyko-studies__rule {
+  border: none;
+  border-top: 2px solid #000000;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* Three-column info row: services | project | overview.
+   The third column (overview) takes more space because it holds a paragraph. */
+.koyko-studies__info {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  grid-gap: clamp(1.5rem, 3vw, 3rem);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  margin-bottom: clamp(2.5rem, 4vw, 4rem);
+}
+
+/* Each column — stacks label on top of its content */
+.koyko-studies__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Column heading — "services", "project", "overview" — Inter ExtraBold */
+.koyko-studies__col-label {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  color: #000000;
+  margin: 0;
+  text-transform: lowercase;
+}
+
+/* Services list — removes default bullet/padding, Inter Light */
+.koyko-studies__services-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  color: #000000;
+}
+
+/* "visit site" link — Inter Light, black, underline on hover */
+.koyko-studies__link {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  color: #000000;
+  text-decoration: none;
+}
+
+.koyko-studies__link:hover {
+  text-decoration: underline;
+}
+
+/* Overview paragraph — Inter Light, relaxed line-height for readability */
+.koyko-studies__overview-text {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  line-height: var(--line-height-normal);   /* 1.7 — set in design tokens */
+  color: #000000;
+  margin: 0;
+}
+
+/* Image gallery container — stacks the 3 rows vertically */
+.koyko-studies__gallery {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* Each row holds exactly 2 images side by side */
+.koyko-studies__gallery-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: clamp(1rem, 2vw, 1.5rem);
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* Each image fills its grid cell, cropped to maintain consistent row height */
+.koyko-studies__img {
+  width: 100%;
+  height: clamp(200px, 28vw, 440px);
+  object-fit: cover;           /* crops the image to fill without stretching */
+  display: block;
+}
+
+
+/* ── Bottom project navigator ─────────────────────────────────────────────── */
+/* Two buttons side by side: ← prev on the left, next → on the right.
+   Hovering on either one reveals a thumbnail of that project's first image. */
+
+/* Full-width bar — top border mirrors the entry bottom border */
+.koyko-studies__nav {
+  display: flex;
+  border-top: 2px solid #000000;
+}
+
+/* Each button takes exactly half the width */
+.koyko-studies__nav-btn {
+  position: relative;          /* positioning context for the floating preview */
+  flex: 1 1;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(2rem, 5vw, 5rem);
+  cursor: pointer;
+  overflow: hidden;            /* clips the preview image to the button area */
+  transition: background-color var(--transition-fast);
+}
+
+.koyko-studies__nav-btn:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Vertical divider between the two buttons */
+.koyko-studies__nav-btn--left {
+  border-right: 2px solid #000000;
+  justify-content: flex-start;
+}
+
+.koyko-studies__nav-btn--right {
+  justify-content: flex-end;
+}
+
+/* Inner row — holds the arrow and the project name.
+   z-index: 1 keeps it above the preview image. */
+.koyko-studies__nav-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  pointer-events: none;        /* clicks pass through to the button */
+}
+
+/* Arrow character — Inter ExtraBold, slightly larger than the label */
+.koyko-studies__nav-arrow {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  color: #000000;
+  line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+/* Slide the arrows outward on hover to hint at direction */
+.koyko-studies__nav-btn--left:hover .koyko-studies__nav-arrow {
+  transform: translateX(-4px);
+}
+
+.koyko-studies__nav-btn--right:hover .koyko-studies__nav-arrow {
+  transform: translateX(4px);
+}
+
+/* Project name — Noto Sans JP W8, large editorial style */
+.koyko-studies__nav-label {
+  font-family: var(--font-alt);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 3.5vw, 3rem);
+  color: #000000;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Preview thumbnail — sits behind the text, revealed on hover.
+   Covers the full button so the image feels immersive. */
+.koyko-studies__nav-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+  pointer-events: none;
+}
+
+/* On hover, fade the image in at low opacity so the text stays legible */
+.koyko-studies__nav-btn:hover .koyko-studies__nav-preview {
+  opacity: 0.18;
+}
+
+
+/* =============================================================================
    RESPONSIVE OVERRIDES
    Collected at the bottom so breakpoints are easy to scan in one place.
    Ordered smallest → largest: mobile (≤ 640px), tablet (≤ 1024px).
@@ -1472,6 +1704,22 @@ a.koyko-footer__value:hover {
     left: 140px;
     width: 250px;
     margin-left: 40px;
+  }
+
+  /* ---- Case Studies page ---- */
+  /* Collapse the three info columns to a 2-column layout on tablet */
+  .koyko-studies__info {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Overview spans both columns so it reads fully */
+  .koyko-studies__col:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Scale down the nav labels so they don't overflow the half-width buttons */
+  .koyko-studies__nav-label {
+    font-size: clamp(1rem, 2.5vw, 2rem);
   }
 
   /* ---- Packages page ---- */
@@ -1893,6 +2141,42 @@ a.koyko-footer__value:hover {
     font-size: 13px;
     padding: 10px 10px;
     white-space: normal;
+  }
+
+  /* ---- Case Studies page ---- */
+  /* Stack info columns and gallery images in a single column on mobile */
+  .koyko-studies__info {
+    grid-template-columns: 1fr;
+  }
+
+  .koyko-studies__col:last-child {
+    grid-column: 1;
+  }
+
+  /* Stack images vertically so they aren't too small on phone screens */
+  .koyko-studies__gallery-row {
+    grid-template-columns: 1fr;
+  }
+
+  .koyko-studies__img {
+    height: clamp(200px, 55vw, 320px);
+  }
+
+  .koyko-studies__entry {
+    padding: clamp(2rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+  }
+
+  /* Nav buttons — reduce padding and show shorter labels on small screens */
+  .koyko-studies__nav-btn {
+    padding: 1.5rem 1rem;
+  }
+
+  .koyko-studies__nav-label {
+    font-size: clamp(0.9rem, 5vw, 1.5rem);
+  }
+
+  .koyko-studies__nav-arrow {
+    font-size: clamp(1rem, 4vw, 1.5rem);
   }
 
   /* ---- Contact page ---- */

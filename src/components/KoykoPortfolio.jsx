@@ -2,8 +2,8 @@
 //
 // Three logos sit side by side. Clicking a side logo swaps it to the
 // centre with a GSAP Flip animation; once the Flip completes, the page
-// transition wipe fires and the user is taken to /casestudies.
-// Clicking the centre logo skips straight to the page transition.
+// transition wipe fires and the user is taken to /casestudies/<project-id>.
+// Clicking the centre logo skips the swap and goes straight to its study page.
 //
 // State is managed entirely here so siblings can react to each other's clicks.
 
@@ -57,10 +57,15 @@ function KoykoPortfolio() {
   const [items, setItems] = useState(PROJECTS);
   const router = useRouter();
 
-  // Triggers the page-wipe animation then pushes the new route.
-  const goToCaseStudies = useCallback(() => {
+  // Stores the id of the project that will be in the centre after a swap.
+  // Written in handleLogoClick before the Flip fires; read in goToCaseStudies
+  // once the animation completes — at that point items[1] is already updated.
+  const navigateToIdRef = useRef(null);
+
+  // Triggers the page-wipe animation then navigates to that project's study page.
+  const goToCaseStudies = useCallback((projectId) => {
     animateTransition().then(() => {
-      router.push('/casestudies');
+      router.push(`/casestudies/${projectId}`);
     });
   }, [router]);
 
@@ -80,7 +85,9 @@ function KoykoPortfolio() {
         // If this swap was triggered by a side-logo click, navigate now.
         if (shouldNavigate.current) {
           shouldNavigate.current = false;
-          goToCaseStudies();
+          // navigateToIdRef was set in handleLogoClick to the clicked logo's id,
+          // which is now in the centre position after the swap.
+          goToCaseStudies(navigateToIdRef.current);
         }
       },
     });
@@ -92,14 +99,15 @@ function KoykoPortfolio() {
     const clickedIndex = items.findIndex(item => item.id === clickedId);
     const isCenter     = clickedIndex === 1;
 
-    // Centre logo clicked → skip the swap and go straight to case studies
+    // Centre logo clicked → no swap needed, navigate directly to its study page
     if (isCenter) {
-      goToCaseStudies();
+      goToCaseStudies(items[1].id);
       return;
     }
 
-    // Side logo clicked → swap it to centre, then navigate once Flip is done
-    isAnimating.current  = true;
+    // Side logo clicked → store its id so we can navigate to it after Flip
+    navigateToIdRef.current = items[clickedIndex].id;
+    isAnimating.current    = true;
     shouldNavigate.current = true;
 
     // Capture positions BEFORE React updates the DOM
