@@ -41,8 +41,9 @@ export const CASE_STUDIES = [
     images: [
       '/assets/images/case-studies/nerdecks/nerdecks-laptop-mockup-library.webp',
       '/assets/images/case-studies/nerdecks/nerdecks-study-flashcard-ui.webp',
-      '/assets/images/case-studies/nerdecks/nerdecks-brand-illustrations.webp',
       '/assets/images/case-studies/nerdecks/nerdecks-dashboard-deck-list.webp',
+      '/assets/images/case-studies/nerdecks/nerdecks-brand-illustrations.webp',
+      
       // Object form unlocks per-slot zoom, crop, and poster frame control.
       // scale:      zoom factor (1 = natural size)
       // position:   CSS object-position — 'x% y%' pans the crop window
@@ -89,14 +90,14 @@ export const CASE_STUDIES = [
     siteUrl: 'https://socraticjs-6175a41ed31f.herokuapp.com/',
     overview:
       'A Socratic teacher built to help developers learn JavaScript through guided questions rather than direct answers — making the learning process active and memorable.',
-    // Store images in:  public/assets/images/case-studies/socratic-js/
+    // Store images in:  public/assets/images/case-studies/socraticJS/
     images: [
-      '/assets/images/case-studies/socratic-js/image-1.jpg',
-      '/assets/images/case-studies/socratic-js/image-2.jpg',
-      '/assets/images/case-studies/socratic-js/image-3.jpg',
-      '/assets/images/case-studies/socratic-js/image-4.jpg',
-      '/assets/images/case-studies/socratic-js/image-5.jpg',
-      '/assets/images/case-studies/socratic-js/image-6.jpg',
+      '/assets/images/case-studies/socraticJS/socraticjs-homepage-hero.webp',
+      '/assets/images/case-studies/socraticJS/socraticjs-chat-interface.webp',
+      '/assets/images/case-studies/socraticJS/socraticjs-laptop-mockup-homepage.webp',
+      '/assets/images/case-studies/socraticJS/socraticjs-while-loop-lesson-page.webp',
+      '/assets/images/case-studies/socraticJS/socraticjs-iphone-mockup-homepage.webp',
+      '/assets/images/case-studies/socraticJS/socraticjs-tutor.png',
     ],
   },
 
