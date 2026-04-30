@@ -39,12 +39,17 @@ export const CASE_STUDIES = [
       'A spaced repetition web application that helps users remember information efficiently by reviewing cards at scientifically optimised intervals.',
     // Store images in:  public/assets/images/case-studies/nerdecks/
     images: [
-      '/assets/images/case-studies/nerdecks/image-1.jpg',
-      '/assets/images/case-studies/nerdecks/image-2.jpg',
-      '/assets/images/case-studies/nerdecks/image-3.jpg',
-      '/assets/images/case-studies/nerdecks/image-4.jpg',
-      '/assets/images/case-studies/nerdecks/image-5.jpg',
-      '/assets/images/case-studies/nerdecks/image-6.jpg',
+      '/assets/images/case-studies/nerdecks/nerdecks-laptop-mockup-library.webp',
+      '/assets/images/case-studies/nerdecks/nerdecks-study-flashcard-ui.webp',
+      '/assets/images/case-studies/nerdecks/nerdecks-brand-illustrations.webp',
+      '/assets/images/case-studies/nerdecks/nerdecks-dashboard-deck-list.webp',
+      // Object form unlocks per-slot zoom, crop, and poster frame control.
+      // scale:      zoom factor (1 = natural size)
+      // position:   CSS object-position — 'x% y%' pans the crop window
+      // posterTime: seconds into the video to use as the cover frame before play
+      //             Change this number until you find the frame you want.
+      { src: '/assets/images/case-studies/nerdecks/nerdecks-app-demo.mp4', scale: 1, position: '50% 50%', posterTime: 1 },
+      '/assets/images/case-studies/nerdecks/nerdecks-app-icon.webp',
     ],
   },
 

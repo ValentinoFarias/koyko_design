@@ -1527,12 +1527,25 @@ a.koyko-footer__value:hover {
   gap: clamp(1rem, 2vw, 1.5rem);
 }
 
-/* Each image fills its grid cell, cropped to maintain consistent row height */
+/* Each image/video fills its grid cell, cropped to maintain consistent row height */
 .koyko-studies__img {
   width: 100%;
   height: clamp(200px, 28vw, 440px);
   object-fit: cover;           /* crops the image to fill without stretching */
   display: block;
+}
+
+/* Videos share the same dimensions as images.
+   object-fit:contain shows the full video content within the frame without
+   cropping — unlike cover which zooms in and clips the edges.
+   background: black fills the letterbox bars if the video aspect ratio
+   doesn't match the frame exactly. */
+.koyko-studies__video {
+  object-fit: contain;
+  object-position: var(--video-pos, 50% 50%);
+  transform: scale(var(--video-scale, 1));
+  transform-origin: center center;
+  background: #ffffff;
 }
 
 

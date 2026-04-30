@@ -49,11 +49,23 @@ function KoykoStudies({ projectId }) {
     [router]
   );
 
-  // ── Split the 6 images into 3 pairs (rows) ────────────────────────────────
+  // ── Normalise each media slot ─────────────────────────────────────────────
+  // A slot can be a plain string (src only) or an object with extra options:
+  //   { src: '...', scale: 1.2, position: '50% 30%' }
+  // normalizeMedia() guarantees every slot becomes a full object so the rest
+  // of the component never has to check which format it received.
+  function normalizeMedia(item) {
+    if (!item) return null;
+    if (typeof item === 'string') return { src: item, scale: 1, position: '50% 50%', posterTime: null };
+    // Object form — spread defaults first so any provided key wins.
+    return { scale: 1, position: '50% 50%', posterTime: null, ...item };
+  }
+
+  // ── Split the 6 slots into 3 pairs (rows) ────────────────────────────────
   const imagePairs = [
-    [study.images[0], study.images[1]],
-    [study.images[2], study.images[3]],
-    [study.images[4], study.images[5]],
+    [normalizeMedia(study.images[0]), normalizeMedia(study.images[1])],
+    [normalizeMedia(study.images[2]), normalizeMedia(study.images[3])],
+    [normalizeMedia(study.images[4]), normalizeMedia(study.images[5])],
   ];
 
   return (
@@ -99,24 +111,70 @@ function KoykoStudies({ projectId }) {
 
         </div>
 
-        {/* Image gallery — 3 rows × 2 images */}
+        {/* Image gallery — 3 rows × 2 images.
+            Slots can hold either an image (.webp/.jpg/etc.) or a video (.mp4).
+            We detect the file type by checking the extension and render the
+            appropriate element so both always occupy the same grid cell size. */}
         <div className="koyko-studies__gallery">
           {imagePairs.map((pair, rowIndex) => (
             <div key={rowIndex} className="koyko-studies__gallery-row">
-              {pair.map((src, imgIndex) => {
-                // The very first image is likely visible on load — keep it eager.
-                // Every other image is below the fold — defer with lazy loading
-                // so they don't block the initial page render.
-                const isFirstImage = rowIndex === 0 && imgIndex === 0;
-                return src ? (
+              {pair.map((media, imgIndex) => {
+                if (!media) return null;
+
+                // Destructure the normalised media object.
+                // scale, position, and posterTime are all optional — normalizeMedia()
+                // guarantees they exist with sensible defaults.
+                const { src, scale, position, posterTime } = media;
+
+                // Check whether this slot is a video file.
+                const isVideo = src.endsWith('.mp4');
+
+                // The very first slot is visible on load — keep it eager.
+                // Every other slot is below the fold — defer loading.
+                const isFirstSlot = rowIndex === 0 && imgIndex === 0;
+
+                // CSS custom properties passed as inline styles.
+                // The stylesheet reads these via var(--video-scale) and var(--video-pos).
+                const mediaStyle = {
+                  '--video-scale': scale,
+                  '--video-pos':   position,
+                };
+
+                if (isVideo) {
+                  return (
+                    <video
+                      key={imgIndex}
+                      src={src}
+                      className="koyko-studies__img koyko-studies__video"
+                      style={mediaStyle}
+                      controls
+                      muted
+                      loop
+                      playsInline
+                      // metadata must load so we can seek to the poster frame.
+                      // Without at least 'metadata', currentTime seeks are ignored.
+                      preload="metadata"
+                      // onLoadedMetadata fires once the browser knows the video's
+                      // duration and dimensions. At that point we can safely seek
+                      // to any timestamp — the browser will decode and freeze that
+                      // frame as the visible cover until the user presses play.
+                      onLoadedMetadata={(e) => {
+                        if (posterTime != null) e.target.currentTime = posterTime;
+                      }}
+                    />
+                  );
+                }
+
+                return (
                   <img
                     key={imgIndex}
                     src={src}
                     alt={`${study.title} — project image ${rowIndex * 2 + imgIndex + 1}`}
                     className="koyko-studies__img"
-                    loading={isFirstImage ? 'eager' : 'lazy'}
+                    style={mediaStyle}
+                    loading={isFirstSlot ? 'eager' : 'lazy'}
                   />
-                ) : null;
+                );
               })}
             </div>
           ))}
