@@ -1659,11 +1659,11 @@ a.koyko-footer__value:hover {
   --ob-border: #d8d0be;
 }
 
-/* Page shell */
+/* Page shell — mobile-first base, expanded at wider breakpoints via @media below */
 .koyko-onboarding-page {
   background: var(--color-bg);
-  min-height: 100vh;
-  padding: 56px 24px 80px;
+  min-height: 100dvh; /* dvh accounts for mobile browser chrome, avoids layout jump */
+  padding: 32px 16px 60px;
   font-family: var(--font-sans);
   color: var(--color-fg);
 }
@@ -1696,7 +1696,8 @@ a.koyko-footer__value:hover {
 
 .koyko-onboarding__title {
   font-family: var(--font-alt);
-  font-size: 40px;
+  /* clamp(min, fluid, max) — scales smoothly from 28px on mobile to 40px on desktop */
+  font-size: clamp(1.75rem, 1.25rem + 2.5vw, 2.5rem);
   font-weight: 300;
   line-height: var(--line-height-tight);
   margin-bottom: 12px;
@@ -1828,7 +1829,7 @@ a.koyko-footer__value:hover {
 /* ── Tier cards ── */
 .koyko-onboarding__tier-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr; /* stacked on mobile — expands to 3 columns at ≥640px */
   gap: 10px;
   margin-top: 4px;
 }
@@ -1882,12 +1883,14 @@ a.koyko-footer__value:hover {
 /* ── Toggle buttons (photos / domain) ── */
 .koyko-onboarding__toggle-group {
   display: flex;
+  flex-wrap: wrap; /* wraps onto a second line on very narrow screens */
   gap: 10px;
   margin-top: 4px;
 }
 
 .koyko-onboarding__toggle {
-  padding: 9px 24px;
+  padding: 0 24px;
+  min-height: 44px; /* 44px minimum touch target per accessibility guidelines */
   border: 1px solid var(--ob-border);
   background: transparent;
   font-family: var(--font-sans);
@@ -1915,7 +1918,7 @@ a.koyko-footer__value:hover {
 /* ── Hosting cards ── */
 .koyko-onboarding__hosting-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* stacked on mobile — expands to 2 columns at ≥480px */
   gap: 10px;
   margin-top: 4px;
 }
@@ -1964,14 +1967,14 @@ a.koyko-footer__value:hover {
   margin-bottom: 16px;
 }
 
-/* ── Submit row ── */
+/* ── Submit row — stacked on mobile, side-by-side at ≥480px ── */
 .koyko-onboarding__submit-row {
   margin-top: 48px;
   padding-top: 32px;
   border-top: 1px solid var(--ob-border);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 24px;
 }
 
@@ -1988,6 +1991,8 @@ a.koyko-footer__value:hover {
   color: #fff;
   border: none;
   padding: 14px 36px;
+  min-height: 44px; /* 44px minimum touch target */
+  width: 100%;      /* full width on mobile — shrinks to content at ≥480px */
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 400;
@@ -2013,12 +2018,11 @@ a.koyko-footer__value:hover {
   text-align: center;
 }
 
-.koyko-onboarding__success-glyph {
+.koyko-onboarding__success-logo {
+  width: 64px;
+  height: auto;
   display: block;
-  font-size: 48px;
-  color: var(--color-accent);
-  margin-bottom: 20px;
-  line-height: 1;
+  margin: 0 auto 20px;
 }
 
 .koyko-onboarding__success h2 {
@@ -2689,34 +2693,31 @@ a.koyko-footer__value:hover {
   }
 }
 
-/* Onboarding form — mobile (≤ 480px) */
-@media (max-width: 480px) {
-  .koyko-onboarding-page {
-    padding: 32px 16px 60px;
-  }
-
-  .koyko-onboarding__title {
-    font-size: 28px;
-  }
-
-  /* Stack tier cards vertically on small screens */
-  .koyko-onboarding__tier-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Stack hosting cards vertically on small screens */
+/* Onboarding form — sm (≥ 480px): hosting grid goes side-by-side, submit row goes inline */
+@media (min-width: 480px) {
   .koyko-onboarding__hosting-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
-  /* Stack submit row vertically */
   .koyko-onboarding__submit-row {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .koyko-onboarding__submit {
-    width: 100%;
-    text-align: center;
+    width: auto; /* shrinks to content width alongside the note text */
+  }
+}
+
+/* Onboarding form — md (≥ 640px): full desktop layout */
+@media (min-width: 640px) {
+  .koyko-onboarding-page {
+    padding: 56px 24px 80px;
+  }
+
+  /* Tier cards and payment cards go 3-column */
+  .koyko-onboarding__tier-grid {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }

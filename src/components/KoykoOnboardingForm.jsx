@@ -87,7 +87,7 @@ function KoykoOnboardingForm() {
   if (submitted) {
     return (
       <div className="koyko-onboarding__success">
-        <span className="koyko-onboarding__success-glyph" aria-hidden="true">✦</span>
+        <img src="/assets/images/LogoKoyko.png" alt="Koyko logo" className="koyko-onboarding__success-logo" />
         <h2>You&apos;re all set.</h2>
         <p>I&apos;ve got everything I need to get started.<br />Expect a message from me within 24 hours.</p>
         <p className="koyko-onboarding__success-sig">— Valentino, Koyko Design Studio</p>
