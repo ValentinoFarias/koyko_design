@@ -16,10 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/home/page.js"
     ],
-    "/casestudies/[id]/page": [
+    "/form/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/casestudies/[id]/page.js"
+      "static/chunks/app/form/page.js"
     ]
   }
 }
