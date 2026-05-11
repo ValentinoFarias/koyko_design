@@ -16,20 +16,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/home/page.js"
     ],
-    "/form/page": [
+    "/process/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/form/page.js"
+      "static/chunks/app/process/page.js"
     ],
-    "/api/onboarding/route": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/onboarding/route.js"
-    ],
-    "/casestudies/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/casestudies/[id]/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

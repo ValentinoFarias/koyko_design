@@ -2060,6 +2060,253 @@ a.koyko-footer__value:hover {
 
 
 /* =============================================================================
+   PROCESS PAGE  (KoykoProcess.jsx / KoykoProcessPage.jsx)
+   Standalone "Your journey with Koyko" page shared with prospective clients.
+   Mobile-first — cards stack on mobile, go 2-column at ≥ 560px.
+   ============================================================================= */
+
+/* Scoped vars — values not covered by :root tokens, only used on this page */
+.koyko-process-page {
+  --proc-card-bg:      #ede8d5;   /* slightly darker than --color-bg for card surfaces */
+  --proc-border:       rgba(0, 0, 0, 0.1);
+  --proc-border-dash:  rgba(0, 0, 0, 0.22);
+  --proc-muted-light:  #9c8e86;   /* lighter than --color-fg-muted, used for connector & footer meta */
+}
+
+/* Page shell — mobile-first base */
+.koyko-process-page {
+  background: var(--color-bg);
+  min-height: 100dvh;
+  padding: 40px 20px 64px;
+  font-family: var(--font-sans);
+  color: var(--color-fg);
+}
+
+/* Centred content column */
+.koyko-process__wrapper {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.koyko-process__header {
+  text-align: center;
+  margin-bottom: 56px;
+  /* GSAP sets autoAlpha: 0 — visibility is controlled by JS, not CSS */
+}
+
+/* "Koyko Design Studio" eyebrow label */
+.koyko-process__eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 12px;
+}
+
+/* Main heading — fluid size from 36px (mobile) to 56px (desktop) */
+.koyko-process__title {
+  font-family: var(--font-alt);
+  font-size: clamp(2.25rem, 1.75rem + 2.5vw, 3.5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--color-fg);
+  margin-bottom: 16px;
+}
+
+.koyko-process__title em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.koyko-process__subtitle {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--color-fg-muted);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: var(--line-height-normal);
+}
+
+/* ── Stage ── */
+.koyko-process__stage {
+  margin-bottom: 48px;
+  /* GSAP animates autoAlpha and y — initial state is set by JS */
+}
+
+/* Stage heading row — number circle + title */
+.koyko-process__stage-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Numbered circle badge */
+.koyko-process__stage-number {
+  font-family: var(--font-alt);
+  font-size: 13px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-bg);
+  background: var(--color-fg);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* never squish the circle when the title is long */
+}
+
+.koyko-process__stage-title {
+  font-family: var(--font-alt);
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--color-fg);
+}
+
+.koyko-process__stage-title em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* ── Cards grid — 1 column on mobile, 2 columns at ≥ 560px ── */
+.koyko-process__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 12px;
+  gap: 12px;
+}
+
+.koyko-process__card {
+  background: var(--proc-card-bg);
+  border: 1px solid var(--proc-border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.koyko-process__card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+/* Full-width card spans both columns (e.g. "Build — All other pages" in stage 2) */
+.koyko-process__card--full {
+  grid-column: 1 / -1;
+}
+
+.koyko-process__card-tag {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+}
+
+.koyko-process__card-heading {
+  font-family: var(--font-alt);
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--color-fg);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.koyko-process__card-body {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--color-fg-muted);
+  line-height: 1.5;
+}
+
+/* ── Notice bar (dashed info strip below cards) ── */
+.koyko-process__notice {
+  border: 1px dashed var(--proc-border-dash);
+  border-radius: 12px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Small accent dot beside the notice text */
+.koyko-process__notice-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.koyko-process__notice p {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--color-fg-muted);
+  line-height: 1.5;
+}
+
+.koyko-process__notice strong {
+  font-weight: 500;
+  color: var(--color-fg);
+}
+
+/* ── Connector arrow between stages ── */
+.koyko-process__connector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+  color: var(--proc-muted-light);
+  font-size: 20px;
+  margin: -8px 0;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+/* ── Footer ── */
+.koyko-process__footer {
+  text-align: center;
+  margin-top: 72px;
+  padding-top: 40px;
+  border-top: 1px solid var(--proc-border);
+}
+
+.koyko-process__footer p {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--proc-muted-light);
+  margin-bottom: 6px;
+}
+
+.koyko-process__footer a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.koyko-process__footer a:hover {
+  text-decoration: underline;
+}
+
+/* Italic "Koyko" sign-off */
+.koyko-process__signature {
+  font-family: var(--font-alt);
+  font-size: 28px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-fg);
+  margin-top: 20px;
+}
+
+
+/* =============================================================================
    RESPONSIVE OVERRIDES
    Collected at the bottom so breakpoints are easy to scan in one place.
    Ordered smallest → largest: mobile (≤ 640px), tablet (≤ 1024px).
@@ -2732,6 +2979,17 @@ a.koyko-footer__value:hover {
   /* Tier cards and payment cards go 3-column */
   .koyko-onboarding__tier-grid {
     grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* Process page — sm (≥ 560px): cards go side-by-side, more breathing room */
+@media (min-width: 560px) {
+  .koyko-process-page {
+    padding: 64px 24px 96px;
+  }
+
+  .koyko-process__cards {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
