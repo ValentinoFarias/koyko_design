@@ -416,6 +416,226 @@
   to { transform: translateX(-50%); }
 }
 
+/* =============================================================================
+   PORTFOLIO  (KoykoPortfolioV2.jsx)
+   Three project cards in a 3-up grid. Cards 02 and 03 are pure-CSS
+   illustrations — no images. Each card has a lifted-on-hover thumb and
+   an "open →" pill that fades in.
+   ============================================================================= */
+
+.v2-portfolio {
+  position: relative;
+  z-index: 2;
+  padding: 90px var(--v2-gut) 80px;
+}
+
+/* Heading row — kicker + count, separated by a 1.5px rule */
+.v2-portfolio__heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 24px;
+  margin-bottom: 44px;
+  border-bottom: 1.5px solid var(--v2-ink);
+  font-family: var(--v2-ff-mono);
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.v2-portfolio__kicker {
+  /* override the mono styling above — kicker is in Syne display */
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.v2-portfolio__count { color: var(--v2-mute-ink); }
+
+.v2-portfolio__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 3vw, 44px);
+}
+
+/* ───── Card shell ───── */
+.v2-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  outline: none;                            /* custom focus on the thumb */
+}
+
+.v2-card__thumb {
+  aspect-ratio: 1 / 1;
+  border-radius: 28px;
+  /* Tile matches the page background so the icons sit on the same
+     "paper" as the rest of the layout — only the border defines the card. */
+  background: var(--v2-bg);
+  border: 1.5px solid var(--v2-ink);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition: transform .5s var(--v2-ease), border-radius .5s var(--v2-ease), background .55s var(--v2-ease);
+}
+.v2-card:hover .v2-card__thumb,
+.v2-card:focus-visible .v2-card__thumb {
+  /* slight lift + de-rounded corners on interaction */
+  transform: translateY(-6px) rotate(-1.2deg);
+  border-radius: 12px;
+}
+.v2-card__thumb img {
+  width: 86%;
+  height: auto;
+}
+
+.v2-card__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.v2-card__num {
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  color: var(--v2-mute-ink);
+  letter-spacing: .14em;
+}
+.v2-card__title {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(20px, 1.8vw, 28px);
+  letter-spacing: -.01em;
+}
+.v2-card__tag {
+  margin-left: auto;
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  color: var(--v2-mute-ink);
+}
+
+/* "open →" pill — sits top-right of the thumb, fades in on hover */
+.v2-card__open {
+  position: absolute;
+  top: 16px; right: 18px;
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1.2px solid var(--v2-ink);
+  border-radius: 999px;
+  background: var(--v2-bg);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity .35s var(--v2-ease), transform .35s var(--v2-ease);
+}
+.v2-card:hover .v2-card__open,
+.v2-card:focus-visible .v2-card__open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =============================================================================
+   DESIGNED WITH…  (KoykoDesignedV2.jsx)
+   Headline "DESIGNED WITH ___" where the trailing word rotates through a
+   list (coffee, obsession, hate, love). Words sit in a single slot — the
+   active one is in place, the outgoing slides up, the rest wait below.
+   ============================================================================= */
+
+.v2-designed {
+  position: relative;
+  z-index: 2;
+  padding: 100px var(--v2-gut) 80px;
+  border-top: 1.5px solid var(--v2-ink);
+  transition: border-color .55s var(--v2-ease);
+}
+
+/* The headline row — flex so head + rotator sit on the same baseline */
+.v2-designed__line {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(48px, 9vw, 144px);
+  line-height: .96;
+  letter-spacing: -.015em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: clamp(16px, 1.6vw, 32px);
+}
+
+.v2-designed__head { display: inline-block; }
+
+/* Rotating-word slot — fixed height, hides overflow so words slide in/out
+   from a single line. min-width keeps the layout from shifting as words
+   of different lengths cycle through. */
+.v2-designed__rot {
+  position: relative;
+  display: inline-block;
+  height: 1em;
+  min-width: 6.2em;
+  overflow: hidden;
+  vertical-align: bottom;
+  color: var(--v2-accent);
+}
+/* Under naranjo, accent flips to black — switch the rotator to the
+   cream/paper tone so it stays distinct from the headline. The tagLine
+   on HATE keeps its default black (brightness(0)) and reads correctly
+   on the orange background. */
+.home-v2[data-theme="naranjo"] .v2-designed__rot { color: var(--v2-paper); }
+
+/* Each word stacks in the same slot. Default state: waiting below. */
+.v2-designed__word {
+  position: absolute;
+  inset: 0;
+  font-style: normal;                    /* defeat the <i> default italic */
+  white-space: nowrap;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform .65s var(--v2-ease), opacity .65s var(--v2-ease);
+}
+.v2-designed__word.is-on  { transform: translateY(0);     opacity: 1; }
+.v2-designed__word.is-out { transform: translateY(-110%); opacity: 0; }
+
+/* ───── HATE — tagLine.svg "sticker" cross-out ─────
+   An SVG image is overlaid on the HATE word. While the word is waiting
+   below, the image is clipped to zero width. When the word becomes
+   active, the clip-path animates left → right, revealing the SVG like a
+   pen drawing across. Ported from the v1 KoykoDesigned component. */
+.v2-designed__tagline {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 50%;
+  height: auto;
+  pointer-events: none;
+  /* Force the SVG to render in pure black on light themes. */
+  filter: brightness(0);
+  /* Start fully clipped from the right (nothing visible). */
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path .8s var(--v2-ease) .3s;  /* small delay so it lands after the slide-in */
+}
+/* When the HATE word becomes active, sweep the clip open. */
+.v2-designed__word.is-on .v2-designed__tagline {
+  clip-path: inset(0 0% 0 0);
+}
+/* On negro, black-on-black would vanish — flip to pure white. */
+.home-v2[data-theme="negro"] .v2-designed__tagline {
+  filter: brightness(0) invert(1);
+}
+
+.v2-designed__sub {
+  margin-top: 30px;
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.4vw, 22px);
+  color: var(--v2-mute-ink);
+  max-width: 56ch;
+}
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
@@ -450,9 +670,17 @@
    block also lives here so animation gating stays in one place.
    ============================================================================= */
 
-/* On narrow screens keep the claim on a single line if it wraps. */
+/* Tablet — drop portfolio to a 2-up grid */
+@media (max-width: 920px) {
+  .v2-portfolio__grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Mobile — portfolio stacks single-column, claim stays inline, designed
+   headline drops onto two lines (head above, rotator below). */
 @media (max-width: 600px) {
   .v2-hero__claim-row em { display: inline; }
+  .v2-portfolio__grid { grid-template-columns: 1fr; }
+  .v2-designed__line { flex-direction: column; gap: 0; }
 }
 
 /* Respect users who've asked for less motion — kill the looping animations. */
