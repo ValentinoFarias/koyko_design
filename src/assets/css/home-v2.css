@@ -119,9 +119,11 @@
   transition: color .55s var(--v2-ease);
 }
 
-/* ───── Custom cursor ───── */
-.home-v2 { cursor: none; }
-.home-v2 button { cursor: none; }
+/* ───── Custom cursor ─────
+   Scoped to the navbar + theme picker. Everywhere else the OS cursor
+   is shown and .v2-cursor is invisible. */
+.v2-nav, .v2-nav *,
+.v2-theme-picker, .v2-theme-picker * { cursor: none; }
 
 .v2-cursor {
   position: fixed;
@@ -134,12 +136,17 @@
   pointer-events: none;
   z-index: 60;
   mix-blend-mode: difference;
+  opacity: 0;                       /* hidden until we enter the navbar */
   transition:
     width  .18s var(--v2-ease),
     height .18s var(--v2-ease),
     background-color .18s var(--v2-ease),
-    border-color     .18s var(--v2-ease);
+    border-color     .18s var(--v2-ease),
+    opacity          .15s var(--v2-ease);
 }
+
+/* Only visible while hovering inside the navbar */
+.v2-cursor.is-active { opacity: 1; }
 
 /* Dot in the centre of the ring */
 .v2-cursor::before {
@@ -152,19 +159,39 @@
   transform: translate(-50%, -50%);
 }
 
-/* Hot state — hover over any link / button / card */
+/* Hot state — hover over any link / button / card.
+   --v2-cursor-color lets individual elements (e.g. theme dots) tint
+   the bloom; defaults to white so mix-blend-mode: difference keeps
+   its negative-color behaviour on links. */
 .v2-cursor.is-hot {
   width: 64px; height: 64px;
-  background: #ffffff;
+  background: var(--v2-cursor-color, #ffffff);
+  border-color: var(--v2-cursor-color, #ffffff);
 }
 .v2-cursor.is-hot::before {
   width: 5px; height: 5px;
 }
 
+/* Negative-color bloom for the black dot.
+   `mix-blend-mode: difference` cancels out against black, so instead we
+   drop the blend mode, make the circle transparent, and use
+   `backdrop-filter: invert(1)` — that literally inverts the pixels behind
+   the cursor regardless of theme. */
+.v2-cursor.is-invert {
+  mix-blend-mode: normal;
+  background: transparent !important;
+  border-color: transparent;
+  backdrop-filter: invert(1);
+  -webkit-backdrop-filter: invert(1);
+}
+.v2-cursor.is-invert::before {
+  background: transparent;
+}
+
 /* Hide on touch devices — they have no cursor */
 @media (pointer: coarse) {
-  .home-v2,
-  .home-v2 button { cursor: auto; }
+  .v2-nav, .v2-nav *,
+  .v2-theme-picker, .v2-theme-picker * { cursor: auto; }
   .v2-cursor { display: none; }
 }
 
