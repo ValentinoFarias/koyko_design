@@ -1,0 +1,9 @@
+node_modules
+.next
+CLAUDE.md
+.env
+.env.local
+.env*.local
+.env.production
+falling-text-demo.html
+.claude

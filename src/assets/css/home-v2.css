@@ -1,0 +1,260 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* =============================================================================
+   HOME V2 — design tokens + base styles
+   All rules are scoped under .home-v2 so they never bleed into existing pages.
+   Theme switching is handled via data-theme on the .home-v2 wrapper.
+   ============================================================================= */
+
+.home-v2 {
+  /* Shared tokens */
+  --v2-orange:    #EB5120;
+  --v2-ink-black: #0A0A0A;
+  --v2-paper:     #F5F5F0;
+
+  --v2-ff-display: "Syne", system-ui, sans-serif;
+  --v2-ff-mono:    "JetBrains Mono", ui-monospace, monospace;
+  --v2-ff-mega:    "Noto Sans JP", "Syne", sans-serif;
+
+  --v2-ease: cubic-bezier(.7, .02, .15, 1);
+  --v2-maxw: 1280px;
+  --v2-gut:  clamp(20px, 4vw, 56px);
+
+  /* Default theme: blanco */
+  --v2-bg:             #F5F5F0;
+  --v2-ink:            #0A0A0A;
+  --v2-accent:         #EB5120;
+  --v2-thumb-bg:       #FFFFFF;
+  --v2-grain-opacity:  .035;
+  --v2-rule:           rgba(10, 10, 10, .9);
+  --v2-mute-ink:       rgba(10, 10, 10, .55);
+  --v2-scrim:          rgba(10, 10, 10, .06);
+
+  min-height: 100vh;
+  background:   var(--v2-bg);
+  color:        var(--v2-ink);
+  font-family:  var(--v2-ff-display);
+  font-weight:  500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x:   hidden;
+  transition:   background .55s var(--v2-ease), color .55s var(--v2-ease);
+}
+
+/* ───── Themes ───── */
+.home-v2[data-theme="negro"] {
+  --v2-bg:            #0A0A0A;
+  --v2-ink:           #F5F5F0;
+  --v2-accent:        #EB5120;
+  --v2-thumb-bg:      #1A1A1A;
+  --v2-grain-opacity: .055;
+  --v2-rule:          rgba(245, 245, 240, .9);
+  --v2-mute-ink:      rgba(245, 245, 240, .55);
+  --v2-scrim:         rgba(245, 245, 240, .07);
+}
+
+.home-v2[data-theme="naranjo"] {
+  --v2-bg:            #EB5120;
+  --v2-ink:           #0A0A0A;
+  --v2-accent:        #0A0A0A;
+  --v2-thumb-bg:      #F5F5F0;
+  --v2-grain-opacity: .06;
+  --v2-rule:          rgba(10, 10, 10, .9);
+  --v2-mute-ink:      rgba(10, 10, 10, .6);
+  --v2-scrim:         rgba(10, 10, 10, .08);
+}
+
+/* ───── Paper-grain overlay ───── */
+.home-v2::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: var(--v2-grain-opacity);
+  mix-blend-mode: multiply;
+}
+.home-v2[data-theme="negro"]::before { mix-blend-mode: screen; }
+
+/* ───── Theme Picker ───── */
+.v2-theme-picker {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  border: 1.5px solid var(--v2-ink);
+  border-radius: 999px;
+  background: var(--v2-bg);
+  backdrop-filter: blur(4px);
+  transition: background .55s var(--v2-ease), border-color .55s var(--v2-ease);
+}
+
+.v2-theme-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--dot);
+  border: 1.5px solid var(--v2-ink);
+  cursor: pointer;
+  transition: transform .25s var(--v2-ease), box-shadow .25s var(--v2-ease);
+}
+.v2-theme-dot:hover  { transform: scale(1.15); }
+.v2-theme-dot.is-on  {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 3px var(--v2-bg), 0 0 0 4.5px var(--v2-ink);
+}
+
+.v2-theme-label {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  min-width: 56px;
+  color: var(--v2-ink);
+  transition: color .55s var(--v2-ease);
+}
+
+/* ───── Custom cursor ───── */
+.home-v2 { cursor: none; }
+.home-v2 button { cursor: none; }
+
+.v2-cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 22px; height: 22px;
+  /* Always white — mix-blend-mode: difference turns white into the exact
+     negative of whatever color sits beneath it, on every theme. */
+  border: 1.5px solid #ffffff;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 60;
+  mix-blend-mode: difference;
+  transition:
+    width  .18s var(--v2-ease),
+    height .18s var(--v2-ease),
+    background-color .18s var(--v2-ease),
+    border-color     .18s var(--v2-ease);
+}
+
+/* Dot in the centre of the ring */
+.v2-cursor::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 3px; height: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Hot state — hover over any link / button / card */
+.v2-cursor.is-hot {
+  width: 64px; height: 64px;
+  background: #ffffff;
+}
+.v2-cursor.is-hot::before {
+  width: 5px; height: 5px;
+}
+
+/* Hide on touch devices — they have no cursor */
+@media (pointer: coarse) {
+  .home-v2,
+  .home-v2 button { cursor: auto; }
+  .v2-cursor { display: none; }
+}
+
+/* ───── Navbar ───── */
+.v2-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 40;
+  display: grid;
+  /* 3-col grid: brand left | links center (auto) | empty right */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 16px var(--v2-gut);
+  background: color-mix(in srgb, var(--v2-bg) 88%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1.5px solid var(--v2-ink);
+  transition: background .55s var(--v2-ease), border-color .55s var(--v2-ease);
+}
+
+.v2-nav__brand img {
+  height: 38px;
+  width: auto;
+  filter: var(--v2-logo-filter, none);
+}
+
+/* Per-theme logo filter — negro inverts the dark wordmark to light */
+.home-v2[data-theme="negro"]   { --v2-logo-filter: invert(1); }
+.home-v2[data-theme="blanco"]  { --v2-logo-filter: none; }
+.home-v2[data-theme="naranjo"] { --v2-logo-filter: none; }
+
+.v2-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.v2-nav__sep {
+  display: block;
+  width: 1.5px;
+  height: 28px;
+  background: var(--v2-ink);
+  transition: background .55s var(--v2-ease);
+}
+
+.v2-nav__link {
+  position: relative;
+  padding-bottom: 4px;
+  color: var(--v2-ink);
+  text-decoration: none;
+}
+
+/* Underline slides in from left on hover */
+.v2-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 100%;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  transition: right .35s var(--v2-ease);
+}
+.v2-nav__link:hover::after { right: 0; }
+
+/* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
+.v2-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 200px;
+  border: 1px dashed var(--v2-mute-ink);
+  margin: 16px var(--v2-gut);
+  border-radius: 8px;
+  opacity: .5;
+}
+
+.v2-placeholder__label {
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+}
+
+.v2-placeholder__note {
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  color: var(--v2-mute-ink);
+}
