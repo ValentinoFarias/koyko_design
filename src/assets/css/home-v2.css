@@ -636,6 +636,139 @@
   max-width: 56ch;
 }
 
+/* =============================================================================
+   CONTACT  (KoykoContactV2.jsx)
+   The page CTA. Kicker + two-row claim ("READY TO TALK / ABOUT *YOUR*
+   PROJECT?"), a big X-ring badge that links to mailto with orbiting SVG
+   text, and a 3-column channel list below.
+   ============================================================================= */
+
+.v2-contact {
+  position: relative;
+  z-index: 2;
+  padding: 100px var(--v2-gut) 120px;
+  border-top: 1.5px solid var(--v2-ink);
+  transition: border-color .55s var(--v2-ease);
+}
+
+/* Small "{ contact }" kicker above the claim */
+.v2-contact__kicker {
+  display: block;
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: clamp(20px, 1.8vw, 32px);
+  margin-bottom: 36px;
+}
+
+.v2-contact__claim {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(48px, 8vw, 124px);
+  line-height: .96;
+  letter-spacing: -.015em;
+  margin-bottom: 60px;
+}
+.v2-contact__claim em {
+  /* "YOUR" — italic + accent color, swap to Syne for the proper slant */
+  font-style: italic;
+  font-family: var(--v2-ff-display);
+  font-weight: 800;
+  color: var(--v2-accent);
+}
+
+/* ───── Curtain-reveal heading ─────
+   Each word sits in a clip wrapper (overflow: hidden). GSAP starts the
+   inner span at yPercent: 100 (fully below) and animates to 0 on scroll
+   into view, producing a bottom-to-top reveal. */
+.v2-contact__line-wrap {
+  display: block;            /* each line on its own row */
+  white-space: nowrap;       /* keep all words of a line together */
+}
+.v2-contact__word-clip {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  margin-right: .3em;        /* space between words (replaces normal whitespace) */
+}
+.v2-contact__word-inner {
+  display: inline-block;     /* block-level box is required for yPercent */
+}
+/* Italic words extend past their upright bounding box on the right edge,
+   so the clip wrapper trims the slant of the last letter (e.g. the "R"
+   in "YOUR"). Add a touch of right padding to give the italic room. */
+.v2-contact__word-clip--italic { padding-right: .12em; }
+
+/* ───── X-ring CTA row (with hover-reveal arrow) ───── */
+.v2-contact__row {
+  position: relative;        /* positioning context for the absolute arrow */
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+/* Hint arrow — sits to the right of the ring, hidden until ring is hovered */
+.v2-contact__arrow {
+  position: absolute;
+  left: 240px;               /* 220px ring + 20px gap */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 320px;
+  height: auto;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s var(--v2-ease);
+}
+.v2-xring:hover ~ .v2-contact__arrow,
+.v2-xring:focus-visible ~ .v2-contact__arrow { opacity: 1; }
+/* Negro inverts the (dark) arrow PNG so it reads on the black background */
+.home-v2[data-theme="negro"] .v2-contact__arrow { filter: invert(1); }
+
+/* ───── X-ring CTA ─────
+   Circle border, big "X" centered, orbiting text wraps the perimeter. */
+.v2-xring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: 1.5px solid var(--v2-ink);
+  color: var(--v2-ink);
+  transition: transform .5s var(--v2-ease),
+              background .35s var(--v2-ease),
+              color .35s var(--v2-ease);
+}
+.v2-xring:hover {
+  /* Slight tilt + scale, fill with accent, flip text to bg color */
+  transform: scale(1.06) rotate(-2deg);
+  background: var(--v2-accent);
+  color: var(--v2-bg);
+}
+/* On naranjo, accent = black and bg = orange — the default flip works,
+   but we explicitly set color to keep the giant X readable. */
+.home-v2[data-theme="naranjo"] .v2-xring:hover { color: var(--v2-ink); }
+
+.v2-xring__x {
+  /* Inter would be cleaner here, but it isn't loaded — Syne falls back fine. */
+  font-family: "Inter", var(--v2-ff-display);
+  font-weight: 800;
+  font-size: 78px;
+  line-height: 1;
+  transition: transform .5s var(--v2-ease);
+}
+.v2-xring:hover .v2-xring__x { transform: rotate(90deg) scale(1.08); }
+
+/* Orbiting text — the SVG fills the ring and spins around its center */
+.v2-xring__orbit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--v2-ink);
+  pointer-events: none;
+  animation: v2-xring-spin 22s linear infinite;
+}
+@keyframes v2-xring-spin { to { transform: rotate(360deg); } }
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
@@ -670,7 +803,7 @@
    block also lives here so animation gating stays in one place.
    ============================================================================= */
 
-/* Tablet — drop portfolio to a 2-up grid */
+/* Tablet — portfolio drops to 2-up */
 @media (max-width: 920px) {
   .v2-portfolio__grid { grid-template-columns: 1fr 1fr; }
 }
@@ -687,5 +820,6 @@
 @media (prefers-reduced-motion: reduce) {
   .v2-hero__dot,
   .v2-hero__scroll svg,
-  .v2-marquee__track { animation: none; }
+  .v2-marquee__track,
+  .v2-xring__orbit { animation: none; }
 }
