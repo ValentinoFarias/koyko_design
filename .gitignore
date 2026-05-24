@@ -1,10 +1,11 @@
 node_modules
 .next
 .next-dev
+.DS_Store
 CLAUDE.md
 .env
 .env.local
 .env*.local
 .env.production
 falling-text-demo.html
-.claude.DS_Store
+.claude
