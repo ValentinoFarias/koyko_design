@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import KoykoNavbarV2 from '../components/v2/KoykoNavbarV2';
 import KoykoCursorV2 from '../components/v2/KoykoCursorV2';
+import KoykoHeroV2    from '../components/v2/KoykoHeroV2';
+import KoykoMarqueeV2 from '../components/v2/KoykoMarqueeV2';
 
 const THEMES = {
   negro:   '#0A0A0A',
@@ -43,8 +45,14 @@ export default function HomeV2() {
 
       <KoykoNavbarV2 />
 
-      {/* Section placeholders — replaced one by one as V2 components are built */}
-      {SECTIONS.map(({ id, name }) => (
+      {/* 02 — Hero (replaces the placeholder) */}
+      <KoykoHeroV2 />
+
+      {/* 03 — Marquee (replaces the placeholder) */}
+      <KoykoMarqueeV2 />
+
+      {/* Remaining section placeholders — replaced one by one as V2 components are built */}
+      {SECTIONS.filter((s) => s.id !== '02' && s.id !== '03').map(({ id, name }) => (
         <div key={id} className="v2-placeholder">
           <span className="v2-placeholder__label">{id} · {name}</span>
           <span className="v2-placeholder__note">coming next</span>

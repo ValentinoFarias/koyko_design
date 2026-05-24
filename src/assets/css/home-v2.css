@@ -258,6 +258,164 @@
 }
 .v2-nav__link:hover::after { right: 0; }
 
+/* =============================================================================
+   HERO  (KoykoHeroV2.jsx)
+   Full-viewport intro: meta strip, centered logo figure + wordmark layered
+   beneath, two-row claim, and a bottom-left scroll cue. All animation
+   is pure CSS — no JS hooks.
+   ============================================================================= */
+
+.v2-hero {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  /* meta strip · logo+claim flex space · scroll cue */
+  grid-template-rows: auto 1fr auto;
+  padding: 110px var(--v2-gut) 60px;     /* 110px leaves room for the fixed navbar */
+  gap: 40px;
+  z-index: 2;                            /* above the paper-grain layer */
+}
+
+/* ───── Meta strip ───── */
+.v2-hero__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+}
+.v2-hero__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Pulsing availability dot */
+.v2-hero__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--v2-accent);
+  animation: v2-hero-pulse 2.4s infinite ease-out;
+}
+@keyframes v2-hero-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--v2-accent) 70%, transparent); }
+  60%      { box-shadow: 0 0 0 9px transparent; }
+}
+/* Under the orange theme, the dot + its pulse ring switch to the cream
+   tone — same rationale as "developer" above. */
+.home-v2[data-theme="naranjo"] .v2-hero__dot {
+  background: var(--v2-paper);
+  animation-name: v2-hero-pulse-paper;
+}
+@keyframes v2-hero-pulse-paper {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--v2-paper) 70%, transparent); }
+  60%      { box-shadow: 0 0 0 9px transparent; }
+}
+
+/* ───── Logo (single FullLogo.svg — figure + wordmark in one asset) ───── */
+.v2-hero__logo {
+  position: relative;
+  width: min(38vw, 380px);
+  margin: 0 auto;
+  align-self: center;
+  display: grid;
+  place-items: center;
+}
+.v2-hero__figure-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+/* Negro theme inverts the (dark) logo so it reads on the dark background */
+.home-v2[data-theme="negro"] .v2-hero__figure-img { filter: invert(1); }
+
+/* ───── Claim ───── */
+.v2-hero__claim {
+  text-align: center;
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(40px, 7vw, 110px);
+  line-height: .92;
+  letter-spacing: -.02em;
+  margin-top: 30px;
+}
+.v2-hero__claim em {
+  /* "developer" — italic + accent color, swaps back to Syne for the slant */
+  font-style: italic;
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  color: var(--v2-accent);
+}
+/* Under the orange theme, accent flips to black — switch "developer" to the
+   cream/paper tone instead for better contrast and on-brand color. */
+.home-v2[data-theme="naranjo"] .v2-hero__claim em { color: var(--v2-paper); }
+.v2-hero__claim-row { display: block; }
+
+/* ───── Scroll cue (bottom-left) ───── */
+.v2-hero__scroll {
+  align-self: end;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--v2-ink);
+}
+.v2-hero__scroll svg {
+  width: 22px;
+  height: 36px;
+  stroke: var(--v2-ink);
+  stroke-width: 1.6;
+  fill: none;
+  animation: v2-hero-drop 1.8s infinite ease-in-out;
+}
+@keyframes v2-hero-drop {
+  0%, 100% { transform: translateY(0);  opacity: .6; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
+
+/* =============================================================================
+   MARQUEE  (KoykoMarqueeV2.jsx)
+   Horizontal scrolling band between hero and portfolio. Pure-CSS animation
+   wraps at -50% so the duplicated track loops seamlessly. Pauses on hover.
+   ============================================================================= */
+
+.v2-marquee {
+  position: relative;
+  z-index: 2;
+  border-top:    1.5px solid var(--v2-ink);
+  border-bottom: 1.5px solid var(--v2-ink);
+  overflow: hidden;
+  padding: 22px 0;
+  background: var(--v2-bg);
+  transition: background .55s var(--v2-ease), border-color .55s var(--v2-ease);
+}
+
+.v2-marquee__track {
+  display: flex;
+  width: max-content;                     /* let the spans dictate full width */
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(56px, 9vw, 132px);
+  line-height: 1;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  animation: v2-marquee-scroll 38s linear infinite;
+}
+
+/* Pause on hover so people can actually read it */
+.v2-marquee:hover .v2-marquee__track { animation-play-state: paused; }
+
+@keyframes v2-marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
@@ -284,4 +442,22 @@
   font-family: var(--v2-ff-mono);
   font-size: 12px;
   color: var(--v2-mute-ink);
+}
+
+/* =============================================================================
+   MEDIA QUERIES
+   All breakpoints collected here, smallest → largest. The reduced-motion
+   block also lives here so animation gating stays in one place.
+   ============================================================================= */
+
+/* On narrow screens keep the claim on a single line if it wraps. */
+@media (max-width: 600px) {
+  .v2-hero__claim-row em { display: inline; }
+}
+
+/* Respect users who've asked for less motion — kill the looping animations. */
+@media (prefers-reduced-motion: reduce) {
+  .v2-hero__dot,
+  .v2-hero__scroll svg,
+  .v2-marquee__track { animation: none; }
 }
