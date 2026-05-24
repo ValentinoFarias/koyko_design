@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 // Selectors that trigger the enlarged "hot" cursor state
-const HOT = 'a, button, .v2-theme-dot, .card';
+const HOT = '.v2-nav__link';
 
 export default function KoykoCursorV2() {
   const cursorRef = useRef(null);
