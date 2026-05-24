@@ -7,4 +7,4 @@ CLAUDE.md
 .env*.local
 .env.production
 falling-text-demo.html
-.claude
+.claude.DS_Store
