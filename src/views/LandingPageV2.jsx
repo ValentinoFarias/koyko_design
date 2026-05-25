@@ -140,7 +140,7 @@ export default function LandingPageV2() {
       data-stage={stage}
     >
       {/* Whole screen is a link so clicking anywhere enters the site */}
-      <Link href="/home-v2" className="v2-landing__enter" aria-label="Enter site">
+      <Link href="/home" className="v2-landing__enter" aria-label="Enter site">
         {/* Logo is rendered via mask + background-color so we can crossfade
             between paper, orange, and ink purely through CSS tokens. */}
         <span className="v2-landing__logo" aria-hidden="true" />
