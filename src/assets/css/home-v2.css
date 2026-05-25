@@ -81,13 +81,11 @@
 .home-v2[data-theme="negro"]::before { mix-blend-mode: screen; }
 
 /* ───── Theme Picker ─────
-   Sits below the fixed navbar, vertically aligned with the hero meta
-   strip on the home page (the meta strip starts ~110px from the top
-   of the viewport thanks to .v2-hero's padding-top). On other pages
-   it just floats top-right below the nav. */
+   Sits inside the navbar's right-edge area on desktop. The mobile
+   breakpoint drops it below the shrunk nav so the two don't overlap. */
 .v2-theme-picker {
   position: fixed;
-  top: 110px;
+  top: 22px;
   right: 22px;
   z-index: 50;
   display: flex;
@@ -285,12 +283,11 @@
 
 /* ───── Meta strip ───── */
 .v2-hero__meta {
-  /* Stacked vertically on the left; picker (fixed top-right) sits in
-     the same horizontal band on the right. */
+  /* Desktop: tag on the left, location on the right.
+     The mobile breakpoint stacks them vertically. */
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
   font-family: var(--v2-ff-mono);
   font-size: 11px;
   letter-spacing: .14em;
@@ -1563,6 +1560,14 @@
   /* ── Contact-form inputs (audit C4) — bump vertical padding so each
      field meets the 44px mobile tap-target minimum. */
   .v2-form__input { padding: 12px 0; }
+
+  /* ── Hero meta strip — stack the tag + location vertically on mobile
+     instead of side-by-side. */
+  .v2-hero__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 
   /* ── Hero claim (round 2) — JSX joins "creative" and "developer" with
      a non-breaking space, so the pair can't wrap. Shrinking the clamp
