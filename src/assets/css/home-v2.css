@@ -1008,6 +1008,168 @@
   to   { opacity: 1; transform: translateY(0);   }
 }
 
+/* =============================================================================
+   CONTACT PAGE V2  (ContactV2.jsx + KoykoContactFormV2.jsx)
+   Standalone /contact-v2 page. Navbar at top, centered card containing
+   an editorial header + a line-only form, footer at the bottom.
+   ============================================================================= */
+
+/* Page shell — push content past the fixed nav, center the card column */
+.v2-contact-page__main {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 140px var(--v2-gut) 100px;
+}
+
+/* Page header */
+.v2-contact-page__header {
+  margin-bottom: 56px;
+  text-align: center;
+}
+.v2-contact-page__eyebrow {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+  margin-bottom: 18px;
+}
+.v2-contact-page__title {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(56px, 9vw, 124px);
+  line-height: .96;
+  letter-spacing: -.015em;
+}
+.v2-contact-page__title em {
+  /* "talk" — italic + accent color, swap to Syne for the proper slant */
+  font-style: italic;
+  font-family: var(--v2-ff-display);
+  font-weight: 800;
+  color: var(--v2-accent);
+}
+.v2-contact-page__subtitle {
+  margin-top: 24px;
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.4vw, 20px);
+  color: var(--v2-mute-ink);
+}
+/* Under naranjo, accent flips to black — switch "talk" to cream/paper. */
+.home-v2[data-theme="naranjo"] .v2-contact-page__title em {
+  color: var(--v2-paper);
+}
+
+/* ───── Form ─────
+   Line-only style: a single 1.5px bottom rule per field, accent on focus.
+   Labels sit small + mono above each input. */
+.v2-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.v2-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.v2-form__label {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+}
+.v2-form__input {
+  font: inherit;
+  font-family: var(--v2-ff-display);
+  font-weight: 600;
+  font-size: clamp(16px, 1.6vw, 22px);
+  color: var(--v2-ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid var(--v2-ink);
+  padding: 8px 0;
+  outline: none;
+  transition: border-color .25s var(--v2-ease);
+}
+.v2-form__input::placeholder { color: var(--v2-mute-ink); }
+.v2-form__input:focus { border-bottom-color: var(--v2-accent); }
+
+/* Select — strip default chrome, add a custom dropdown caret */
+.v2-form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  /* Inline SVG caret in currentColor, swaps with text color on every theme */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8' fill='none'><path d='M1 1l6 6 6-6' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  padding-right: 28px;
+}
+.v2-form__select option { color: #0A0A0A; background: #F5F5F0; }
+
+/* Textarea — same line style; resizable vertically only */
+.v2-form__textarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.45;
+}
+
+.v2-form__error {
+  font-family: var(--v2-ff-mono);
+  font-size: 13px;
+  color: var(--v2-accent);
+  margin-top: -8px;
+}
+
+/* Submit — v2 pill button (matches the footer's back-to-top style) */
+.v2-form__submit {
+  align-self: flex-start;
+  font: inherit;
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--v2-ink);
+  background: transparent;
+  border: 1.5px solid var(--v2-ink);
+  padding: 14px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .35s var(--v2-ease),
+              color .35s var(--v2-ease),
+              transform .35s var(--v2-ease),
+              opacity .35s var(--v2-ease);
+}
+.v2-form__submit:hover:not(:disabled) {
+  background: var(--v2-ink);
+  color: var(--v2-bg);
+  transform: translateY(-2px);
+}
+.v2-form__submit:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* Thank-you screen after submission */
+.v2-form__thanks {
+  text-align: center;
+  padding: 40px 0;
+}
+.v2-form__thanks-line {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.1;
+}
+.v2-form__thanks-line--mute {
+  color: var(--v2-mute-ink);
+  font-weight: 700;
+  margin-top: 12px;
+}
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
