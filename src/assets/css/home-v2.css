@@ -914,6 +914,100 @@
   border-radius: 4px;
 }
 
+/* =============================================================================
+   LANDING PAGE V2  (LandingPageV2.jsx)
+   Minimal v2 intro: cream background, centered FullLogo, fades in on load.
+   The whole screen is a link (.v2-landing__enter) that navigates to
+   /home-v2 when clicked.
+   ============================================================================= */
+
+.v2-landing {
+  /* .home-v2 already gives us a 100vh min-height — just need to center. */
+  display: grid;
+  place-items: center;
+}
+
+/* The entire screen is clickable — the link element fills the viewport
+   so a click anywhere navigates to /home-v2. */
+.v2-landing__enter {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100vh;
+  text-decoration: none;
+}
+
+/* Centered logo. Rendered as a masked <span> so the fill color can
+   transition via CSS (background-color) instead of img filter tricks.
+   - Stage 1 (data-theme="negro" wrapper): paper-white logo on black bg.
+   - Stage 2 (data-theme="blanco" + .v2-landing--flipped): orange logo
+     on cream bg.
+   The wrapper's bg transition (.55s, defined on .home-v2) and the
+   background-color transition below run in sync. */
+.v2-landing__logo {
+  display: block;
+  width: clamp(110px, 18vw, 260px);
+  aspect-ratio: 1 / 1;
+  background-color: var(--v2-paper);
+  -webkit-mask: url("/assets/images/v2images/logoFigura.svg") center / contain no-repeat;
+          mask: url("/assets/images/v2images/logoFigura.svg") center / contain no-repeat;
+  transition: background-color .55s var(--v2-ease);
+  /* Subtle one-time fade + lift on initial load */
+  animation: v2-landing-in .9s var(--v2-ease) both;
+}
+/* Stage transitions driven by data-stage on .v2-landing.
+   - Stage 0: paper-white logo (set as the default above)
+   - Stage 1: brand orange logo (on cream bg)
+   - Stage 2: ink-black logo (on orange bg) */
+.v2-landing[data-stage="1"] .v2-landing__logo { background-color: var(--v2-orange);    }
+.v2-landing[data-stage="2"] .v2-landing__logo { background-color: var(--v2-ink-black); }
+
+/* ───── Word-storm overlay (stage 2) ─────
+   16 images appear one by one at random positions to cover the orange
+   background. Each image is absolutely positioned with --rot / --scale
+   as inline custom properties — the .is-on class reads them. */
+.v2-landing__words {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.v2-landing__word {
+  position: absolute;
+  /* top/left set inline; translate -50% centers the image on that point.
+     The final rotation + scale (from inline --rot / --scale) are baked
+     in from the start, so only opacity animates — words just appear
+     rather than scaling/rotating into place. */
+  width: clamp(180px, 30vw, 460px);
+  height: auto;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(var(--scale, 1));
+  transition: opacity .22s var(--v2-ease);
+}
+.v2-landing__word.is-on { opacity: 1; }
+
+/* Final reveal — white FullLogo lands on top of the now-black,
+   word-covered screen once the storm finishes. The source SVG is dark,
+   so we invert it to render pure white. */
+.v2-landing__full-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(110px, 18vw, 260px);
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;                       /* above .v2-landing__words */
+  filter: invert(1);
+  opacity: 0;
+  transition: opacity .6s var(--v2-ease);
+}
+.v2-landing__full-logo.is-on { opacity: 1; }
+@keyframes v2-landing-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
