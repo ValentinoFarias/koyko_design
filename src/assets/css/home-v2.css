@@ -675,6 +675,11 @@
   font-weight: 800;
   color: var(--v2-accent);
 }
+/* Under naranjo, accent flips to black — switch "YOUR" to cream/paper
+   so it stands out from the headline against the orange background. */
+.home-v2[data-theme="naranjo"] .v2-contact__claim em {
+  color: var(--v2-paper);
+}
 
 /* ───── Curtain-reveal heading ─────
    Each word sits in a clip wrapper (overflow: hidden). GSAP starts the
@@ -743,9 +748,12 @@
   background: var(--v2-accent);
   color: var(--v2-bg);
 }
-/* On naranjo, accent = black and bg = orange — the default flip works,
-   but we explicitly set color to keep the giant X readable. */
-.home-v2[data-theme="naranjo"] .v2-xring:hover { color: var(--v2-ink); }
+
+/* On naranjo, the ring border + orbiting "SEND · EMAIL · START PROJECT
+   · SAY HOLA …" text render in cream so they stay readable against
+   both the orange resting bg and the black hover bg. */
+.home-v2[data-theme="naranjo"] .v2-xring         { border-color: var(--v2-paper); color: var(--v2-paper); }
+.home-v2[data-theme="naranjo"] .v2-xring__orbit  { fill: var(--v2-paper); }
 
 .v2-xring__x {
   /* Inter would be cleaner here, but it isn't loaded — Syne falls back fine. */
@@ -768,6 +776,143 @@
   animation: v2-xring-spin 22s linear infinite;
 }
 @keyframes v2-xring-spin { to { transform: rotate(360deg); } }
+
+/* =============================================================================
+   FOOTER  (KoykoFooterV2.jsx)
+   Four-column grid: [figure] [vertical rule] [hello col] [say hi col].
+   A bottom strip spans all columns with copy line + back-to-top button.
+   ============================================================================= */
+
+.v2-foot {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto auto 1fr 1fr;
+  align-items: start;
+  gap: 40px;
+  padding: 56px var(--v2-gut) 36px;
+  border-top: 1.5px solid var(--v2-ink);
+  transition: border-color .55s var(--v2-ease);
+}
+
+/* Left figure column */
+.v2-foot__left { width: 110px; }
+.v2-foot__figure {
+  width: 100%;
+  height: auto;
+  /* Match the navbar's per-theme logo behaviour — invert on negro so the
+     dark SVG reads on the black background. */
+  filter: var(--v2-logo-filter, none);
+}
+.home-v2[data-theme="negro"] .v2-foot__figure { filter: invert(1); }
+
+/* Vertical rule between figure and contact columns */
+.v2-foot__rule {
+  width: 1.5px;
+  background: var(--v2-ink);
+  align-self: stretch;
+  transition: background .55s var(--v2-ease);
+}
+
+/* Each contact column stacks label + link(s) */
+.v2-foot__col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Bold "hello" / "say hi" label */
+.v2-foot__h {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: 28px;
+}
+
+/* Link/value beneath each label */
+.v2-foot__a {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: 22px;
+  position: relative;
+  width: max-content;
+  color: var(--v2-ink);
+  text-decoration: none;
+  padding-bottom: 4px;
+}
+/* Slide-in underline on hover — same pattern as nav links */
+.v2-foot__a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 100%;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  transition: right .35s var(--v2-ease);
+}
+.v2-foot__a:hover::after { right: 0; }
+
+/* Modifiers for the "say hi" column */
+.v2-foot__a--sm   { font-size: 18px; font-weight: 600; }
+.v2-foot__a--mute { color: var(--v2-mute-ink); font-weight: 500; }
+/* Non-link mute text shouldn't show the hover underline */
+.v2-foot__a--mute::after { content: none; }
+
+/* Bottom strip spans the full grid: copy left, back-to-top right */
+.v2-foot__col--bot {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1.2px solid var(--v2-scrim);
+  padding-top: 28px;
+  margin-top: 24px;
+  transition: border-color .55s var(--v2-ease);
+}
+
+/* Copyright / made-by-hand line */
+.v2-foot__small {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+}
+
+/* Back-to-top pill button */
+.v2-foot__top {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--v2-ink);
+  background: transparent;
+  border: 1.5px solid var(--v2-ink);
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .35s var(--v2-ease),
+              color .35s var(--v2-ease),
+              transform .35s var(--v2-ease);
+}
+.v2-foot__top:hover {
+  background: var(--v2-ink);
+  color: var(--v2-bg);
+  transform: translateY(-2px);
+}
+
+/* Trail image appended to the footer when hovering the "say hi" column.
+   The image element itself is created and positioned by gsap (see
+   useMouseTrailImage in KoykoFooterV2.jsx) — these rules just size and
+   layer it. */
+.v2-foot__trail-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(120px, 16vw, 220px);
+  height: auto;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 4px;
+}
 
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
@@ -803,9 +948,12 @@
    block also lives here so animation gating stays in one place.
    ============================================================================= */
 
-/* Tablet — portfolio drops to 2-up */
+/* Tablet — portfolio drops to 2-up; footer figure column collapses */
 @media (max-width: 920px) {
   .v2-portfolio__grid { grid-template-columns: 1fr 1fr; }
+  .v2-foot           { grid-template-columns: auto 1fr; }
+  .v2-foot__rule     { display: none; }
+  .v2-foot__col--bot { grid-column: 1 / -1; }
 }
 
 /* Mobile — portfolio stacks single-column, claim stays inline, designed

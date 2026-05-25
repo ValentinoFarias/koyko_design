@@ -8,6 +8,7 @@ import KoykoMarqueeV2   from '../components/v2/KoykoMarqueeV2';
 import KoykoPortfolioV2 from '../components/v2/KoykoPortfolioV2';
 import KoykoDesignedV2  from '../components/v2/KoykoDesignedV2';
 import KoykoContactV2   from '../components/v2/KoykoContactV2';
+import KoykoFooterV2    from '../components/v2/KoykoFooterV2';
 
 const THEMES = {
   negro:   '#0A0A0A',
@@ -63,13 +64,8 @@ export default function HomeV2() {
       {/* 06 — Contact (replaces the placeholder) */}
       <KoykoContactV2 />
 
-      {/* Remaining section placeholders — replaced one by one as V2 components are built */}
-      {SECTIONS.filter((s) => !['02', '03', '04', '05', '06'].includes(s.id)).map(({ id, name }) => (
-        <div key={id} className="v2-placeholder">
-          <span className="v2-placeholder__label">{id} · {name}</span>
-          <span className="v2-placeholder__note">coming next</span>
-        </div>
-      ))}
+      {/* 07 — Footer (replaces the placeholder) */}
+      <KoykoFooterV2 />
 
     </div>
   );
