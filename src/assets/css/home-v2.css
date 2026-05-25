@@ -80,10 +80,14 @@
 }
 .home-v2[data-theme="negro"]::before { mix-blend-mode: screen; }
 
-/* ───── Theme Picker ───── */
+/* ───── Theme Picker ─────
+   Sits below the fixed navbar, vertically aligned with the hero meta
+   strip on the home page (the meta strip starts ~110px from the top
+   of the viewport thanks to .v2-hero's padding-top). On other pages
+   it just floats top-right below the nav. */
 .v2-theme-picker {
   position: fixed;
-  top: 22px;
+  top: 110px;
   right: 22px;
   z-index: 50;
   display: flex;
@@ -281,9 +285,12 @@
 
 /* ───── Meta strip ───── */
 .v2-hero__meta {
+  /* Stacked vertically on the left; picker (fixed top-right) sits in
+     the same horizontal band on the right. */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   font-family: var(--v2-ff-mono);
   font-size: 11px;
   letter-spacing: .14em;
@@ -1564,10 +1571,9 @@
 
   /* ── Designed-with (round 2) — "DESIGNED WITH" was overflowing because
      the existing 48px clamp floor is too big for a 360-400px viewport.
-     The rotator's 6.2em min-width is also unnecessary once the row
-     stacks to a column, so reset it. */
+     The rotator must keep a min-width — its words are absolutely
+     positioned (inset: 0), so a 0-width parent renders nothing. */
   .v2-designed__line { font-size: clamp(28px, 9vw, 72px); }
-  .v2-designed__rot  { min-width: 0; }
 
   /* ── Contact claim (round 2) — drop the floor further and tighten the
      inter-word gap so each word in the GSAP word-clip system fits
