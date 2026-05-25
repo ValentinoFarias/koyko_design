@@ -12,35 +12,24 @@ import KoykoNavbarV2      from '../components/v2/KoykoNavbarV2';
 import KoykoCursorV2      from '../components/v2/KoykoCursorV2';
 import KoykoFooterV2      from '../components/v2/KoykoFooterV2';
 import KoykoContactFormV2 from '../components/v2/KoykoContactFormV2';
+import V2ThemePicker      from '../components/v2/V2ThemePicker';
 import { useV2Theme }     from '../components/v2/useV2Theme';
-
-const THEMES = {
-  negro:   '#0A0A0A',
-  blanco:  '#F5F5F0',
-  naranjo: '#EB5120',
-};
 
 export default function ContactV2() {
   const [theme, setTheme] = useV2Theme();
 
   return (
-    <div className="home-v2 v2-contact-page" data-theme={theme}>
+    // suppressHydrationWarning silences the data-theme mismatch — SSR
+    // uses the default, client reads the saved theme from localStorage.
+    <div
+      className="home-v2 v2-contact-page"
+      data-theme={theme}
+      suppressHydrationWarning
+    >
 
       <KoykoCursorV2 />
 
-      {/* Theme Picker — same component pattern as HomeV2 */}
-      <div className="v2-theme-picker">
-        {Object.entries(THEMES).map(([name, hex]) => (
-          <button
-            key={name}
-            className={`v2-theme-dot${theme === name ? ' is-on' : ''}`}
-            style={{ '--dot': hex }}
-            onClick={() => setTheme(name)}
-            aria-label={name}
-          />
-        ))}
-        <span className="v2-theme-label">{theme}</span>
-      </div>
+      <V2ThemePicker theme={theme} setTheme={setTheme} />
 
       <KoykoNavbarV2 />
 

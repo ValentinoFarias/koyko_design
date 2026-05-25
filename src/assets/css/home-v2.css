@@ -1526,6 +1526,26 @@
     justify-content: flex-start;
     text-align: left;
   }
+
+  /* ── Navbar (audit C1) — shrink so links + brand don't crowd the
+     theme picker on the right. Smaller font, shorter brand logo,
+     tighter horizontal padding, and a narrower link gap. */
+  .v2-nav {
+    padding: 12px var(--v2-gut);
+  }
+  .v2-nav__brand img { height: 28px; }
+  .v2-nav__links     { font-size: 16px; gap: 14px; }
+  .v2-nav__sep       { height: 20px; }
+
+  /* ── Theme picker (audit C2) — drop below the navbar so the two
+     never overlap, hide the text label that makes the pill wide. */
+  .v2-theme-picker {
+    top: 64px;                       /* sits just below the shrunk navbar */
+    right: 12px;
+    padding: 6px 8px 6px 8px;
+    gap: 8px;
+  }
+  .v2-theme-label { display: none; } /* hide "blanco / negro / naranjo" text */
 }
 
 /* Respect users who've asked for less motion — kill the looping animations. */
