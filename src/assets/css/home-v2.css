@@ -1208,16 +1208,18 @@
 }
 
 /* Tagline sits OUTSIDE the sticky — scrolls away naturally before the body
-   text locks into view. Noto Sans JP mega size matches the rest of the v2 site. */
+   text locks into view. Sized to fit on a single line at all viewports and
+   spaced from the fixed v2-nav above it. */
 .v2-mission__tagline {
   font-family: var(--v2-ff-mega);
   font-weight: 900;
-  font-size: clamp(56px, 9vw, 132px);
-  line-height: .96;
+  font-size: clamp(28px, 5.5vw, 80px);
+  line-height: 1;
   letter-spacing: -.015em;
   text-align: center;
+  white-space: nowrap;                                   /* keep "A WEBSITE IS A PLACE" on one row */
   color: var(--v2-ink);
-  padding: clamp(2rem, 6vh, 5rem) var(--v2-gut);
+  padding: clamp(140px, 22vh, 220px) var(--v2-gut) clamp(2rem, 6vh, 5rem);
   margin: 0;
   transition: color .55s var(--v2-ease);
 }
@@ -1234,6 +1236,14 @@
 }
 .v2-mission__body p              { margin: 0 0 1.4rem; }
 .v2-mission__body p:last-child   { margin-bottom: 0; }
+
+/* Under naranjo (orange bg), the orange highlight color disappears into
+   the background. Force highlights to render in cream/paper instead.
+   !important is needed because GSAP's Phase 2 timeline writes the color
+   as an inline style — that's higher specificity than a normal class rule. */
+.home-v2[data-theme="naranjo"] .v2-mission__word[data-highlight="true"] {
+  color: var(--v2-paper) !important;
+}
 
 /* Each word is its own span so GSAP can animate them independently.
    The three CSS custom properties (--x, --y, --rotate) default to 0 so
@@ -1294,7 +1304,7 @@
   .v2-hero__claim-row em { display: inline; }
   .v2-portfolio__grid { grid-template-columns: 1fr; }
   .v2-designed__line { flex-direction: column; gap: 0; }
-  .v2-mission__tagline { font-size: clamp(40px, 13vw, 72px); }
+  .v2-mission__tagline { font-size: clamp(18px, 6vw, 32px); }
   .v2-mission__body    { font-size: clamp(15px, 4vw, 20px); }
 }
 
