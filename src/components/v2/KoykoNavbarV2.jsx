@@ -11,8 +11,8 @@ export default function KoykoNavbarV2() {
       </Link>
 
       <nav className="v2-nav__links" aria-label="Primary">
-        {/* about — still an in-page anchor for now */}
-        <a href="#about" className="v2-nav__link">about</a>
+        {/* about → dedicated /about-v2 route */}
+        <Link href="/about-v2" className="v2-nav__link">about</Link>
         <span className="v2-nav__sep" aria-hidden="true" />
         {/* contact → dedicated /contact-v2 route */}
         <Link href="/contact-v2" className="v2-nav__link">contact</Link>

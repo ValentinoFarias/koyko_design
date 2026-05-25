@@ -1170,6 +1170,78 @@
   margin-top: 12px;
 }
 
+/* =============================================================================
+   ABOUT PAGE V2  (KoykoMissionV2.jsx)
+   Scroll-driven brand story. 500vh tall section with a sticky 100dvh
+   container — user scrolls through phases that fade words in, recolor
+   highlights to brand orange, then drop them via Matter.js physics.
+   Behaviour is identical to v1 KoykoMission; only the visuals are re-skinned.
+   ============================================================================= */
+
+.v2-mission {
+  height: 500vh;                 /* 4× viewport — scroll-room for the four phases */
+  position: relative;
+  /* Background inherits .home-v2's theme-aware --v2-bg; paper-grain
+     overlay (.home-v2::before) shows through automatically. */
+}
+
+/* Sticky container — pins to top while the user scrolls through 500vh. */
+.v2-mission__sticky {
+  position: sticky;
+  top: 80px;                     /* clears the fixed v2-nav (38px logo + 16px×2 pad) */
+  height: 100dvh;                /* dvh handles iOS chrome show/hide */
+  overflow: clip;                /* contains falling words without breaking sticky */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v2-mission__content {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  width: 100%;
+  padding: clamp(2rem, 4vw, 3.5rem);
+}
+
+/* Tagline sits OUTSIDE the sticky — scrolls away naturally before the body
+   text locks into view. Noto Sans JP mega size matches the rest of the v2 site. */
+.v2-mission__tagline {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(56px, 9vw, 132px);
+  line-height: .96;
+  letter-spacing: -.015em;
+  text-align: center;
+  color: var(--v2-ink);
+  padding: clamp(2rem, 6vh, 5rem) var(--v2-gut);
+  margin: 0;
+  transition: color .55s var(--v2-ease);
+}
+
+/* Five body paragraphs in Noto Sans JP heavy — keeps the editorial feel
+   of v1 while scaling typography to match the v2 design language. */
+.v2-mission__body {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(18px, 1.7vw, 28px);
+  line-height: 1.6;
+  color: var(--v2-ink);
+  transition: color .55s var(--v2-ease);
+}
+.v2-mission__body p              { margin: 0 0 1.4rem; }
+.v2-mission__body p:last-child   { margin-bottom: 0; }
+
+/* Each word is its own span so GSAP can animate them independently.
+   The three CSS custom properties (--x, --y, --rotate) default to 0 so
+   words sit normally before the physics RAF loop kicks in. */
+.v2-mission__word {
+  display: inline-block;
+  white-space: pre;              /* preserves the trailing space between words */
+  transform: translate(var(--x, 0px), var(--y, 0px)) rotate(var(--rotate, 0rad));
+  will-change: transform, opacity;
+}
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
@@ -1213,11 +1285,14 @@
 }
 
 /* Mobile — portfolio stacks single-column, claim stays inline, designed
-   headline drops onto two lines (head above, rotator below). */
+   headline drops onto two lines (head above, rotator below), mission
+   tagline shrinks. */
 @media (max-width: 600px) {
   .v2-hero__claim-row em { display: inline; }
   .v2-portfolio__grid { grid-template-columns: 1fr; }
   .v2-designed__line { flex-direction: column; gap: 0; }
+  .v2-mission__tagline { font-size: clamp(40px, 13vw, 72px); }
+  .v2-mission__body    { font-size: clamp(15px, 4vw, 20px); }
 }
 
 /* Respect users who've asked for less motion — kill the looping animations. */
