@@ -1561,6 +1561,13 @@
      field meets the 44px mobile tap-target minimum. */
   .v2-form__input { padding: 12px 0; }
 
+  /* ── Hero — pull the top padding down so the meta strip's first line
+     sits at the same vertical level as the theme picker pill (which is
+     fixed at top: 64px on mobile). */
+  .v2-hero {
+    padding-top: 70px;
+  }
+
   /* ── Hero meta strip — stack the tag + location vertically on mobile
      instead of side-by-side. */
   .v2-hero__meta {
