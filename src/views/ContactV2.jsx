@@ -8,11 +8,11 @@
 //   3. KoykoContactFormV2 — name, email, project type, message, submit
 //   4. KoykoFooterV2     — figure + contact info + back-to-top
 
-import { useState } from 'react';
 import KoykoNavbarV2      from '../components/v2/KoykoNavbarV2';
 import KoykoCursorV2      from '../components/v2/KoykoCursorV2';
 import KoykoFooterV2      from '../components/v2/KoykoFooterV2';
 import KoykoContactFormV2 from '../components/v2/KoykoContactFormV2';
+import { useV2Theme }     from '../components/v2/useV2Theme';
 
 const THEMES = {
   negro:   '#0A0A0A',
@@ -21,7 +21,7 @@ const THEMES = {
 };
 
 export default function ContactV2() {
-  const [theme, setTheme] = useState('blanco');
+  const [theme, setTheme] = useV2Theme();
 
   return (
     <div className="home-v2 v2-contact-page" data-theme={theme}>

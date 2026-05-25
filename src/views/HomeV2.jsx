@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import KoykoNavbarV2 from '../components/v2/KoykoNavbarV2';
 import KoykoCursorV2 from '../components/v2/KoykoCursorV2';
+import { useV2Theme } from '../components/v2/useV2Theme';
 import KoykoHeroV2    from '../components/v2/KoykoHeroV2';
 import KoykoMarqueeV2   from '../components/v2/KoykoMarqueeV2';
 import KoykoPortfolioV2 from '../components/v2/KoykoPortfolioV2';
@@ -26,7 +26,7 @@ const SECTIONS = [
 ];
 
 export default function HomeV2() {
-  const [theme, setTheme] = useState('blanco');
+  const [theme, setTheme] = useV2Theme();
 
   return (
     <div className="home-v2" data-theme={theme}>

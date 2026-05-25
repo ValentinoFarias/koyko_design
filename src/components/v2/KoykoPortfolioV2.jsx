@@ -1,21 +1,28 @@
 'use client';
 
+import Link from 'next/link';
+
 // Portfolio grid — three project cards, each using its iOS-style icon.
+// `id` matches the case-study id in src/data/caseStudies.js so the card
+// links to /casestudies-v2/[id].
 const PROJECTS = [
   {
-    num: '01',
+    id:    'nerdecks',
+    num:   '01',
     title: 'NERDECKS',
     tag:   'flashcards · ai',
     src:   '/assets/images/logoNerdecks.png',
   },
   {
-    num: '02',
+    id:    'kumo-ramen',
+    num:   '02',
     title: 'KUMO RAMEN',
     tag:   'brand · web',
     src:   '/assets/images/logoIOSkumo.png',
   },
   {
-    num: '03',
+    id:    'socratic-js',
+    num:   '03',
     title: 'SOCRATIC JS',
     tag:   'teach · cli · oss',
     src:   '/assets/images/logoiconIOSSocraticJS.png',
@@ -32,8 +39,13 @@ export default function KoykoPortfolioV2() {
       </div>
 
       <div className="v2-portfolio__grid">
-        {PROJECTS.map(({ num, title, tag, src }) => (
-          <article key={num} className="v2-card" tabIndex={0}>
+        {PROJECTS.map(({ id, num, title, tag, src }) => (
+          <Link
+            key={id}
+            href={`/casestudies-v2/${id}`}
+            className="v2-card"
+            aria-label={`Open ${title} case study`}
+          >
             <div className="v2-card__thumb">
               <img src={src} alt={`${title} icon`} />
             </div>
@@ -43,7 +55,7 @@ export default function KoykoPortfolioV2() {
               <span className="v2-card__tag">{tag}</span>
             </div>
             <span className="v2-card__open">open →</span>
-          </article>
+          </Link>
         ))}
       </div>
     </section>

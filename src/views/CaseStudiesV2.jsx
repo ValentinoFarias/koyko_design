@@ -1,16 +1,14 @@
 'use client';
 
-// AboutV2 — /about-v2 route
+// CaseStudiesV2 — /casestudies-v2/[id] route
 //
-// Page composition:
-//   1. KoykoCursorV2 + KoykoNavbarV2 — V2 chrome
-//   2. KoykoMissionV2 — scroll-driven brand story (v2-styled mission)
-//   3. KoykoFooterV2 — V2 footer (lands after the 500vh mission scroll range)
+// V2 chrome (cursor + theme picker + navbar) wrapping a KoykoStudiesV2
+// body. Receives projectId from the dynamic route and forwards it down.
 
 import KoykoCursorV2  from '../components/v2/KoykoCursorV2';
 import KoykoNavbarV2  from '../components/v2/KoykoNavbarV2';
 import KoykoFooterV2  from '../components/v2/KoykoFooterV2';
-import KoykoMissionV2 from '../components/v2/KoykoMissionV2';
+import KoykoStudiesV2 from '../components/v2/KoykoStudiesV2';
 import { useV2Theme } from '../components/v2/useV2Theme';
 
 const THEMES = {
@@ -19,14 +17,14 @@ const THEMES = {
   naranjo: '#EB5120',
 };
 
-export default function AboutV2() {
+export default function CaseStudiesV2({ projectId }) {
   const [theme, setTheme] = useV2Theme();
 
   return (
-    <div className="home-v2 v2-about-page" data-theme={theme}>
+    <div className="home-v2 v2-studies-page" data-theme={theme}>
       <KoykoCursorV2 />
 
-      {/* Theme picker — same component pattern as HomeV2 / ContactV2 */}
+      {/* Theme picker — matches HomeV2 / AboutV2 / ContactV2 */}
       <div className="v2-theme-picker">
         {Object.entries(THEMES).map(([name, hex]) => (
           <button
@@ -41,7 +39,7 @@ export default function AboutV2() {
       </div>
 
       <KoykoNavbarV2 />
-      <KoykoMissionV2 />
+      <KoykoStudiesV2 projectId={projectId} />
       <KoykoFooterV2 />
     </div>
   );

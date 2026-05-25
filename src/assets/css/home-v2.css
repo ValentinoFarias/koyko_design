@@ -468,6 +468,9 @@
   flex-direction: column;
   gap: 18px;
   outline: none;                            /* custom focus on the thumb */
+  /* Defeat default <a> styling — cards are now Next <Link>s */
+  text-decoration: none;
+  color: inherit;
 }
 
 .v2-card__thumb {
@@ -1255,6 +1258,212 @@
   will-change: transform, opacity;
 }
 
+/* =============================================================================
+   CASE STUDIES V2  (KoykoStudiesV2.jsx)
+   Editorial layout per case study: large title, info columns (services /
+   project link / overview), 3×2 image+video gallery, and a prev/next
+   navigator at the bottom that reveals a preview thumbnail on hover.
+   ============================================================================= */
+
+.v2-studies {
+  position: relative;
+  z-index: 2;
+  padding: clamp(140px, 18vh, 180px) var(--v2-gut) 80px;
+}
+
+.v2-studies__entry {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Title — mega editorial, same scale as the about tagline */
+.v2-studies__title {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(56px, 9vw, 124px);
+  line-height: .96;
+  letter-spacing: -.015em;
+  color: var(--v2-ink);
+  margin: 0 0 24px;
+}
+
+/* 1.5px rule under the title — matches the portfolio heading */
+.v2-studies__rule {
+  border: 0;
+  border-top: 1.5px solid var(--v2-ink);
+  margin: 0 0 44px;
+  transition: border-color .55s var(--v2-ease);
+}
+
+/* Info columns — services | project | overview */
+.v2-studies__info {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: clamp(20px, 3vw, 56px);
+  margin-bottom: 72px;
+}
+.v2-studies__col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.v2-studies__col-label {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+  margin: 0;
+}
+
+/* Services as a clean stack — no bullets */
+.v2-studies__services-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.v2-studies__services-list li {
+  font-family: var(--v2-ff-display);
+  font-weight: 600;
+  font-size: clamp(15px, 1.3vw, 18px);
+  color: var(--v2-ink);
+}
+
+/* External "visit site" link — same hover-underline pattern as nav links */
+.v2-studies__link {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 20px);
+  color: var(--v2-ink);
+  text-decoration: none;
+  position: relative;
+  width: max-content;
+  padding-bottom: 4px;
+}
+.v2-studies__link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 100%;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  transition: right .35s var(--v2-ease);
+}
+.v2-studies__link:hover::after { right: 0; }
+
+/* Overview copy — display family for body text */
+.v2-studies__overview-text {
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.3vw, 18px);
+  line-height: 1.5;
+  color: var(--v2-ink);
+  margin: 0;
+  max-width: 56ch;
+}
+
+/* Image gallery — 3 rows × 2 cols */
+.v2-studies__gallery {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 28px);
+}
+.v2-studies__gallery-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(16px, 2vw, 28px);
+}
+
+/* Each gallery cell — rounded card, contains image or video */
+.v2-studies__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: var(--video-pos, 50% 50%);
+  background: var(--v2-thumb-bg);
+  border: 1.5px solid var(--v2-ink);
+  border-radius: 28px;
+  overflow: hidden;
+  /* --video-scale lets the data file zoom individual slots without
+     stretching the cell. transform sits on top of object-fit so it
+     scales the rendered image rather than the cell. */
+  transform: scale(var(--video-scale, 1));
+  transition: background .55s var(--v2-ease), border-color .55s var(--v2-ease);
+}
+.v2-studies__video {
+  /* Same shell as images; video controls show on hover */
+  cursor: pointer;
+}
+
+/* Bottom prev/next nav — full width, 1.5px top rule */
+.v2-studies__nav {
+  margin-top: clamp(72px, 10vw, 120px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1.5px solid var(--v2-ink);
+  transition: border-color .55s var(--v2-ease);
+}
+.v2-studies__nav-btn {
+  position: relative;
+  overflow: hidden;
+  padding: 32px clamp(20px, 4vw, 56px);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--v2-ink);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+.v2-studies__nav-btn--right {
+  border-left: 1.5px solid var(--v2-ink);
+  justify-content: flex-end;
+  text-align: right;
+}
+.v2-studies__nav-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(24px, 3vw, 44px);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+  transition: transform .35s var(--v2-ease);
+}
+.v2-studies__nav-arrow {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+}
+.v2-studies__nav-btn:hover .v2-studies__nav-inner {
+  transform: translateX(8px);
+}
+.v2-studies__nav-btn--left:hover .v2-studies__nav-inner {
+  transform: translateX(-8px);
+}
+
+/* Preview image — low-opacity ghost revealed on hover */
+.v2-studies__nav-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .45s var(--v2-ease);
+  pointer-events: none;
+  filter: grayscale(.4);
+}
+.v2-studies__nav-btn:hover .v2-studies__nav-preview {
+  opacity: .25;
+}
+
 /* ───── Section placeholders — visual scaffolding, removed as real sections land ───── */
 .v2-placeholder {
   display: flex;
@@ -1306,6 +1515,17 @@
   .v2-designed__line { flex-direction: column; gap: 0; }
   .v2-mission__tagline { font-size: clamp(18px, 6vw, 32px); }
   .v2-mission__body    { font-size: clamp(15px, 4vw, 20px); }
+
+  /* Case studies stack on mobile */
+  .v2-studies__info        { grid-template-columns: 1fr; gap: 32px; }
+  .v2-studies__gallery-row { grid-template-columns: 1fr; }
+  .v2-studies__nav         { grid-template-columns: 1fr; }
+  .v2-studies__nav-btn--right {
+    border-left: 0;
+    border-top: 1.5px solid var(--v2-ink);
+    justify-content: flex-start;
+    text-align: left;
+  }
 }
 
 /* Respect users who've asked for less motion — kill the looping animations. */
