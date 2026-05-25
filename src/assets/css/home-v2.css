@@ -37,7 +37,10 @@
   font-weight:  500;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x:   hidden;
+  /* `clip` (not `hidden`) — same clipping behavior but does NOT establish
+     a scroll container, so descendant `position: sticky` (e.g. the about
+     page mission) keeps working. */
+  overflow-x:   clip;
   transition:   background .55s var(--v2-ease), color .55s var(--v2-ease);
 }
 
