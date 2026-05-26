@@ -107,7 +107,7 @@ export default function KoykoContactV2() {
         </a>
         {/* Arrow image — hidden by default, fades in when the X-ring is hovered */}
         <img
-          src="/assets/images/arrowContact.png"
+          src="/assets/images/arrowContact.svg"
           alt=""
           aria-hidden="true"
           className="v2-contact__arrow"

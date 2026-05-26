@@ -747,8 +747,8 @@ body {
   position: absolute;
   left: 240px;               /* 220px ring + 20px gap */
   top: 50%;
-  transform: translateY(-50%);
-  width: 320px;
+  transform: translateY(-50% + 20px);
+  width: 384px;              /* 320px × 1.2 — 20% bigger */
   height: auto;
   pointer-events: none;
   opacity: 0;
@@ -829,6 +829,12 @@ body {
 
 /* Left figure column */
 .v2-foot__left { width: 110px; }
+.v2-foot__figure-link {
+  display: block;
+  line-height: 0;             /* removes the inline-image baseline gap */
+  transition: opacity .25s var(--v2-ease);
+}
+.v2-foot__figure-link:hover { opacity: .7; }
 .v2-foot__figure {
   width: 100%;
   height: auto;
@@ -929,21 +935,6 @@ body {
   background: var(--v2-ink);
   color: var(--v2-bg);
   transform: translateY(-2px);
-}
-
-/* Trail image appended to the footer when hovering the "say hi" column.
-   The image element itself is created and positioned by gsap (see
-   useMouseTrailImage in KoykoFooterV2.jsx) — these rules just size and
-   layer it. */
-.v2-foot__trail-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: clamp(120px, 16vw, 220px);
-  height: auto;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 4px;
 }
 
 /* =============================================================================
