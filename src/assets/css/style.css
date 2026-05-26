@@ -1,60 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@100..900&family=Syne:wght@400;500;600;700;800&display=swap');
 
-
-
-/* =============================================================================
-   DESIGN TOKENS
-   All reusable values live here. Changing a token updates every component
-   that references it — so always prefer tokens over hardcoded values.
-   ============================================================================= */
-
-:root {
-  /* ---- Fonts ---- */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-alt:  'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold:   700;
-
-  --line-height-tight:  1.05;
-  --line-height-normal: 1.7;
-
-  /* ---- Colours (light theme) ---- */
-  /* Used by the landing page counter and page transitions */
-  --color-bg:             #f7f3e2;   /* warm off-white canvas */
-  --color-fg:             #000000;   /* primary text */
-  --color-fg-muted:       #5b5444;   /* secondary / supporting text */
-  --color-accent:         #99753f;   /* brand accent */
-
-  /* ---- Transitions ---- */
-  --transition-fast:   0.2s ease;
-  --transition-normal: 0.25s ease;
-  --transition-slow:   0.35s ease;
-
-  /* ---- Z-index ---- */
-  --z-overlay: 9999;  /* page transition curtain — must sit above everything */
-  --z-header:    40;  /* fixed navbar */
-}
-
-/* Dark-mode overrides.
-   Only the tokens that actually change between themes are listed here.
-   The landing-page counter reads --color-fg, so it respects this too. */
-html[data-theme='dark'] {
-  --color-bg:       #050510;
-  --color-fg:       #f9f9ff;
-  --color-fg-muted: #a2a2c5;
-  --color-accent:   #7b7bff;
-}
-
-
 /* =============================================================================
    BASE RESET
-   Minimal global styles. Avoid putting component logic here.
+   Minimal global styles. Component styles live further down under .home-v2.
    ============================================================================= */
 
-/* border-box makes padding count INSIDE an element's width/height.
-   Without this, any element with width:100% + padding overflows its parent. */
 *,
 *::before,
 *::after {
@@ -62,16 +12,12 @@ html[data-theme='dark'] {
 }
 
 html {
-  /* Native smooth-scrolling for anchor links (e.g. #contact, #packages) */
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: var(--font-sans);
-  /* The page-transition JS fades the body opacity during route changes */
-  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 
