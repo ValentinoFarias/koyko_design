@@ -1,8 +1,13 @@
-// KoykoProcessPage — "Your journey with Koyko" standalone page
+// KoykoProcessV2 — V2-styled body for the /process page.
 //
-// Shows the 4-stage client journey: Getting Started → Design → Go Live → After Launch.
-// Each stage fades up on scroll using GSAP ScrollTrigger (matches site animation pattern).
-// Standalone — no navbar or footer, designed to be shared directly with prospective clients.
+// Renders the 4-stage client journey using Syne / Noto Sans JP / JetBrains
+// Mono typography and the --v2-* token system. Themes (blanco / negro /
+// naranjo) come for free because every selector lives under the .home-v2
+// wrapper supplied by the parent view (ProcessV2.jsx).
+//
+// Animations match the rest of the site:
+//   • Header fades up once on mount.
+//   • Each stage fades up when it enters the viewport on scroll.
 
 'use client';
 
@@ -12,11 +17,11 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── All page content defined here so the JSX stays readable ──────────────────
+// ── Page content (mirrors the v1 KoykoProcessPage data) ─────────────────────
 
 const STAGES = [
   {
-    number: '1',
+    number: '01',
     title: 'Getting',
     em: 'started',
     cards: [
@@ -37,7 +42,7 @@ const STAGES = [
     },
   },
   {
-    number: '2',
+    number: '02',
     title: 'The',
     em: 'design',
     cards: [
@@ -54,8 +59,9 @@ const STAGES = [
       {
         tag: 'Build',
         heading: 'All other pages',
+        // fullWidth — this card spans both columns on ≥720px
         body: 'I build out the rest of the site, keeping things consistent and sending each section to you for review.',
-        fullWidth: true, // this card spans both columns
+        fullWidth: true,
       },
     ],
     notice: {
@@ -64,7 +70,7 @@ const STAGES = [
     },
   },
   {
-    number: '3',
+    number: '03',
     title: 'Going',
     em: 'live',
     cards: [
@@ -81,7 +87,7 @@ const STAGES = [
     ],
   },
   {
-    number: '4',
+    number: '04',
     title: 'After',
     em: 'launch',
     cards: [
@@ -99,22 +105,22 @@ const STAGES = [
   },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Component ────────────────────────────────────────────────────────────────
 
-function KoykoProcessPage() {
+export default function KoykoProcessV2() {
   const headerRef = useRef(null);
-  // One ref per stage — stored in an array
+  // One ref per stage section, stored in an array
   const stageRefs = useRef([]);
 
   useEffect(() => {
-    // Animate the header in on load
+    // Header fades up on mount
     gsap.fromTo(
       headerRef.current,
       { autoAlpha: 0, y: 16 },
       { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power2.out' }
     );
 
-    // Each stage fades up when it enters the viewport while scrolling
+    // Each stage fades up when scrolled into view
     stageRefs.current.forEach((el, i) => {
       if (!el) return;
       gsap.fromTo(
@@ -125,31 +131,31 @@ function KoykoProcessPage() {
           y: 0,
           duration: 0.6,
           ease: 'power2.out',
-          delay: i * 0.05, // slight stagger so stages don't all pop at once
+          delay: i * 0.05,
           scrollTrigger: {
             trigger: el,
-            start: 'top 85%', // start when top of stage is 85% down the viewport
+            start: 'top 85%',
           },
         }
       );
     });
 
-    // Clean up all ScrollTrigger instances when the component unmounts
+    // Clean up ScrollTrigger instances on unmount
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
 
   return (
-    <div className="koyko-process__wrapper">
+    <main className="v2-process-page__main">
 
       {/* ── Header ── */}
-      <header className="koyko-process__header" ref={headerRef}>
-        <p className="koyko-process__eyebrow">Koyko Design Studio</p>
-        <h1 className="koyko-process__title">
-          Your journey,<br /><em>from idea to launch</em>
+      <header className="v2-process-page__header" ref={headerRef}>
+        <p className="v2-process-page__eyebrow">K O Y K O&nbsp;&nbsp;D E S I G N</p>
+        <h1 className="v2-process-page__title">
+          Your journey, from idea to <em>launch</em>
         </h1>
-        <p className="koyko-process__subtitle">
+        <p className="v2-process-page__subtitle">
           Here&apos;s exactly what working together looks like — no surprises, no guesswork.
         </p>
       </header>
@@ -158,43 +164,43 @@ function KoykoProcessPage() {
       {STAGES.map((stage, i) => (
         <div key={stage.number}>
 
-          {/* Connector arrow between stages (not before the first one) */}
+          {/* Mono down-arrow between stages (skip before the first) */}
           {i > 0 && (
-            <div className="koyko-process__connector" aria-hidden="true">↓</div>
+            <div className="v2-process-page__connector" aria-hidden="true">↓</div>
           )}
 
           <section
-            className="koyko-process__stage"
+            className="v2-process-page__stage"
             ref={(el) => (stageRefs.current[i] = el)}
           >
-            {/* Stage heading — number circle + title */}
-            <div className="koyko-process__stage-header">
-              <div className="koyko-process__stage-number" aria-hidden="true">
+            {/* Stage header — large display number + Syne title with italic accent */}
+            <div className="v2-process-page__stage-header">
+              <div className="v2-process-page__stage-number" aria-hidden="true">
                 {stage.number}
               </div>
-              <h2 className="koyko-process__stage-title">
+              <h2 className="v2-process-page__stage-title">
                 {stage.title} <em>{stage.em}</em>
               </h2>
             </div>
 
             {/* Cards grid */}
-            <div className="koyko-process__cards">
+            <div className="v2-process-page__cards">
               {stage.cards.map((card) => (
                 <div
                   key={card.tag}
-                  className={`koyko-process__card${card.fullWidth ? ' koyko-process__card--full' : ''}`}
+                  className={`v2-process-page__card${card.fullWidth ? ' v2-process-page__card--full' : ''}`}
                 >
-                  <p className="koyko-process__card-tag">{card.tag}</p>
-                  <h3 className="koyko-process__card-heading">{card.heading}</h3>
-                  <p className="koyko-process__card-body">{card.body}</p>
+                  <p className="v2-process-page__card-tag">{card.tag}</p>
+                  <h3 className="v2-process-page__card-heading">{card.heading}</h3>
+                  <p className="v2-process-page__card-body">{card.body}</p>
                 </div>
               ))}
             </div>
 
-            {/* Notice bar — only shown on stages that have one */}
+            {/* Notice bar (only on stages that have one) */}
             {stage.notice && (
-              <div className="koyko-process__notice">
-                <div className="koyko-process__notice-dot" aria-hidden="true" />
+              <div className="v2-process-page__notice">
+                <div className="v2-process-page__notice-bar" aria-hidden="true" />
                 <p>
                   <strong>{stage.notice.strong}</strong> {stage.notice.body}
                 </p>
@@ -204,17 +210,14 @@ function KoykoProcessPage() {
         </div>
       ))}
 
-      {/* ── Footer ── */}
-      <footer className="koyko-process__footer">
-        <p>Questions before getting started?</p>
-        <p>
-          <a href="mailto:hello@koykodesign.com">hello@koykodesign.com</a>
-        </p>
-        <div className="koyko-process__signature">Koyko</div>
-      </footer>
+      {/* ── Closing CTA — keeps the email handoff that v1 had ── */}
+      <div className="v2-process-page__cta">
+        <p className="v2-process-page__cta-prompt">Questions before getting started?</p>
+        <a className="v2-process-page__cta-mail" href="mailto:hello@koykodesign.com">
+          hello@koykodesign.com
+        </a>
+      </div>
 
-    </div>
+    </main>
   );
 }
-
-export default KoykoProcessPage;

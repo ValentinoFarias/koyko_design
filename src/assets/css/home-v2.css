@@ -1497,6 +1497,211 @@
 }
 
 /* =============================================================================
+   PROCESS PAGE V2  (KoykoProcessV2.jsx)
+   Standalone /process page. Navbar at top, editorial header, then four
+   stage sections (01-04) connected by mono down-arrows. Each stage has a
+   number, a Syne title with italic accent, a cards grid, and an optional
+   accent-bar notice. Every selector lives under .home-v2 so the three
+   theme overrides (blanco / negro / naranjo) above apply automatically.
+   ============================================================================= */
+
+/* Page shell — push content past the fixed nav, center a comfortable column */
+.v2-process-page__main {
+  position: relative;
+  z-index: 2;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 140px var(--v2-gut) 120px;
+}
+
+/* ── Header ── */
+.v2-process-page__header {
+  margin-bottom: 96px;
+  text-align: center;
+}
+.v2-process-page__eyebrow {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+  margin-bottom: 22px;
+}
+.v2-process-page__title {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(48px, 8vw, 104px);
+  line-height: .98;
+  letter-spacing: -.015em;
+}
+.v2-process-page__title em {
+  /* "from idea to launch" — italic accent, swap to Syne for the slant */
+  font-style: italic;
+  font-family: var(--v2-ff-display);
+  font-weight: 800;
+  color: var(--v2-accent);
+}
+.v2-process-page__subtitle {
+  margin-top: 24px;
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.4vw, 20px);
+  color: var(--v2-mute-ink);
+}
+/* Under naranjo the accent is black — flip "from idea to launch" to paper. */
+.home-v2[data-theme="naranjo"] .v2-process-page__title em {
+  color: var(--v2-paper);
+}
+
+/* ── Stage section ── */
+.v2-process-page__stage {
+  padding: 24px 0 8px;
+}
+
+/* Stage header — big display number sits next to the title */
+.v2-process-page__stage-header {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1.5px solid var(--v2-rule);
+}
+.v2-process-page__stage-number {
+  font-family: var(--v2-ff-display);
+  font-weight: 800;
+  font-size: clamp(56px, 10vw, 120px);
+  line-height: .9;
+  color: var(--v2-accent);
+  letter-spacing: -.02em;
+  flex-shrink: 0;
+}
+.v2-process-page__stage-title {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+.v2-process-page__stage-title em {
+  font-style: italic;
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  color: var(--v2-accent);
+}
+.home-v2[data-theme="naranjo"] .v2-process-page__stage-number,
+.home-v2[data-theme="naranjo"] .v2-process-page__stage-title em {
+  color: var(--v2-paper);
+}
+
+/* ── Cards grid ── */
+.v2-process-page__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.v2-process-page__card {
+  padding: 28px 28px 32px;
+  border: 1.5px solid var(--v2-rule);
+  background: var(--v2-thumb-bg);
+  transition: background .55s var(--v2-ease), border-color .55s var(--v2-ease);
+}
+.v2-process-page__card-tag {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+  margin-bottom: 14px;
+}
+.v2-process-page__card-heading {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.v2-process-page__card-body {
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.55;
+  color: var(--v2-mute-ink);
+}
+
+/* ── Notice bar — accent vertical rule on the left + mono-flavoured copy ── */
+.v2-process-page__notice {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  padding: 18px 22px;
+  background: var(--v2-scrim);
+  border: 1.5px solid var(--v2-rule);
+}
+.v2-process-page__notice-bar {
+  width: 4px;
+  background: var(--v2-accent);
+  flex-shrink: 0;
+}
+.v2-process-page__notice p {
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.55;
+  color: var(--v2-ink);
+}
+.v2-process-page__notice strong {
+  font-weight: 700;
+  color: var(--v2-accent);
+}
+.home-v2[data-theme="naranjo"] .v2-process-page__notice strong {
+  color: var(--v2-paper);
+}
+
+/* ── Connector arrow between stages ── */
+.v2-process-page__connector {
+  font-family: var(--v2-ff-mono);
+  font-size: 24px;
+  color: var(--v2-mute-ink);
+  text-align: center;
+  margin: 32px 0;
+  line-height: 1;
+}
+
+/* ── Closing CTA ── */
+.v2-process-page__cta {
+  margin-top: 96px;
+  padding-top: 56px;
+  border-top: 1.5px solid var(--v2-rule);
+  text-align: center;
+}
+.v2-process-page__cta-prompt {
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+  margin-bottom: 14px;
+}
+.v2-process-page__cta-mail {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 36px);
+  color: var(--v2-accent);
+  text-decoration: none;
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 4px;
+  transition: color .25s var(--v2-ease);
+}
+.v2-process-page__cta-mail:hover {
+  color: var(--v2-ink);
+}
+.home-v2[data-theme="naranjo"] .v2-process-page__cta-mail {
+  color: var(--v2-paper);
+}
+
+/* =============================================================================
    MEDIA QUERIES
    All breakpoints collected here, smallest → largest. The reduced-motion
    block also lives here so animation gating stays in one place.
@@ -1510,6 +1715,12 @@
   .v2-foot__col--bot { grid-column: 1 / -1; }
 }
 
+/* Process page — wider screens: 2-up card grid with a full-width opt-in */
+@media (min-width: 720px) {
+  .v2-process-page__cards          { grid-template-columns: 1fr 1fr; }
+  .v2-process-page__card--full     { grid-column: 1 / -1; }
+}
+
 /* Mobile — portfolio stacks single-column, claim stays inline, designed
    headline drops onto two lines (head above, rotator below), mission
    tagline shrinks. */
@@ -1517,8 +1728,56 @@
   .v2-hero__claim-row em { display: inline; }
   .v2-portfolio__grid { grid-template-columns: 1fr; }
   .v2-designed__line { flex-direction: column; gap: 0; }
-  .v2-mission__tagline { font-size: clamp(18px, 6vw, 32px); }
-  .v2-mission__body    { font-size: clamp(15px, 4vw, 20px); }
+  /* ── Mission — phone optimizations ported from v1 KoykoMission.
+     500vh is too tall on phones: words finish fading in long before the
+     sticky reaches its end. Halving to 250vh keeps the same phase
+     proportions (Phase 1 at 0-33%, physics at 85%, wind at 97%) while
+     dramatically shrinking the scroll distance. Combined with hiding
+     paragraphs 4-5 so the visible text actually fits inside 100dvh,
+     this is what makes the section behave on phones. */
+  .v2-mission { height: 250vh; }
+
+  /* Tagline — bigger on phones (the desktop clamp resolves too small at
+     narrow widths) and tighter padding so the sticky enters sooner. */
+  .v2-mission__tagline {
+    font-size: clamp(1.6rem, 8vw, 2.4rem);
+    padding: clamp(80px, 14vh, 140px) var(--v2-gut) clamp(1.5rem, 4vh, 3rem);
+    white-space: normal;
+  }
+
+  /* Body text — bump min size to a readable 1rem and tighten line-height
+     so the remaining 3 paragraphs sit comfortably inside the viewport. */
+  .v2-mission__body {
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    line-height: 1.55;
+  }
+  .v2-mission__body p { margin-bottom: 1rem; }
+
+  /* Hide paragraphs 4 and 5 on phones — three is all that fits inside the
+     sticky 100dvh without overflowing, which breaks the physics layout. */
+  .v2-mission__body p:nth-child(n+4) { display: none; }
+
+  /* Sticky — align text to the top instead of vertically centring it, so
+     the body picks up right where the tagline left off. */
+  .v2-mission__sticky {
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  /* Tighter side padding — give text more room on narrow screens. */
+  .v2-mission__content { padding: clamp(1rem, 5vw, 1.75rem); }
+
+  /* Process — tighten layout: stack the stage header so the number sits
+     above the title, shrink page paddings, and slim card padding. */
+  .v2-process-page__main         { padding: 120px var(--v2-gut) 80px; }
+  .v2-process-page__header       { margin-bottom: 64px; }
+  .v2-process-page__stage-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .v2-process-page__card         { padding: 22px 22px 26px; }
+  .v2-process-page__cta          { margin-top: 64px; padding-top: 40px; }
 
   /* Case studies stack on mobile */
   .v2-studies__info        { grid-template-columns: 1fr; gap: 32px; }

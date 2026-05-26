@@ -1,5 +1,5 @@
-import KoykoProcess from '../../views/KoykoProcess';
+import ProcessV2 from '../../views/ProcessV2';
 
 export default function Page() {
-  return <KoykoProcess />;
+  return <ProcessV2 />;
 }

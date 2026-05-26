@@ -24,11 +24,13 @@
     ]
   },
   "include": [
-    "next-env.d.ts",
-    ".next-dev/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/app/packages/page.jsx"  ],
+    "**/*.tsx",
+    ".next-dev/types/**/*.ts",
+    "next-env.d.ts",
+    "src/app/packages/page.jsx",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]
