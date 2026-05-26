@@ -4,7 +4,7 @@
 // KoykoMissionV2.jsx — v2-styled re-skin of KoykoMission
 // =============================================================================
 // Behaviour-identical port of /src/components/KoykoMission.jsx, with:
-//   - All CSS classes renamed v2-mission* (styled in home-v2.css)
+//   - All CSS classes renamed v2-mission* (styled in style.css)
 //   - Highlight color changed from green (#79FF4F) to brand orange (#EB5120)
 //   - Background image dropped — the v2 paper-grain shows through
 //

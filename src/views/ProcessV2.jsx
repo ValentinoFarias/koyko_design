@@ -8,7 +8,7 @@
 //   3. KoykoFooterV2 — shared V2 footer
 //
 // The wrapper carries `home-v2` so every --v2-* token + theme override
-// from home-v2.css applies, plus `v2-process-page` for page-specific
+// from style.css applies, plus `v2-process-page` for page-specific
 // styles. Theme is shared with the rest of the V2 site via useV2Theme().
 
 import KoykoCursorV2  from '../components/v2/KoykoCursorV2';
