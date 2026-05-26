@@ -23,10 +23,10 @@ export default function KoykoHeroV2() {
         />
       </figure>
 
-      {/* Two-row claim — "developer" is italic + accent color */}
+      {/* Claim — "design" is italic Syne + accent color */}
       <h1 className="v2-hero__claim">
         <span className="v2-hero__claim-row">
-          creative&nbsp;<em>developer</em>
+          web&nbsp;<em>design</em>
         </span>
       </h1>
 

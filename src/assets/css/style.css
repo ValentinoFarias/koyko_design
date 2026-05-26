@@ -372,7 +372,7 @@ body {
   margin-top: 30px;
 }
 .v2-hero__claim em {
-  /* "developer" — italic + accent color, swaps back to Syne for the slant */
+  /* "design" — italic + accent color, swaps to Syne for the slant */
   font-style: italic;
   font-family: var(--v2-ff-display);
   font-weight: 700;
