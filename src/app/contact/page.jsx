@@ -1,5 +1,5 @@
-import Contact from '../../views/Contact';
+import ContactV2 from '../../views/ContactV2';
 
-export default function Page() {
-  return <Contact />;
+export default function ContactV2Page() {
+  return <ContactV2 />;
 }

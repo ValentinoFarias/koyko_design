@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 
 // Persisted theme for the V2 site. Saves to localStorage so picking a
 // theme on one page (e.g. naranjo on /home) sticks when navigating to
-// /about-v2, /contact-v2, or /casestudies-v2 — with no visible flash.
+// /about, /contact, or /casestudies — with no visible flash.
 //
 // Key design points:
 //   - useState uses a *synchronous* lazy initializer that reads

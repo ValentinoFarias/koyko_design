@@ -3,7 +3,7 @@
 // KoykoStudiesV2 — v2-styled re-skin of KoykoStudies.
 //
 // Displays ONE case study at a time. Receives projectId from the dynamic
-// /casestudies-v2/[id] route. Same logic as v1 KoykoStudies — data from
+// /casestudies/[id] route. Same logic as v1 KoykoStudies — data from
 // CASE_STUDIES, image-pair split, video poster-frame seek, prev/next
 // wrap-around — but uses plain Next <Link> navigation (no curtain wipe).
 
@@ -143,7 +143,7 @@ export default function KoykoStudiesV2({ projectId }) {
           Hovering reveals a low-opacity preview thumbnail behind the label. */}
       <nav className="v2-studies__nav" aria-label="Browse other projects">
         <Link
-          href={`/casestudies-v2/${prev.id}`}
+          href={`/casestudies/${prev.id}`}
           className="v2-studies__nav-btn v2-studies__nav-btn--left"
           aria-label={`Go to ${prev.title}`}
         >
@@ -163,7 +163,7 @@ export default function KoykoStudiesV2({ projectId }) {
         </Link>
 
         <Link
-          href={`/casestudies-v2/${next.id}`}
+          href={`/casestudies/${next.id}`}
           className="v2-studies__nav-btn v2-studies__nav-btn--right"
           aria-label={`Go to ${next.title}`}
         >

@@ -1,6 +1,6 @@
 'use client';
 
-// CaseStudiesV2 — /casestudies-v2/[id] route
+// CaseStudiesV2 — /casestudies/[id] route
 //
 // V2 chrome (cursor + theme picker + navbar) wrapping a KoykoStudiesV2
 // body. Receives projectId from the dynamic route and forwards it down.

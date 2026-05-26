@@ -1,7 +1,6 @@
 // Dynamic route: /casestudies/kumo-ramen, /casestudies/nerdecks, etc.
-// Next.js passes the URL segment as params.id — we forward it to the view.
-import CaseStudies from '../../../views/CaseStudies';
+import CaseStudiesV2 from '../../../views/CaseStudiesV2';
 
 export default function Page({ params }) {
-  return <CaseStudies projectId={params.id} />;
+  return <CaseStudiesV2 projectId={params.id} />;
 }

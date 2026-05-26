@@ -1,6 +1,6 @@
 'use client';
 
-// AboutV2 — /about-v2 route
+// AboutV2 — /about route
 //
 // Page composition:
 //   1. KoykoCursorV2 + KoykoNavbarV2 — V2 chrome

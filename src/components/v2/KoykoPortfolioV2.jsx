@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 // Portfolio grid — three project cards, each using its iOS-style icon.
 // `id` matches the case-study id in src/data/caseStudies.js so the card
-// links to /casestudies-v2/[id].
+// links to /casestudies/[id].
 const PROJECTS = [
   {
     id:    'nerdecks',
@@ -42,7 +42,7 @@ export default function KoykoPortfolioV2() {
         {PROJECTS.map(({ id, num, title, tag, src }) => (
           <Link
             key={id}
-            href={`/casestudies-v2/${id}`}
+            href={`/casestudies/${id}`}
             className="v2-card"
             aria-label={`Open ${title} case study`}
           >

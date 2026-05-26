@@ -1,6 +1,6 @@
 'use client';
 
-// ContactV2 — /contact-v2 route
+// ContactV2 — /contact route
 //
 // Page order (mirrors v1 Contact but with v2 components):
 //   1. KoykoNavbarV2     — fixed top nav (plus the v2 cursor it pairs with)
