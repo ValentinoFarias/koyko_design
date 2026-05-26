@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@100..900&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@100..900&family=Syne:wght@400;500;600;700;800&display=swap');
 
 /* =============================================================================
    BASE RESET
@@ -788,8 +788,7 @@ body {
 .home-v2[data-theme="naranjo"] .v2-xring__orbit  { fill: var(--v2-paper); }
 
 .v2-xring__x {
-  /* Inter would be cleaner here, but it isn't loaded — Syne falls back fine. */
-  font-family: "Inter", var(--v2-ff-display);
+  font-family: var(--v2-ff-display);
   font-weight: 800;
   font-size: 78px;
   line-height: 1;
@@ -859,11 +858,14 @@ body {
   gap: 6px;
 }
 
-/* Bold "hello" / "say hi" label */
+/* Small uppercase column label — same eyebrow pattern as the rest of the site
+   (cards, page eyebrows, copyright line) so the footer stays in-system. */
 .v2-foot__h {
-  font-family: var(--v2-ff-display);
-  font-weight: 700;
-  font-size: 28px;
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
 }
 
 /* Link/value beneath each label */
@@ -1243,12 +1245,26 @@ body {
   margin: 0;
   transition: color .55s var(--v2-ease);
 }
+/* "PLACE" sits on its own row, in Syne, accent colour — same pattern as
+   page titles elsewhere on the site (e.g. <em>launch</em>, <em>developer</em>). */
+.v2-mission__tagline em {
+  display: block;                 /* breaks onto its own row */
+  font-family: var(--v2-ff-display);
+  font-weight: 800;
+  font-style: normal;
+  color: var(--v2-accent);
+}
+/* Under naranjo the accent flips to black — which would clash with the orange
+   bg. Switch "PLACE" to paper/cream so it still pops. */
+.home-v2[data-theme="naranjo"] .v2-mission__tagline em {
+  color: var(--v2-paper);
+}
 
-/* Five body paragraphs in Noto Sans JP heavy — keeps the editorial feel
-   of v1 while scaling typography to match the v2 design language. */
+/* Five body paragraphs in Syne semi-bold — matches the site's body text
+   system while keeping enough weight to read as editorial brand-story copy. */
 .v2-mission__body {
-  font-family: var(--v2-ff-mega);
-  font-weight: 900;
+  font-family: var(--v2-ff-display);
+  font-weight: 600;
   font-size: clamp(18px, 1.7vw, 28px);
   line-height: 1.6;
   color: var(--v2-ink);
@@ -1878,7 +1894,6 @@ body {
     padding: 40px var(--v2-gut) 28px;
   }
   .v2-foot__left  { width: clamp(72px, 22vw, 110px); }
-  .v2-foot__h     { font-size: 22px; }
   .v2-foot__a     { font-size: 18px; }
   .v2-foot__a--sm { font-size: 16px; }
 

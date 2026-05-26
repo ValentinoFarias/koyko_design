@@ -365,7 +365,7 @@ export default function KoykoMissionV2() {
       ref={sectionRef}
     >
       {/* Tagline outside the sticky — scrolls away before the body locks in */}
-      <p className="v2-mission__tagline">A WEBSITE IS A PLACE</p>
+      <p className="v2-mission__tagline">A WEBSITE IS A <em>PLACE</em></p>
 
       <div className="v2-mission__sticky" ref={stickyRef}>
         <div className="v2-mission__content">
