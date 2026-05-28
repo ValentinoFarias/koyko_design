@@ -1785,6 +1785,183 @@ body {
 }
 
 /* =============================================================================
+   FAQS PAGE V2  (KoykoFAQsV2.jsx)
+   Standalone /faqs page. Navbar at top, editorial header (mirrors the
+   /process page), then an accordion list of 12 questions built on native
+   <details>/<summary> for free keyboard + screen-reader support. Each
+   item has a mono number, a Syne question, and a +/− indicator that
+   flips when the item is open. Every selector lives under .home-v2 so
+   theme overrides apply automatically.
+   ============================================================================= */
+
+/* Page shell — push past the fixed nav, center a comfortable reading column */
+.v2-faqs-page__main {
+  position: relative;
+  z-index: 2;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 140px var(--v2-gut) 120px;
+}
+
+/* ── Header (same rhythm as the process page) ── */
+.v2-faqs-page__header {
+  margin-bottom: 80px;
+  text-align: center;
+}
+.v2-faqs-page__eyebrow {
+  font-family: var(--v2-ff-mono);
+  font-size: 11px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+  margin-bottom: 22px;
+}
+.v2-faqs-page__title {
+  font-family: var(--v2-ff-mega);
+  font-weight: 900;
+  font-size: clamp(48px, 8vw, 104px);
+  line-height: .98;
+  letter-spacing: -.015em;
+}
+.v2-faqs-page__title em {
+  /* "wondering" — italic accent, Syne for the slant */
+  font-style: italic;
+  font-family: var(--v2-ff-display);
+  font-weight: 800;
+  color: var(--v2-accent);
+}
+.v2-faqs-page__subtitle {
+  margin-top: 24px;
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.4vw, 20px);
+  line-height: 1.5;
+  color: var(--v2-mute-ink);
+}
+/* Under naranjo the accent reads as paper instead of orange */
+.home-v2[data-theme="naranjo"] .v2-faqs-page__title em {
+  color: var(--v2-paper);
+}
+
+/* ── Accordion list ── */
+.v2-faqs-page__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1.5px solid var(--v2-rule);
+}
+.v2-faqs-page__item {
+  border-bottom: 1.5px solid var(--v2-rule);
+}
+
+/* <details> wrapper — strip default disclosure styles */
+.v2-faqs-page__details {
+  width: 100%;
+}
+
+/* <summary> — clickable question row. Reset the default marker and lay out
+   number + question + +/- sign on a single row. */
+.v2-faqs-page__summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 4px;
+  cursor: pointer;
+  list-style: none;        /* Firefox — kill the triangle marker */
+  user-select: none;
+}
+.v2-faqs-page__summary::-webkit-details-marker { display: none; } /* Safari */
+
+/* Mono number on the left (matches eyebrow / footer label style) */
+.v2-faqs-page__num {
+  font-family: var(--v2-ff-mono);
+  font-size: 13px;
+  letter-spacing: .2em;
+  color: var(--v2-accent);
+  flex-shrink: 0;
+}
+
+/* The question itself */
+.v2-faqs-page__q {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 24px);
+  line-height: 1.3;
+  color: var(--v2-ink);
+  transition: color .25s var(--v2-ease);
+}
+.v2-faqs-page__summary:hover .v2-faqs-page__q {
+  color: var(--v2-accent);
+}
+
+/* +/− toggle indicator. Defaults to '+'; we flip to '−' when open. */
+.v2-faqs-page__sign {
+  font-family: var(--v2-ff-mono);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--v2-mute-ink);
+  transition: color .25s var(--v2-ease), transform .25s var(--v2-ease);
+}
+.v2-faqs-page__details[open] .v2-faqs-page__sign {
+  color: var(--v2-accent);
+  /* Replace '+' with '−' visually using a rotated unicode minus */
+  transform: rotate(45deg);
+}
+
+/* Answer body — fades in when the item is open */
+.v2-faqs-page__answer {
+  padding: 0 4px 28px;
+  max-width: 760px;
+}
+.v2-faqs-page__answer p {
+  font-family: var(--v2-ff-display);
+  font-weight: 500;
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.6;
+  color: var(--v2-mute-ink);
+}
+
+/* Under naranjo, the accent flips to paper so the number + open sign read */
+.home-v2[data-theme="naranjo"] .v2-faqs-page__num,
+.home-v2[data-theme="naranjo"] .v2-faqs-page__details[open] .v2-faqs-page__sign,
+.home-v2[data-theme="naranjo"] .v2-faqs-page__summary:hover .v2-faqs-page__q {
+  color: var(--v2-paper);
+}
+
+/* ── Closing CTA — mirrors /process exactly ── */
+.v2-faqs-page__cta {
+  margin-top: 96px;
+  padding-top: 56px;
+  border-top: 1.5px solid var(--v2-rule);
+  text-align: center;
+}
+.v2-faqs-page__cta-prompt {
+  font-family: var(--v2-ff-mono);
+  font-size: 12px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--v2-mute-ink);
+  margin-bottom: 14px;
+}
+.v2-faqs-page__cta-mail {
+  font-family: var(--v2-ff-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 36px);
+  color: var(--v2-accent);
+  text-decoration: none;
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 4px;
+  transition: color .25s var(--v2-ease);
+}
+.v2-faqs-page__cta-mail:hover {
+  color: var(--v2-ink);
+}
+.home-v2[data-theme="naranjo"] .v2-faqs-page__cta-mail {
+  color: var(--v2-paper);
+}
+
+/* =============================================================================
    MEDIA QUERIES
    All breakpoints collected here, smallest → largest. The reduced-motion
    block also lives here so animation gating stays in one place.

@@ -36,7 +36,7 @@ export default function KoykoFooterV2() {
       <div className="v2-foot__col">
         <span className="v2-foot__h">explore</span>
         <Link className="v2-foot__a v2-foot__a--sm" href="/process">
-          process
+          the process
         </Link>
         <Link className="v2-foot__a v2-foot__a--sm" href="/faqs">
           FAQs
