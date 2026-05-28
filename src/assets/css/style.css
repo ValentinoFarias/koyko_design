@@ -819,7 +819,7 @@ body {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: auto auto 1fr 1fr;
+  grid-template-columns: auto auto 1fr 1fr auto;
   align-items: start;
   gap: 40px;
   padding: 56px var(--v2-gut) 36px;
@@ -897,6 +897,59 @@ body {
 .v2-foot__a--mute { color: var(--v2-mute-ink); font-weight: 500; }
 /* Non-link mute text shouldn't show the hover underline */
 .v2-foot__a--mute::after { content: none; }
+
+/* Socials column — icons sit in a horizontal row beneath the label */
+.v2-foot__socials {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+/* Each social link is a square hit area; the icon shape lives in the span */
+.v2-foot__social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--v2-ink);
+  transition: color .35s var(--v2-ease),
+              transform .35s var(--v2-ease),
+              opacity .35s var(--v2-ease);
+}
+.v2-foot__social:hover {
+  opacity: .65;
+  transform: translateY(-2px);
+}
+
+/* Mono icon — uses mask-image so the SVG's silhouette is filled with the
+   current text colour. This means socials follow the per-theme --v2-ink
+   without needing to edit the SVG files. */
+.v2-foot__social-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-size: contain;
+          mask-size: contain;
+}
+.v2-foot__social-icon--insta {
+  -webkit-mask-image: url('/assets/images/socials/Insta.svg');
+          mask-image: url('/assets/images/socials/Insta.svg');
+}
+.v2-foot__social-icon--whatsapp {
+  -webkit-mask-image: url('/assets/images/socials/whatsapp.svg');
+          mask-image: url('/assets/images/socials/whatsapp.svg');
+}
+.v2-foot__social-icon--linkedin {
+  -webkit-mask-image: url('/assets/images/socials/linkedin.svg');
+          mask-image: url('/assets/images/socials/linkedin.svg');
+}
 
 /* Bottom strip spans the full grid: copy left, back-to-top right */
 .v2-foot__col--bot {
@@ -1740,7 +1793,9 @@ body {
 /* Tablet — portfolio drops to 2-up; footer figure column collapses */
 @media (max-width: 920px) {
   .v2-portfolio__grid { grid-template-columns: 1fr 1fr; }
-  .v2-foot           { grid-template-columns: auto 1fr; }
+  /* On tablet, drop the vertical rule and lay the three label columns
+     in a single row beneath the figure. */
+  .v2-foot           { grid-template-columns: auto 1fr 1fr 1fr; }
   .v2-foot__rule     { display: none; }
   .v2-foot__col--bot { grid-column: 1 / -1; }
 }

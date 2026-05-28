@@ -25,7 +25,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning here is for third-party HTML mutations
+    // (e.g. Chrome on iOS injects __gchrome_remoteframetoken on <html>
+    // before React hydrates). Scoped to <html>'s own attributes only.
+    <html lang="en" suppressHydrationWarning>
       <body>
         {children}
         <Script
