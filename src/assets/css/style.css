@@ -607,10 +607,11 @@ body {
   position: relative;
   display: inline-block;
   height: 1em;
-  min-width: 6.2em;
+  min-width: 10em;
   overflow: hidden;
   vertical-align: bottom;
   color: var(--v2-accent);
+  font-family: var(--v2-ff-display);
 }
 /* Under naranjo, accent flips to black — switch the rotator to the
    cream/paper tone so it stays distinct from the headline. The tagLine

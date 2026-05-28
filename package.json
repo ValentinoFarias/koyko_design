@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "rm -rf .next-dev && next dev -H 0.0.0.0",
+    "dev": "rm -rf .next-dev && (sleep 3 && node scripts/print-qr.js) & next dev -H 0.0.0.0",
     "dev:fast": "next dev -H 0.0.0.0",
     "dev:fresh": "rm -rf .next-dev && next dev -H 0.0.0.0",
     "clean": "rm -rf .next .next-dev",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@types/node": "25.5.0",
     "@types/react": "19.2.14",
+    "qrcode-terminal": "^0.12.0",
     "typescript": "5.9.3"
   }
 }
