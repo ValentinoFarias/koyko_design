@@ -2118,6 +2118,29 @@ body {
      state on most phones) and overflows off-screen anyway. */
   .v2-contact__arrow { display: none; }
 
+  /* ── FAQs page — tighten the reading column for phones. The desktop
+     title floor (48px) overflows on ~360px viewports, the 28px summary
+     padding + 24px gap crowds the row, and the 140/120 page padding
+     wastes vertical space above the fold. */
+  .v2-faqs-page__main    { padding: 110px var(--v2-gut) 72px; }
+  .v2-faqs-page__header  { margin-bottom: 56px; }
+  /* Re-floor the headline so it fits a 360px viewport without clipping */
+  .v2-faqs-page__title   { font-size: clamp(32px, 10vw, 56px); }
+  .v2-faqs-page__subtitle{ margin-top: 18px; font-size: clamp(14px, 4vw, 16px); }
+
+  /* Summary row: tighter gap, smaller mono number, slightly bigger tap area
+     (28px top/bottom keeps each row ≥ 56px — well past the 44px minimum). */
+  .v2-faqs-page__summary { gap: 14px; padding: 22px 2px; }
+  .v2-faqs-page__num     { font-size: 11px; letter-spacing: .18em; }
+  .v2-faqs-page__q       { font-size: clamp(16px, 4.4vw, 19px); }
+  .v2-faqs-page__sign    { font-size: 20px; }
+  .v2-faqs-page__answer  { padding: 0 2px 22px; }
+  .v2-faqs-page__answer p{ font-size: clamp(14px, 4vw, 16px); }
+
+  /* CTA — shrink the breathing room and bring the mail link in range */
+  .v2-faqs-page__cta      { margin-top: 64px; padding-top: 40px; }
+  .v2-faqs-page__cta-mail { font-size: clamp(20px, 6.5vw, 28px); }
+
   /* ── Footer (audit I2 + P4) — collapse to a single stacked column
      under 600px. The previous 2-col grid from the 920px breakpoint
      wasn't enough for narrow phones. */
