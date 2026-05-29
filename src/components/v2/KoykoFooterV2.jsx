@@ -59,7 +59,7 @@ export default function KoykoFooterV2() {
           </a>
           <a
             className="v2-foot__social"
-            href="https://wa.me/"
+            href="https://wa.me/447310924258?text=Hi%20Koyko%2C%20I'd%20like%20to%20chat%20about%20a%20project"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp"
