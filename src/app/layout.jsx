@@ -1,5 +1,6 @@
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import '../assets/css/style.css';
 
 export const metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
       <body>
         {children}
         <Analytics />
+        <SpeedInsights />
         <Script
           src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"
           strategy="afterInteractive"
