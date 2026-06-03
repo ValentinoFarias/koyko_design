@@ -16,10 +16,17 @@ export default function KoykoHeroV2() {
 
       {/* Centered figure with the wordmark overlapping its lower edge */}
       <figure className="v2-hero__logo">
+        {/* Explicit width/height + fetchPriority="high" tell the browser to
+            reserve space (no CLS) and prioritize this asset (better LCP).
+            The CSS sets width:100% so the intrinsic ratio still scales fluidly. */}
         <img
           className="v2-hero__figure-img"
           src="/assets/images/v2images/FullLogo.svg"
           alt=""
+          width="728"
+          height="961"
+          fetchPriority="high"
+          decoding="async"
         />
       </figure>
 

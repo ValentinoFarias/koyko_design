@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@100..900&family=Syne:wght@400;500;600;700;800&display=swap');
+/* Fonts are now self-hosted via next/font in src/app/layout.jsx.
+   Each font exposes a CSS variable (--font-syne, --font-noto-sans-jp,
+   --font-jetbrains-mono) which the --v2-ff-* tokens below reference. */
 
 /* =============================================================================
    BASE RESET
@@ -34,9 +36,10 @@ body {
   --v2-ink-black: #0A0A0A;
   --v2-paper:     #F5F5F0;
 
-  --v2-ff-display: "Syne", system-ui, sans-serif;
-  --v2-ff-mono:    "JetBrains Mono", ui-monospace, monospace;
-  --v2-ff-mega:    "Noto Sans JP", "Syne", sans-serif;
+  /* Next/font sets these CSS variables on <html>; fallbacks kept for safety. */
+  --v2-ff-display: var(--font-syne), system-ui, sans-serif;
+  --v2-ff-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
+  --v2-ff-mega:    var(--font-noto-sans-jp), var(--font-syne), sans-serif;
 
   --v2-ease: cubic-bezier(.7, .02, .15, 1);
   --v2-maxw: 1280px;
