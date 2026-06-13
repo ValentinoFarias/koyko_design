@@ -503,6 +503,120 @@
   background: var(--color-ink);
   border-radius: 999px;
 }
+/* Small colour swatch matching the chart's category colour. */
+.catDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+/* =============================================================================
+   TIME-BY-CATEGORY CHART  (studio-hub line chart)
+   Full-width SVG line chart of tracked time per category across weeks/months.
+   ============================================================================= */
+.chartSection {
+  margin-top: clamp(40px, 6vw, 72px);
+  border-top: 1.5px solid var(--color-ink);
+  padding-top: 32px;
+}
+.chartHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+.chartTitle {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 0.9rem + 1vw, 1.5rem);
+  letter-spacing: -0.01em;
+}
+.chartSub {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(var(--ink-rgb), 0.5);
+  margin-top: 5px;
+}
+
+/* Weeks / Months segmented toggle. */
+.segmented {
+  display: inline-flex;
+  border: 1.5px solid var(--color-ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.segBtn {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  min-height: 38px;
+  background: transparent;
+  border: none;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.segBtn + .segBtn { border-left: 1.5px solid var(--color-ink); }
+.segActive { background: var(--color-ink); color: var(--color-paper); }
+
+/* Horizontal scroll keeps the chart legible on small screens (see media query). */
+.chartScroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.chartCanvas { position: relative; }
+.chartSvg { width: 100%; height: auto; display: block; overflow: visible; }
+
+.gridLine { stroke: rgba(var(--ink-rgb), 0.12); stroke-width: 1; }
+.axisLabel { font-family: var(--ff-mono); font-size: 11px; fill: rgba(var(--ink-rgb), 0.5); }
+.xLabel { font-family: var(--ff-mono); font-size: 11px; fill: rgba(var(--ink-rgb), 0.6); }
+.serieLine { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.serieDot { stroke: var(--color-paper); stroke-width: 1.5; }
+.hoverGuide { stroke: rgba(var(--ink-rgb), 0.35); stroke-width: 1; stroke-dasharray: 3 3; }
+
+/* Hover tooltip — positioned over the canvas as a % of its width. */
+.chartTip {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 5;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+.chartTipPeriod { letter-spacing: 0.05em; margin-bottom: 7px; opacity: 0.85; }
+.chartTipRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.chartTipRow + .chartTipRow { margin-top: 4px; }
+.chartTipDot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; }
+.chartTipVal { font-variant-numeric: tabular-nums; }
+
+/* Legend. */
+.legend { display: flex; flex-wrap: wrap; gap: 12px 22px; margin-top: 22px; }
+.legendItem { display: inline-flex; align-items: center; gap: 8px; font-family: var(--ff-mono); font-size: 12px; }
+.legendSwatch { width: 12px; height: 12px; border-radius: 3px; }
+.legendTime { color: rgba(var(--ink-rgb), 0.55); }
+
+/* Empty / sparse-data message. */
+.chartEmpty {
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  color: rgba(var(--ink-rgb), 0.45);
+  padding: 36px 4px;
+  max-width: 48ch;
+  line-height: 1.6;
+}
 
 /* =============================================================================
    MEDIA QUERIES  (smallest → largest)
@@ -515,6 +629,8 @@
   .taskAside { margin-left: 40px; padding-top: 4px; } /* align under the title, past the checkbox */
   .check { width: 26px; height: 26px; min-width: 26px; }
   .timerValue { min-width: 72px; }
+  /* Force a minimum drawing width so chart labels stay legible (scrolls). */
+  .chartCanvas { min-width: 560px; }
 }
 
 /* Desktop: board + sticky report sidebar side by side. */

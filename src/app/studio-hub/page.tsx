@@ -17,6 +17,7 @@ import {
   useMemo,
   useCallback,
   type FormEvent,
+  type ReactNode,
 } from 'react';
 import styles from './studio-hub.module.css';
 
@@ -56,6 +57,19 @@ const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
+
+/* Chart canvas geometry, in SVG viewBox user units. The viewBox scales to fit
+   the container, so all positions below are computed against these fixed dims. */
+const CW = 820; // canvas width
+const CH = 300; // canvas height
+const PAD_L = 46;
+const PAD_R = 16;
+const PAD_T = 16;
+const PAD_B = 34;
+const PX0 = PAD_L;        // plot-area left
+const PX1 = CW - PAD_R;   // plot-area right
+const PY0 = PAD_T;        // plot-area top
+const PY1 = CH - PAD_B;   // plot-area bottom (baseline)
 
 /* ---------------------------------------------------------------------------
    Date / ISO-week helpers
@@ -122,6 +136,56 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+/* ---- Category colours: brand-aligned, just distinct enough to read a chart.
+   Warm tones for the comms/social work, cooler tones for the build work. ---- */
+const CATEGORY_COLORS: Record<string, string> = {
+  DMs: '#EB5120',         // signal
+  Instagram: '#C94418',   // deep
+  'Follow-up': '#F2954A', // tangerine
+  Admin: '#111111',       // ink
+  Design: '#5A8A7B',      // sage
+  Dev: '#3F6189',         // slate
+  Other: '#9C9389',       // warm grey
+};
+function catColor(cat: string): string {
+  return CATEGORY_COLORS[cat] ?? '#9C9389';
+}
+
+// Monday date for a "YYYY-Www" ISO week key — the inverse of weekKeyOf().
+function weekKeyToMonday(key: string): Date {
+  const [y, w] = key.split('-W').map(Number);
+  const jan4 = new Date(y, 0, 4);          // Jan 4 is always inside ISO week 1
+  const jan4Day = (jan4.getDay() + 6) % 7; // Mon=0..Sun=6
+  const monday = new Date(jan4);
+  monday.setDate(jan4.getDate() - jan4Day + (w - 1) * 7);
+  return monday;
+}
+
+// "YYYY-MM" month bucket for the week a task belongs to.
+function monthKeyOfWeek(weekKey: string): string {
+  const m = weekKeyToMonday(weekKey);
+  return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Compact duration for chart axes: "45m", "2h", "1.5h".
+function fmtDurShort(secs: number): string {
+  if (secs <= 0) return '0';
+  if (secs < 60) return `${Math.round(secs)}s`;
+  const mins = secs / 60;
+  if (mins < 60) return `${Math.round(mins)}m`;
+  const hrs = secs / 3600;
+  return Number.isInteger(hrs) ? `${hrs}h` : `${hrs.toFixed(1)}h`;
+}
+
+// Round a value up to a "nice" axis maximum (1, 2, 2.5, 5, 10 × 10ⁿ).
+function niceCeil(v: number): number {
+  if (v <= 0) return 1;
+  const pow = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / pow;
+  const nice = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+  return nice * pow;
+}
+
 /* ---------------------------------------------------------------------------
    Component
    --------------------------------------------------------------------------- */
@@ -149,6 +213,10 @@ export default function StudioHubPage() {
 
   // Report panel collapse state (open by default on desktop).
   const [reportOpen, setReportOpen] = useState(true);
+
+  // Time-by-category line chart: granularity + currently hovered period index.
+  const [chartGran, setChartGran] = useState<'week' | 'month'>('week');
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   /* ---- Load persisted state once, on mount ---- */
   useEffect(() => {
@@ -295,6 +363,97 @@ export default function StudioHubPage() {
     };
   }, [weekTasks, done, elapsedOf]);
 
+  /* ---- Time-by-category line chart data (weekly or monthly) ---- */
+  const chart = useMemo(() => {
+    // Bucket tracked seconds: period key -> category -> seconds.
+    const buckets = new Map<string, Map<string, number>>();
+    for (const t of tasks) {
+      if (!t.category) continue; // uncategorised time isn't plotted
+      const secs = elapsedOf(t);
+      if (secs <= 0) continue;
+      const pkey = chartGran === 'week' ? t.weekKey : monthKeyOfWeek(t.weekKey);
+      let m = buckets.get(pkey);
+      if (!m) { m = new Map(); buckets.set(pkey, m); }
+      m.set(t.category, (m.get(t.category) ?? 0) + secs);
+    }
+    if (buckets.size === 0) return { state: 'empty' as const };
+
+    // Build a continuous, chronological span from the first to the last period
+    // that has data, filling the gaps in between with zeros.
+    const sorted = [...buckets.keys()].sort(); // zero-padded keys sort correctly
+    let periods: string[] = [];
+    if (chartGran === 'week') {
+      let d = weekKeyToMonday(sorted[0]);
+      const end = weekKeyToMonday(sorted[sorted.length - 1]);
+      while (d <= end) {
+        periods.push(weekKeyOf(d));
+        const next = new Date(d);
+        next.setDate(d.getDate() + 7);
+        d = next;
+      }
+    } else {
+      let [y, mo] = sorted[0].split('-').map(Number);
+      const [ly, lm] = sorted[sorted.length - 1].split('-').map(Number);
+      while (y < ly || (y === ly && mo <= lm)) {
+        periods.push(`${y}-${String(mo).padStart(2, '0')}`);
+        mo++;
+        if (mo > 12) { mo = 1; y++; }
+      }
+    }
+
+    // Keep only the most recent window so the axis never gets too crowded.
+    const MAX = 12;
+    if (periods.length > MAX) periods = periods.slice(periods.length - MAX);
+
+    // Which categories actually have time inside the visible window?
+    const visible = new Set(periods);
+    const totals = new Map<string, number>();
+    for (const [pk, m] of buckets) {
+      if (!visible.has(pk)) continue;
+      for (const [c, s] of m) totals.set(c, (totals.get(c) ?? 0) + s);
+    }
+    const cats = CATEGORIES.filter((c) => (totals.get(c) ?? 0) > 0);
+
+    // A line needs at least two periods (and at least one category) to exist.
+    if (periods.length < 2 || cats.length === 0) return { state: 'sparse' as const };
+
+    const series = cats.map((cat) => ({
+      cat,
+      color: catColor(cat),
+      total: totals.get(cat) ?? 0,
+      points: periods.map((pk) => buckets.get(pk)?.get(cat) ?? 0),
+    }));
+
+    // Y-axis maximum, rounded up to a tidy number of hours.
+    let peak = 0;
+    for (const s of series) for (const v of s.points) peak = Math.max(peak, v);
+    const yMax = niceCeil(peak / 3600) * 3600; // nice ceiling, back in seconds
+
+    // Short x-axis labels, thinned so they never collide.
+    const labelFor = (pk: string) => {
+      if (chartGran === 'week') return `W${pk.split('-W')[1]}`;
+      const [yy, mm] = pk.split('-').map(Number);
+      return mm === 1 ? `${MONTHS[mm - 1]} '${String(yy).slice(2)}` : MONTHS[mm - 1];
+    };
+    const step = Math.ceil(periods.length / 8);
+    const xLabels = periods.map((pk, i) => ({
+      text: labelFor(pk),
+      show: i % step === 0 || i === periods.length - 1,
+    }));
+
+    // Fuller labels for the hover tooltip header.
+    const tipLabels = periods.map((pk) => {
+      if (chartGran === 'week') {
+        const range = weekLabelOf(weekKeyToMonday(pk)).split('— ')[1];
+        return `${labelFor(pk)} · ${range}`;
+      }
+      const [yy, mm] = pk.split('-').map(Number);
+      return `${MONTHS[mm - 1]} ${yy}`;
+    });
+
+    return { state: 'ok' as const, periods, series, yMax, xLabels, tipLabels };
+  }, [tasks, chartGran, elapsedOf]);
+
   /* ---- Render a single task row ---- */
   const renderTask = (t: Task) => {
     const isRunning = Boolean(running[t.id]);
@@ -391,6 +550,133 @@ export default function StudioHubPage() {
     );
   };
 
+  /* ---- Build the line chart body (empty / sparse / full SVG) ---- */
+  let chartInner: ReactNode;
+  if (chart.state === 'empty') {
+    chartInner = (
+      <p className={styles.chartEmpty}>
+        No time tracked yet. Start a task timer and your category trends will appear here.
+      </p>
+    );
+  } else if (chart.state === 'sparse') {
+    chartInner = (
+      <p className={styles.chartEmpty}>
+        Track time across at least two {chartGran === 'week' ? 'weeks' : 'months'} to draw the trend line.
+      </p>
+    );
+  } else {
+    const n = chart.periods.length;
+    // Map a period index / a duration to SVG coordinates.
+    const xAt = (i: number) => PX0 + (n === 1 ? 0 : (i / (n - 1)) * (PX1 - PX0));
+    const yAt = (v: number) => PY1 - (v / chart.yMax) * (PY1 - PY0);
+    const ticks = [0, 0.25, 0.5, 0.75, 1];
+    const tipLeft = hoverIdx != null ? Math.min(94, Math.max(6, (xAt(hoverIdx) / CW) * 100)) : 0;
+
+    chartInner = (
+      <>
+        <div className={styles.chartScroll}>
+          <div className={styles.chartCanvas}>
+            <svg
+              className={styles.chartSvg}
+              viewBox={`0 0 ${CW} ${CH}`}
+              role="img"
+              aria-label="Line chart of time invested per category over time"
+              onMouseMove={(e) => {
+                // Snap the hover to the nearest period based on cursor x.
+                const rect = e.currentTarget.getBoundingClientRect();
+                const svgX = ((e.clientX - rect.left) / rect.width) * CW;
+                const idx = Math.round(((svgX - PX0) / (PX1 - PX0)) * (n - 1));
+                setHoverIdx(Math.max(0, Math.min(n - 1, idx)));
+              }}
+              onMouseLeave={() => setHoverIdx(null)}
+            >
+              {/* Horizontal gridlines + y-axis duration labels */}
+              {ticks.map((f, i) => {
+                const y = PY1 - f * (PY1 - PY0);
+                return (
+                  <g key={`g${i}`}>
+                    <line className={styles.gridLine} x1={PX0} y1={y} x2={PX1} y2={y} />
+                    <text className={styles.axisLabel} x={PX0 - 8} y={y + 3} textAnchor="end">
+                      {fmtDurShort(chart.yMax * f)}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* X-axis period labels (thinned) */}
+              {chart.xLabels.map((l, i) =>
+                l.show ? (
+                  <text key={`x${i}`} className={styles.xLabel} x={xAt(i)} y={CH - 12} textAnchor="middle">
+                    {l.text}
+                  </text>
+                ) : null,
+              )}
+
+              {/* Vertical hover guide */}
+              {hoverIdx != null && (
+                <line className={styles.hoverGuide} x1={xAt(hoverIdx)} y1={PY0} x2={xAt(hoverIdx)} y2={PY1} />
+              )}
+
+              {/* One line + dots per category */}
+              {chart.series.map((s) => (
+                <g key={s.cat}>
+                  <polyline
+                    className={styles.serieLine}
+                    stroke={s.color}
+                    points={s.points.map((v, i) => `${xAt(i)},${yAt(v)}`).join(' ')}
+                  />
+                  {s.points.map((v, i) => (
+                    <circle
+                      key={i}
+                      className={styles.serieDot}
+                      fill={s.color}
+                      cx={xAt(i)}
+                      cy={yAt(v)}
+                      r={hoverIdx === i ? 4.5 : 2.5}
+                    />
+                  ))}
+                </g>
+              ))}
+            </svg>
+
+            {/* Hover tooltip: this period's time per category */}
+            {hoverIdx != null && (
+              <div className={styles.chartTip} style={{ left: `${tipLeft}%` }}>
+                <div className={styles.chartTipPeriod}>{chart.tipLabels[hoverIdx]}</div>
+                {chart.series.filter((s) => s.points[hoverIdx] > 0).length === 0 ? (
+                  <div className={styles.chartTipRow}><span>No time logged</span></div>
+                ) : (
+                  chart.series
+                    .filter((s) => s.points[hoverIdx] > 0)
+                    .map((s) => (
+                      <div key={s.cat} className={styles.chartTipRow}>
+                        <span>
+                          <span className={styles.chartTipDot} style={{ background: s.color }} />
+                          {s.cat}
+                        </span>
+                        <span className={styles.chartTipVal}>{fmtClock(s.points[hoverIdx])}</span>
+                      </div>
+                    ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Legend: swatch + category + total time in the visible window */}
+        <div className={styles.legend}>
+          {chart.series.map((s) => (
+            <span key={s.cat} className={styles.legendItem}>
+              <span className={styles.legendSwatch} style={{ background: s.color }} />
+              {s.cat}
+              <span className={styles.legendTime}>{fmtClock(s.total)}</span>
+            </span>
+          ))}
+        </div>
+      </>
+    );
+  }
+
   /* ---- Markup ---- */
   return (
     <main className={styles.hub}>
@@ -417,6 +703,7 @@ export default function StudioHubPage() {
         {!mounted ? (
           <p className={styles.empty} style={{ marginTop: 40 }}>Loading…</p>
         ) : (
+          <>
           <div className={styles.layout}>
             {/* -------- Weekly board -------- */}
             <section aria-label="Weekly task board">
@@ -555,13 +842,19 @@ export default function StudioHubPage() {
                       {stats.categoryRows.map(([cat, count]) => (
                         <div key={cat} className={styles.catRow}>
                           <div className={styles.catTop}>
-                            <span>{cat}</span>
+                            <span>
+                              <span className={styles.catDot} style={{ background: catColor(cat) }} />
+                              {cat}
+                            </span>
                             <span>{count}</span>
                           </div>
                           <div className={styles.catBarTrack}>
                             <div
                               className={styles.catBarFill}
-                              style={{ width: `${stats.maxCat ? (count / stats.maxCat) * 100 : 0}%` }}
+                              style={{
+                                width: `${stats.maxCat ? (count / stats.maxCat) * 100 : 0}%`,
+                                background: catColor(cat),
+                              }}
                             />
                           </div>
                         </div>
@@ -572,6 +865,38 @@ export default function StudioHubPage() {
               )}
             </aside>
           </div>
+
+          {/* -------- Time-by-category line chart (full width) -------- */}
+          <section className={styles.chartSection} aria-label="Time by category over time">
+            <div className={styles.chartHead}>
+              <div>
+                <div className={styles.chartTitle}>Time by category</div>
+                <div className={styles.chartSub}>
+                  Hours tracked across {chartGran === 'week' ? 'weeks' : 'months'}
+                </div>
+              </div>
+              <div className={styles.segmented} role="tablist" aria-label="Chart granularity">
+                <button
+                  className={`${styles.segBtn} ${chartGran === 'week' ? styles.segActive : ''}`}
+                  onClick={() => { setChartGran('week'); setHoverIdx(null); }}
+                  role="tab"
+                  aria-selected={chartGran === 'week'}
+                >
+                  Weeks
+                </button>
+                <button
+                  className={`${styles.segBtn} ${chartGran === 'month' ? styles.segActive : ''}`}
+                  onClick={() => { setChartGran('month'); setHoverIdx(null); }}
+                  role="tab"
+                  aria-selected={chartGran === 'month'}
+                >
+                  Months
+                </button>
+              </div>
+            </div>
+            {chartInner}
+          </section>
+          </>
         )}
       </div>
     </main>
