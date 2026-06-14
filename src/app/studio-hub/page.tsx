@@ -294,7 +294,6 @@ export default function StudioHubPage() {
     active: true,
   });
   const [mondayBannerOpen, setMondayBannerOpen] = useState(false); // Monday activation
-  const [endBannerOpen, setEndBannerOpen] = useState(false);       // sprint-finished
   const [mareaActivated, setMareaActivated] = useState(false);     // confirmation phase
 
   // Report + Plans cards: collapse state, the user's named plans, and drafts.
@@ -349,12 +348,9 @@ export default function StudioHubPage() {
     setSprint(sp);
     setPlans(plansInit);
 
-    // Decide which banner (if any) to show. The sprint-finished banner wins,
-    // then the Monday activation prompt.
+    // Show the Monday activation prompt (only on Mondays, once per day).
     const today = dateKeyOf(new Date());
-    if (sprintWeekRaw(sp.startDate) > SPRINT_WEEKS && sp.active) {
-      setEndBannerOpen(true);
-    } else if (isMonday(new Date()) && pm.lastPrompted !== today) {
+    if (isMonday(new Date()) && pm.lastPrompted !== today) {
       setMondayBannerOpen(true);
     }
 
@@ -562,17 +558,6 @@ export default function StudioHubPage() {
   const handleMareaSkip = useCallback(() => {
     setPlanMarea({ lastPrompted: dateKeyOf(new Date()), activated: false });
     setMondayBannerOpen(false);
-  }, []);
-
-  // End-of-sprint banner actions.
-  const handleNewSprint = useCallback(() => {
-    setSprint({ startDate: dateKeyOf(new Date()), active: true }); // restart from today
-    setEndBannerOpen(false);
-  }, []);
-
-  const handlePauseSprint = useCallback(() => {
-    setSprint((prev) => ({ ...prev, active: false }));
-    setEndBannerOpen(false);
   }, []);
 
   /* ---- Plan manager actions (report "Plan Marea" tab) ---- */
@@ -1012,17 +997,6 @@ export default function StudioHubPage() {
         {/* Everything below depends on the browser; render after mount. */}
         {!mounted ? (
           <p className={styles.empty} style={{ marginTop: 40 }}>Loading…</p>
-        ) : endBannerOpen ? (
-          /* -------- Sprint finished (90 days) -------- */
-          <section className={styles.mareaBanner} role="dialog" aria-label="Plan Marea: sprint completado">
-            <div className={styles.mareaHero}>Plan Marea</div>
-            <h2 className={styles.mareaHeadline}>90 días completados. Plan Marea terminado.</h2>
-            <p className={styles.mareaSub}>¿Lanzamos el siguiente?</p>
-            <div className={styles.mareaBtns}>
-              <button className={styles.mareaActivar} onClick={handleNewSprint}>Nuevo sprint</button>
-              <button className={styles.mareaSkip} onClick={handlePauseSprint}>Pausar</button>
-            </div>
-          </section>
         ) : mondayBannerOpen ? (
           /* -------- Monday activation prompt -------- */
           <section className={styles.mareaBanner} role="dialog" aria-label="Activar Plan Marea esta semana">
