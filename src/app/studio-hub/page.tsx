@@ -40,6 +40,18 @@ type Task = {
 // It lives in its own localStorage key so a running timer survives a reload.
 type RunningMap = Record<string, number>;
 
+// A user-authored Plan Marea plan: a named checklist that auto-activates (its
+// tasks are added to the dashboard) when its activation week arrives.
+type PlanTaskTemplate = { title: string; category: string };
+type Plan = {
+  id: string;
+  name: string;
+  tasks: PlanTaskTemplate[];
+  activationDate: string;       // "YYYY-MM-DD" — the day it should activate
+  active: boolean;              // armed/enabled by the user
+  activatedWeek: string | null; // weekKey it has already been activated into
+};
+
 const CATEGORIES = [
   'DMs',
   'Instagram',
@@ -52,6 +64,29 @@ const CATEGORIES = [
 
 const STORAGE_KEY = 'koyko-dashboard-tasks';
 const RUNNING_KEY = 'koyko-dashboard-running';
+
+/* ---- Plan Marea: weekly activation + 90-day sprint tracker ---- */
+const PLAN_MAREA_KEY = 'koyko-plan-marea';   // { lastPrompted, activated }
+const MAREA_SPRINT_KEY = 'koyko-marea-sprint'; // { startDate, active }
+const MAREA_PLANS_KEY = 'koyko-marea-plans';   // Plan[]
+const SPRINT_START_DEFAULT = '2025-06-15';   // hardcoded sprint start
+const SPRINT_WEEKS = 13;                      // 90 days ≈ 13 weeks
+
+// The fixed weekly checklist activated by Plan Marea (12 tasks, ~3h).
+const PLAN_MAREA_TASKS: { title: string; category: string }[] = [
+  { title: 'DM en frío — restaurante/negocio Bristol #1', category: 'DMs' },
+  { title: 'DM en frío — restaurante/negocio Bristol #2', category: 'DMs' },
+  { title: 'DM en frío — restaurante/negocio Bristol #3', category: 'DMs' },
+  { title: 'DM en frío — restaurante/negocio Bristol #4', category: 'DMs' },
+  { title: 'DM en frío — restaurante/negocio Bristol #5', category: 'DMs' },
+  { title: 'Publicar 1 post (portfolio, proceso u opinión)', category: 'Instagram' },
+  { title: 'Comentar 5 cuentas de restaurantes/negocios en Bristol', category: 'Instagram' },
+  { title: 'Responder todos los DMs y comentarios', category: 'Instagram' },
+  { title: 'Follow-up a leads que no respondieron la semana anterior', category: 'Follow-up' },
+  { title: 'Mensaje a cliente activo (relación y referidos)', category: 'Follow-up' },
+  { title: 'Revisar métricas Instagram (alcance, saves, DMs nuevos)', category: 'Admin' },
+  { title: 'Revisión semanal: ¿qué funcionó, qué no? (15 min)', category: 'Admin' },
+];
 
 const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -136,6 +171,40 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+// "YYYY-MM-DD" for a local date (used by the Plan Marea persistence).
+function dateKeyOf(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Parse a "YYYY-MM-DD" string into a local Date.
+function parseISODate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y || 1970, (m || 1) - 1, d || 1);
+}
+
+// "15 Jun" from a "YYYY-MM-DD" string.
+function fmtNiceDate(s: string): string {
+  const d = parseISODate(s);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+// Is this date a Monday? (getDay: Sun=0 … Mon=1 … Sat=6)
+function isMonday(d: Date): boolean {
+  return d.getDay() === 1;
+}
+
+// Raw (uncapped) sprint week number for a "YYYY-MM-DD" start date.
+// Math.ceil(daysSinceStart / 7); > SPRINT_WEEKS means the sprint is over.
+function sprintWeekRaw(startDate: string): number {
+  const [y, m, dd] = startDate.split('-').map(Number);
+  const start = new Date(y, m - 1, dd);
+  const now = new Date();
+  const startMid = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const nowMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const days = Math.round((nowMid.getTime() - startMid.getTime()) / 86400000);
+  return Math.ceil(days / 7);
+}
+
 /* ---- Category colours: brand-aligned, just distinct enough to read a chart.
    Warm tones for the comms/social work, cooler tones for the build work. ---- */
 const CATEGORY_COLORS: Record<string, string> = {
@@ -211,24 +280,84 @@ export default function StudioHubPage() {
   // Id of the task showing its inline "Delete?" confirmation, if any.
   const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
-  // Report panel collapse state (open by default on desktop).
-  const [reportOpen, setReportOpen] = useState(true);
-
   // Time-by-category line chart: granularity + currently hovered period index.
   const [chartGran, setChartGran] = useState<'week' | 'month'>('week');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
+  // Plan Marea: weekly-activation prompt + 90-day sprint state.
+  const [planMarea, setPlanMarea] = useState<{ lastPrompted: string; activated: boolean }>({
+    lastPrompted: '',
+    activated: false,
+  });
+  const [sprint, setSprint] = useState<{ startDate: string; active: boolean }>({
+    startDate: SPRINT_START_DEFAULT,
+    active: true,
+  });
+  const [mondayBannerOpen, setMondayBannerOpen] = useState(false); // Monday activation
+  const [endBannerOpen, setEndBannerOpen] = useState(false);       // sprint-finished
+  const [mareaActivated, setMareaActivated] = useState(false);     // confirmation phase
+
+  // Report + Plans cards: collapse state, the user's named plans, and drafts.
+  const [reportOpen, setReportOpen] = useState(true);
+  const [plansOpen, setPlansOpen] = useState(true);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [planDraft, setPlanDraft] = useState<Record<string, { title: string; cat: string }>>({});
+  const [openPlans, setOpenPlans] = useState<Record<string, boolean>>({}); // per-plan collapse
+
   /* ---- Load persisted state once, on mount ---- */
   useEffect(() => {
     setAnchor(mondayOf(new Date()));
+
+    // Defaults that get overwritten if storage has values.
+    let pm = { lastPrompted: '', activated: false };
+    let sp = { startDate: SPRINT_START_DEFAULT, active: true };
+    let plansInit: Plan[] = [];
+
     try {
       const rawTasks = localStorage.getItem(STORAGE_KEY);
       if (rawTasks) setTasks(JSON.parse(rawTasks));
       const rawRunning = localStorage.getItem(RUNNING_KEY);
       if (rawRunning) setRunning(JSON.parse(rawRunning));
+
+      const rawPm = localStorage.getItem(PLAN_MAREA_KEY);
+      if (rawPm) pm = JSON.parse(rawPm);
+
+      const rawSp = localStorage.getItem(MAREA_SPRINT_KEY);
+      if (rawSp) sp = JSON.parse(rawSp);
+      else localStorage.setItem(MAREA_SPRINT_KEY, JSON.stringify(sp)); // seed hardcoded sprint
+
+      const rawPlans = localStorage.getItem(MAREA_PLANS_KEY);
+      if (rawPlans) {
+        plansInit = JSON.parse(rawPlans);
+      } else {
+        // Seed one plan: the classic Plan Marea checklist (off by default).
+        plansInit = [{
+          id: newId(),
+          name: 'Plan Marea',
+          tasks: PLAN_MAREA_TASKS,
+          activationDate: dateKeyOf(mondayOf(new Date())),
+          active: false,
+          activatedWeek: null,
+        }];
+        localStorage.setItem(MAREA_PLANS_KEY, JSON.stringify(plansInit));
+      }
     } catch {
       // Corrupt/blocked storage — start clean rather than crash.
     }
+
+    setPlanMarea(pm);
+    setSprint(sp);
+    setPlans(plansInit);
+
+    // Decide which banner (if any) to show. The sprint-finished banner wins,
+    // then the Monday activation prompt.
+    const today = dateKeyOf(new Date());
+    if (sprintWeekRaw(sp.startDate) > SPRINT_WEEKS && sp.active) {
+      setEndBannerOpen(true);
+    } else if (isMonday(new Date()) && pm.lastPrompted !== today) {
+      setMondayBannerOpen(true);
+    }
+
     setMounted(true);
   }, []);
 
@@ -241,6 +370,66 @@ export default function StudioHubPage() {
     if (mounted) localStorage.setItem(RUNNING_KEY, JSON.stringify(running));
   }, [running, mounted]);
 
+  useEffect(() => {
+    if (mounted) localStorage.setItem(PLAN_MAREA_KEY, JSON.stringify(planMarea));
+  }, [planMarea, mounted]);
+
+  useEffect(() => {
+    if (mounted) localStorage.setItem(MAREA_SPRINT_KEY, JSON.stringify(sprint));
+  }, [sprint, mounted]);
+
+  useEffect(() => {
+    if (mounted) localStorage.setItem(MAREA_PLANS_KEY, JSON.stringify(plans));
+  }, [plans, mounted]);
+
+  /* ---- Auto-activate plans whose activation week has arrived ---- */
+  useEffect(() => {
+    if (!mounted) return;
+    const todayMonday = mondayOf(new Date()).getTime();
+    // Plans that are armed, not yet activated, and whose week has been reached.
+    const due = plans.filter(
+      (p) =>
+        p.active &&
+        !p.activatedWeek &&
+        mondayOf(parseISODate(p.activationDate)).getTime() <= todayMonday,
+    );
+    if (due.length === 0) return;
+
+    // Add each due plan's tasks into its activation week (dedup by title).
+    setTasks((prev) => {
+      const next = [...prev];
+      for (const p of due) {
+        const targetWeek = weekKeyOf(parseISODate(p.activationDate));
+        const existing = new Set(next.filter((t) => t.weekKey === targetWeek).map((t) => t.title));
+        for (const pt of p.tasks) {
+          if (existing.has(pt.title)) continue;
+          existing.add(pt.title);
+          next.unshift({
+            id: newId(),
+            title: pt.title,
+            category: pt.category,
+            weekKey: targetWeek,
+            createdAt: Date.now(),
+            completedAt: null,
+            done: false,
+            timeLogged: 0,
+          });
+        }
+      }
+      return next;
+    });
+
+    // Mark them activated so they never re-add (until re-armed).
+    const dueIds = new Set(due.map((p) => p.id));
+    setPlans((prev) =>
+      prev.map((p) =>
+        dueIds.has(p.id)
+          ? { ...p, activatedWeek: weekKeyOf(parseISODate(p.activationDate)) }
+          : p,
+      ),
+    );
+  }, [plans, mounted]);
+
   /* ---- Heartbeat: only tick while at least one timer is running ---- */
   useEffect(() => {
     if (Object.keys(running).length === 0) return;
@@ -251,6 +440,10 @@ export default function StudioHubPage() {
   /* ---- Derived week data ---- */
   const weekKey = weekKeyOf(anchor);
   const isCurrentWeek = mounted && weekKey === weekKeyOf(new Date());
+
+  // Plan Marea sprint position (cheap; recomputed each render).
+  const sprintRaw = mounted ? sprintWeekRaw(sprint.startDate) : 0;
+  const sprintWeek = Math.min(SPRINT_WEEKS, Math.max(1, sprintRaw));
 
   const weekTasks = useMemo(
     () => tasks.filter((t) => t.weekKey === weekKey),
@@ -334,6 +527,117 @@ export default function StudioHubPage() {
       return next;
     });
     setConfirmingDelete(null);
+  }, []);
+
+  /* ---- Plan Marea actions ---- */
+
+  // Adds the 12 weekly tasks to the week currently in view, skipping any that
+  // already exist (so activating twice never duplicates). Returns how many were
+  // actually added. Shared by the Monday banner and the manual board button.
+  const addPlanMareaTasks = useCallback((): number => {
+    const existing = new Set(tasks.filter((t) => t.weekKey === weekKey).map((t) => t.title));
+    const toAdd: Task[] = PLAN_MAREA_TASKS.filter((t) => !existing.has(t.title)).map((t) => ({
+      id: newId(),
+      title: t.title,
+      category: t.category,
+      weekKey,
+      createdAt: Date.now(),
+      completedAt: null,
+      done: false,
+      timeLogged: 0,
+    }));
+    if (toAdd.length > 0) setTasks((prev) => [...toAdd, ...prev]);
+    return toAdd.length;
+  }, [tasks, weekKey]);
+
+  // "Activar" from the Monday banner: load the tasks, confirm, then close.
+  const handleMareaActivar = useCallback(() => {
+    addPlanMareaTasks();
+    setPlanMarea({ lastPrompted: dateKeyOf(new Date()), activated: true });
+    setMareaActivated(true); // swap banner to the "activado" confirmation
+    window.setTimeout(() => setMondayBannerOpen(false), 1800);
+  }, [addPlanMareaTasks]);
+
+  // "Saltar esta semana": dismiss; won't show again until next Monday.
+  const handleMareaSkip = useCallback(() => {
+    setPlanMarea({ lastPrompted: dateKeyOf(new Date()), activated: false });
+    setMondayBannerOpen(false);
+  }, []);
+
+  // End-of-sprint banner actions.
+  const handleNewSprint = useCallback(() => {
+    setSprint({ startDate: dateKeyOf(new Date()), active: true }); // restart from today
+    setEndBannerOpen(false);
+  }, []);
+
+  const handlePauseSprint = useCallback(() => {
+    setSprint((prev) => ({ ...prev, active: false }));
+    setEndBannerOpen(false);
+  }, []);
+
+  /* ---- Plan manager actions (report "Plan Marea" tab) ---- */
+
+  const updatePlan = useCallback((id: string, patch: Partial<Plan>) => {
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  }, []);
+
+  const createPlan = useCallback(() => {
+    const p: Plan = {
+      id: newId(),
+      name: 'Nuevo plan',
+      tasks: [],
+      activationDate: dateKeyOf(mondayOf(new Date())),
+      active: false,
+      activatedWeek: null,
+    };
+    setPlans((prev) => [...prev, p]);
+    setOpenPlans((prev) => ({ ...prev, [p.id]: true })); // open the new plan for editing
+  }, []);
+
+  const deletePlan = useCallback((id: string) => {
+    setPlans((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const togglePlanOpen = useCallback((id: string) => {
+    setOpenPlans((prev) => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  // Toggling a plan on re-arms it (activatedWeek -> null) so it can fire again.
+  const togglePlanActive = useCallback((id: string) => {
+    setPlans((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, active: !p.active, activatedWeek: !p.active ? null : p.activatedWeek }
+          : p,
+      ),
+    );
+  }, []);
+
+  // Changing the date re-arms the plan too.
+  const setPlanDate = useCallback((id: string, date: string) => {
+    setPlans((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, activationDate: date, activatedWeek: null } : p)),
+    );
+  }, []);
+
+  const addTaskToPlan = useCallback((id: string) => {
+    setPlanDraft((draftState) => {
+      const draft = draftState[id];
+      const title = draft?.title.trim();
+      if (!title) return draftState;
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, tasks: [...p.tasks, { title, category: draft?.cat || '' }] } : p,
+        ),
+      );
+      return { ...draftState, [id]: { title: '', cat: '' } };
+    });
+  }, []);
+
+  const removeTaskFromPlan = useCallback((id: string, index: number) => {
+    setPlans((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, tasks: p.tasks.filter((_, i) => i !== index) } : p)),
+    );
   }, []);
 
   /* ---- Weekly report stats ---- */
@@ -690,11 +994,17 @@ export default function StudioHubPage() {
             <h1 className={styles.title}>Studio Hub</h1>
           </div>
           {mounted && (
-            <div className={styles.headerStamp}>
-              <div>
-                <strong>{weekKeyOf(new Date())}</strong>
+            <div className={styles.headerRight}>
+              {/* Persistent Plan Marea sprint counter — JetBrains Mono, signal. */}
+              <div className={styles.sprintTag}>
+                Plan Marea — Semana {sprintWeek} de {SPRINT_WEEKS}
               </div>
-              <div>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</div>
+              <div className={styles.headerStamp}>
+                <div>
+                  <strong>{weekKeyOf(new Date())}</strong>
+                </div>
+                <div>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</div>
+              </div>
             </div>
           )}
         </header>
@@ -702,6 +1012,39 @@ export default function StudioHubPage() {
         {/* Everything below depends on the browser; render after mount. */}
         {!mounted ? (
           <p className={styles.empty} style={{ marginTop: 40 }}>Loading…</p>
+        ) : endBannerOpen ? (
+          /* -------- Sprint finished (90 days) -------- */
+          <section className={styles.mareaBanner} role="dialog" aria-label="Plan Marea: sprint completado">
+            <div className={styles.mareaHero}>Plan Marea</div>
+            <h2 className={styles.mareaHeadline}>90 días completados. Plan Marea terminado.</h2>
+            <p className={styles.mareaSub}>¿Lanzamos el siguiente?</p>
+            <div className={styles.mareaBtns}>
+              <button className={styles.mareaActivar} onClick={handleNewSprint}>Nuevo sprint</button>
+              <button className={styles.mareaSkip} onClick={handlePauseSprint}>Pausar</button>
+            </div>
+          </section>
+        ) : mondayBannerOpen ? (
+          /* -------- Monday activation prompt -------- */
+          <section className={styles.mareaBanner} role="dialog" aria-label="Activar Plan Marea esta semana">
+            {mareaActivated ? (
+              <>
+                <div className={styles.mareaHero}>Plan Marea</div>
+                <p className={styles.mareaConfirm}>Plan Marea activado. Buena semana.</p>
+              </>
+            ) : (
+              <>
+                <div className={styles.mareaHero}>Plan Marea</div>
+                <h2 className={styles.mareaHeadline}>¿Activamos Plan Marea esta semana?</h2>
+                <p className={styles.mareaSub}>
+                  Tu sistema de ventas y marketing semanal — 12 tareas, 3 horas.
+                </p>
+                <div className={styles.mareaBtns}>
+                  <button className={styles.mareaActivar} onClick={handleMareaActivar}>Activar</button>
+                  <button className={styles.mareaSkip} onClick={handleMareaSkip}>Saltar esta semana</button>
+                </div>
+              </>
+            )}
+          </section>
         ) : (
           <>
           <div className={styles.layout}>
@@ -791,20 +1134,22 @@ export default function StudioHubPage() {
               )}
             </section>
 
-            {/* -------- Weekly report panel -------- */}
-            <aside className={styles.report} aria-label="Weekly report">
-              <button
-                className={styles.reportHead}
-                onClick={() => setReportOpen((o) => !o)}
-                aria-expanded={reportOpen}
-              >
-                <span>Weekly report</span>
-                <span className={`${styles.reportChevron} ${reportOpen ? styles.reportChevronOpen : ''}`} aria-hidden="true">
-                  ▾
-                </span>
-              </button>
+            {/* -------- Sidebar: Reporte card + Plans card (stacked) -------- */}
+            <div className={styles.sidebar}>
+              {/* Reporte card — unchanged, collapsible */}
+              <aside className={styles.report} aria-label="Weekly report">
+                <button
+                  className={styles.reportHead}
+                  onClick={() => setReportOpen((o) => !o)}
+                  aria-expanded={reportOpen}
+                >
+                  <span>Weekly report</span>
+                  <span className={`${styles.reportChevron} ${reportOpen ? styles.reportChevronOpen : ''}`} aria-hidden="true">
+                    ▾
+                  </span>
+                </button>
 
-              {reportOpen && (
+                {reportOpen && (
                 <div className={styles.reportBody}>
                   <div className={styles.rateBlock}>
                     <div className={styles.rateNumber}>
@@ -862,8 +1207,179 @@ export default function StudioHubPage() {
                     </div>
                   )}
                 </div>
-              )}
-            </aside>
+                )}
+              </aside>
+
+              {/* Plans card — new, below the Reporte card */}
+              <aside className={styles.report} aria-label="Plans">
+                <button
+                  className={styles.reportHead}
+                  onClick={() => setPlansOpen((o) => !o)}
+                  aria-expanded={plansOpen}
+                >
+                  <span>Plans</span>
+                  <span className={`${styles.reportChevron} ${plansOpen ? styles.reportChevronOpen : ''}`} aria-hidden="true">
+                    ▾
+                  </span>
+                </button>
+
+                {plansOpen && (
+                <div className={styles.reportBody}>
+                  <button className={styles.planNewBtn} onClick={createPlan}>+ Nuevo plan</button>
+
+                  {plans.length === 0 ? (
+                    <p className={styles.empty}>No hay planes. Crea uno arriba.</p>
+                  ) : (
+                    plans.map((p) => {
+                      const reached =
+                        mondayOf(new Date()).getTime() >=
+                        mondayOf(parseISODate(p.activationDate)).getTime();
+                      const draft = planDraft[p.id] || { title: '', cat: '' };
+                      const open = openPlans[p.id] ?? false;
+                      return (
+                        <div key={p.id} className={styles.planCard}>
+                          <div className={styles.planTop}>
+                            <button
+                              className={`${styles.planChevron} ${open ? styles.planChevronOpen : ''}`}
+                              onClick={() => togglePlanOpen(p.id)}
+                              aria-expanded={open}
+                              aria-label={open ? 'Colapsar plan' : 'Expandir plan'}
+                            >
+                              ▸
+                            </button>
+                            <input
+                              className={styles.planName}
+                              value={p.name}
+                              onChange={(e) => updatePlan(p.id, { name: e.target.value })}
+                              aria-label="Nombre del plan"
+                            />
+                            <button
+                              className={styles.planDelete}
+                              onClick={() => deletePlan(p.id)}
+                              aria-label="Eliminar plan"
+                              title="Eliminar plan"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {/* Status badge */}
+                          <div className={styles.planStatus}>
+                            {!p.active ? (
+                              <span className={styles.planBadgeOff}>Inactivo</span>
+                            ) : p.activatedWeek ? (
+                              <span className={styles.planBadgeDone}>Activado · {p.activatedWeek}</span>
+                            ) : reached ? (
+                              <span className={styles.planBadgeOn}>Activando…</span>
+                            ) : (
+                              <span className={styles.planBadgeSched}>
+                                Programado · {fmtNiceDate(p.activationDate)}
+                              </span>
+                            )}
+                          </div>
+
+                          {open && (
+                          <>
+                          {/* Activation date */}
+                          <label className={styles.planDateRow}>
+                            <span className={styles.planDateLabel}>Se activa el</span>
+                            <input
+                              type="date"
+                              className={styles.planDateInput}
+                              value={p.activationDate}
+                              onChange={(e) => setPlanDate(p.id, e.target.value)}
+                            />
+                          </label>
+
+                          {/* Activate / deactivate */}
+                          <button
+                            className={p.active ? styles.planToggleOff : styles.planToggleOn}
+                            onClick={() => togglePlanActive(p.id)}
+                          >
+                            {p.active ? 'Desactivar Plan Marea' : 'Activar Plan Marea'}
+                          </button>
+
+                          {/* Plan task list */}
+                          <div className={styles.planTasksLabel}>Tareas ({p.tasks.length})</div>
+                          {p.tasks.length > 0 && (
+                            <ul className={styles.planTaskList}>
+                              {p.tasks.map((t, i) => (
+                                <li key={i} className={styles.planTaskItem}>
+                                  <span className={styles.planTaskText}>
+                                    {t.category && (
+                                      <span
+                                        className={styles.catDot}
+                                        style={{ background: catColor(t.category) }}
+                                      />
+                                    )}
+                                    {t.title}
+                                  </span>
+                                  <button
+                                    className={styles.planTaskDel}
+                                    onClick={() => removeTaskFromPlan(p.id, i)}
+                                    aria-label="Quitar tarea"
+                                    title="Quitar"
+                                  >
+                                    ×
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          {/* Add task to plan */}
+                          <div className={styles.planAddRow}>
+                            <input
+                              className={styles.planAddInput}
+                              value={draft.title}
+                              placeholder="Nueva tarea…"
+                              onChange={(e) =>
+                                setPlanDraft((prev) => ({
+                                  ...prev,
+                                  [p.id]: { title: e.target.value, cat: draft.cat },
+                                }))
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  addTaskToPlan(p.id);
+                                }
+                              }}
+                            />
+                            <select
+                              className={styles.planAddSelect}
+                              value={draft.cat}
+                              onChange={(e) =>
+                                setPlanDraft((prev) => ({
+                                  ...prev,
+                                  [p.id]: { title: draft.title, cat: e.target.value },
+                                }))
+                              }
+                              aria-label="Categoría"
+                            >
+                              <option value="">—</option>
+                              {CATEGORIES.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                            <button
+                              className={styles.planAddBtn}
+                              onClick={() => addTaskToPlan(p.id)}
+                              aria-label="Añadir tarea al plan"
+                            >
+                              +
+                            </button>
+                          </div>
+                          </>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+                )}
+              </aside>
+            </div>
           </div>
 
           {/* -------- Time-by-category line chart (full width) -------- */}
