@@ -65,12 +65,9 @@ const CATEGORIES = [
 const STORAGE_KEY = 'koyko-dashboard-tasks';
 const RUNNING_KEY = 'koyko-dashboard-running';
 
-/* ---- Plan Marea: weekly activation + 90-day sprint tracker ---- */
+/* ---- Plan Marea: weekly activation + user-authored plans ---- */
 const PLAN_MAREA_KEY = 'koyko-plan-marea';   // { lastPrompted, activated }
-const MAREA_SPRINT_KEY = 'koyko-marea-sprint'; // { startDate, active }
 const MAREA_PLANS_KEY = 'koyko-marea-plans';   // Plan[]
-const SPRINT_START_DEFAULT = '2025-06-15';   // hardcoded sprint start
-const SPRINT_WEEKS = 13;                      // 90 days ≈ 13 weeks
 
 // The fixed weekly checklist activated by Plan Marea (12 tasks, ~3h).
 const PLAN_MAREA_TASKS: { title: string; category: string }[] = [
@@ -193,18 +190,6 @@ function isMonday(d: Date): boolean {
   return d.getDay() === 1;
 }
 
-// Raw (uncapped) sprint week number for a "YYYY-MM-DD" start date.
-// Math.ceil(daysSinceStart / 7); > SPRINT_WEEKS means the sprint is over.
-function sprintWeekRaw(startDate: string): number {
-  const [y, m, dd] = startDate.split('-').map(Number);
-  const start = new Date(y, m - 1, dd);
-  const now = new Date();
-  const startMid = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-  const nowMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const days = Math.round((nowMid.getTime() - startMid.getTime()) / 86400000);
-  return Math.ceil(days / 7);
-}
-
 /* ---- Category colours: brand-aligned, just distinct enough to read a chart.
    Warm tones for the comms/social work, cooler tones for the build work. ---- */
 const CATEGORY_COLORS: Record<string, string> = {
@@ -284,14 +269,10 @@ export default function StudioHubPage() {
   const [chartGran, setChartGran] = useState<'week' | 'month'>('week');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  // Plan Marea: weekly-activation prompt + 90-day sprint state.
+  // Plan Marea: weekly-activation prompt state.
   const [planMarea, setPlanMarea] = useState<{ lastPrompted: string; activated: boolean }>({
     lastPrompted: '',
     activated: false,
-  });
-  const [sprint, setSprint] = useState<{ startDate: string; active: boolean }>({
-    startDate: SPRINT_START_DEFAULT,
-    active: true,
   });
   const [mondayBannerOpen, setMondayBannerOpen] = useState(false); // Monday activation
   const [mareaActivated, setMareaActivated] = useState(false);     // confirmation phase
@@ -309,7 +290,6 @@ export default function StudioHubPage() {
 
     // Defaults that get overwritten if storage has values.
     let pm = { lastPrompted: '', activated: false };
-    let sp = { startDate: SPRINT_START_DEFAULT, active: true };
     let plansInit: Plan[] = [];
 
     try {
@@ -320,10 +300,6 @@ export default function StudioHubPage() {
 
       const rawPm = localStorage.getItem(PLAN_MAREA_KEY);
       if (rawPm) pm = JSON.parse(rawPm);
-
-      const rawSp = localStorage.getItem(MAREA_SPRINT_KEY);
-      if (rawSp) sp = JSON.parse(rawSp);
-      else localStorage.setItem(MAREA_SPRINT_KEY, JSON.stringify(sp)); // seed hardcoded sprint
 
       const rawPlans = localStorage.getItem(MAREA_PLANS_KEY);
       if (rawPlans) {
@@ -345,7 +321,6 @@ export default function StudioHubPage() {
     }
 
     setPlanMarea(pm);
-    setSprint(sp);
     setPlans(plansInit);
 
     // Show the Monday activation prompt (only on Mondays, once per day).
@@ -369,10 +344,6 @@ export default function StudioHubPage() {
   useEffect(() => {
     if (mounted) localStorage.setItem(PLAN_MAREA_KEY, JSON.stringify(planMarea));
   }, [planMarea, mounted]);
-
-  useEffect(() => {
-    if (mounted) localStorage.setItem(MAREA_SPRINT_KEY, JSON.stringify(sprint));
-  }, [sprint, mounted]);
 
   useEffect(() => {
     if (mounted) localStorage.setItem(MAREA_PLANS_KEY, JSON.stringify(plans));
@@ -437,9 +408,18 @@ export default function StudioHubPage() {
   const weekKey = weekKeyOf(anchor);
   const isCurrentWeek = mounted && weekKey === weekKeyOf(new Date());
 
-  // Plan Marea sprint position (cheap; recomputed each render).
-  const sprintRaw = mounted ? sprintWeekRaw(sprint.startDate) : 0;
-  const sprintWeek = Math.min(SPRINT_WEEKS, Math.max(1, sprintRaw));
+  // Header indicator, derived from the user's plans (not a hardcoded sprint).
+  // 0 active -> "Sin plan activo"; 1 -> "{name} · activo/fecha"; n -> "n planes activos".
+  const planTag = useMemo(() => {
+    const active = plans.filter((p) => p.active);
+    if (active.length === 0) return 'Sin plan activo';
+    if (active.length > 1) return `${active.length} planes activos`;
+    const p = active[0];
+    const reached =
+      mondayOf(new Date()).getTime() >= mondayOf(parseISODate(p.activationDate)).getTime();
+    const live = Boolean(p.activatedWeek) || reached;
+    return `${p.name} · ${live ? 'activo' : fmtNiceDate(p.activationDate)}`;
+  }, [plans]);
 
   const weekTasks = useMemo(
     () => tasks.filter((t) => t.weekKey === weekKey),
@@ -980,10 +960,8 @@ export default function StudioHubPage() {
           </div>
           {mounted && (
             <div className={styles.headerRight}>
-              {/* Persistent Plan Marea sprint counter — JetBrains Mono, signal. */}
-              <div className={styles.sprintTag}>
-                Plan Marea — Semana {sprintWeek} de {SPRINT_WEEKS}
-              </div>
+              {/* Active-plan indicator (derived from the Plans card). */}
+              <div className={styles.sprintTag}>{planTag}</div>
               <div className={styles.headerStamp}>
                 <div>
                   <strong>{weekKeyOf(new Date())}</strong>

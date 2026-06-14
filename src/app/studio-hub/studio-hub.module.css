@@ -92,16 +92,16 @@
   font-weight: 500;
 }
 
-/* Right side of the header: sprint counter stacked above the date stamp. */
+/* Right side of the header: active-plan indicator stacked above the date stamp. */
 .headerRight {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
-  align-self: flex-start; /* pin the sprint counter to the top-right */
+  align-self: flex-start; /* pin the indicator to the top-right */
 }
 
-/* Persistent Plan Marea sprint counter — reads like a counter, not a label. */
+/* Active-plan indicator — JetBrains Mono, signal. Reflects the Plans card state. */
 .sprintTag {
   font-family: var(--ff-mono);
   font-size: 12px;
@@ -111,7 +111,7 @@
 }
 
 /* =============================================================================
-   PLAN MAREA  (Monday activation banner + sprint-finished banner)
+   PLAN MAREA  (Monday activation banner)
    Sharp, confident, signal-on-paper. Shown in place of the board until dismissed.
    ============================================================================= */
 .mareaBanner {
