@@ -65,8 +65,7 @@ const CATEGORIES = [
 const STORAGE_KEY = 'koyko-dashboard-tasks';
 const RUNNING_KEY = 'koyko-dashboard-running';
 
-/* ---- Plan Marea: weekly activation + user-authored plans ---- */
-const PLAN_MAREA_KEY = 'koyko-plan-marea';   // { lastPrompted, activated }
+/* ---- Plan Marea: user-authored plans ---- */
 const MAREA_PLANS_KEY = 'koyko-marea-plans';   // Plan[]
 
 // The fixed weekly checklist activated by Plan Marea (12 tasks, ~3h).
@@ -168,7 +167,7 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-// "YYYY-MM-DD" for a local date (used by the Plan Marea persistence).
+// "YYYY-MM-DD" for a local date (used by plan persistence).
 function dateKeyOf(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
@@ -183,11 +182,6 @@ function parseISODate(s: string): Date {
 function fmtNiceDate(s: string): string {
   const d = parseISODate(s);
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
-}
-
-// Is this date a Monday? (getDay: Sun=0 … Mon=1 … Sat=6)
-function isMonday(d: Date): boolean {
-  return d.getDay() === 1;
 }
 
 /* ---- Category colours: brand-aligned, just distinct enough to read a chart.
@@ -269,14 +263,6 @@ export default function StudioHubPage() {
   const [chartGran, setChartGran] = useState<'week' | 'month'>('week');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  // Plan Marea: weekly-activation prompt state.
-  const [planMarea, setPlanMarea] = useState<{ lastPrompted: string; activated: boolean }>({
-    lastPrompted: '',
-    activated: false,
-  });
-  const [mondayBannerOpen, setMondayBannerOpen] = useState(false); // Monday activation
-  const [mareaActivated, setMareaActivated] = useState(false);     // confirmation phase
-
   // Report + Plans cards: collapse state, the user's named plans, and drafts.
   const [reportOpen, setReportOpen] = useState(true);
   const [plansOpen, setPlansOpen] = useState(true);
@@ -288,8 +274,6 @@ export default function StudioHubPage() {
   useEffect(() => {
     setAnchor(mondayOf(new Date()));
 
-    // Defaults that get overwritten if storage has values.
-    let pm = { lastPrompted: '', activated: false };
     let plansInit: Plan[] = [];
 
     try {
@@ -297,9 +281,6 @@ export default function StudioHubPage() {
       if (rawTasks) setTasks(JSON.parse(rawTasks));
       const rawRunning = localStorage.getItem(RUNNING_KEY);
       if (rawRunning) setRunning(JSON.parse(rawRunning));
-
-      const rawPm = localStorage.getItem(PLAN_MAREA_KEY);
-      if (rawPm) pm = JSON.parse(rawPm);
 
       const rawPlans = localStorage.getItem(MAREA_PLANS_KEY);
       if (rawPlans) {
@@ -320,14 +301,7 @@ export default function StudioHubPage() {
       // Corrupt/blocked storage — start clean rather than crash.
     }
 
-    setPlanMarea(pm);
     setPlans(plansInit);
-
-    // Show the Monday activation prompt (only on Mondays, once per day).
-    const today = dateKeyOf(new Date());
-    if (isMonday(new Date()) && pm.lastPrompted !== today) {
-      setMondayBannerOpen(true);
-    }
 
     setMounted(true);
   }, []);
@@ -340,10 +314,6 @@ export default function StudioHubPage() {
   useEffect(() => {
     if (mounted) localStorage.setItem(RUNNING_KEY, JSON.stringify(running));
   }, [running, mounted]);
-
-  useEffect(() => {
-    if (mounted) localStorage.setItem(PLAN_MAREA_KEY, JSON.stringify(planMarea));
-  }, [planMarea, mounted]);
 
   useEffect(() => {
     if (mounted) localStorage.setItem(MAREA_PLANS_KEY, JSON.stringify(plans));
@@ -503,41 +473,6 @@ export default function StudioHubPage() {
       return next;
     });
     setConfirmingDelete(null);
-  }, []);
-
-  /* ---- Plan Marea actions ---- */
-
-  // Adds the 12 weekly tasks to the week currently in view, skipping any that
-  // already exist (so activating twice never duplicates). Returns how many were
-  // actually added. Shared by the Monday banner and the manual board button.
-  const addPlanMareaTasks = useCallback((): number => {
-    const existing = new Set(tasks.filter((t) => t.weekKey === weekKey).map((t) => t.title));
-    const toAdd: Task[] = PLAN_MAREA_TASKS.filter((t) => !existing.has(t.title)).map((t) => ({
-      id: newId(),
-      title: t.title,
-      category: t.category,
-      weekKey,
-      createdAt: Date.now(),
-      completedAt: null,
-      done: false,
-      timeLogged: 0,
-    }));
-    if (toAdd.length > 0) setTasks((prev) => [...toAdd, ...prev]);
-    return toAdd.length;
-  }, [tasks, weekKey]);
-
-  // "Activar" from the Monday banner: load the tasks, confirm, then close.
-  const handleMareaActivar = useCallback(() => {
-    addPlanMareaTasks();
-    setPlanMarea({ lastPrompted: dateKeyOf(new Date()), activated: true });
-    setMareaActivated(true); // swap banner to the "activado" confirmation
-    window.setTimeout(() => setMondayBannerOpen(false), 1800);
-  }, [addPlanMareaTasks]);
-
-  // "Saltar esta semana": dismiss; won't show again until next Monday.
-  const handleMareaSkip = useCallback(() => {
-    setPlanMarea({ lastPrompted: dateKeyOf(new Date()), activated: false });
-    setMondayBannerOpen(false);
   }, []);
 
   /* ---- Plan manager actions (report "Plan Marea" tab) ---- */
@@ -975,28 +910,6 @@ export default function StudioHubPage() {
         {/* Everything below depends on the browser; render after mount. */}
         {!mounted ? (
           <p className={styles.empty} style={{ marginTop: 40 }}>Loading…</p>
-        ) : mondayBannerOpen ? (
-          /* -------- Monday activation prompt -------- */
-          <section className={styles.mareaBanner} role="dialog" aria-label="Activar Plan Marea esta semana">
-            {mareaActivated ? (
-              <>
-                <div className={styles.mareaHero}>Plan Marea</div>
-                <p className={styles.mareaConfirm}>Plan Marea activado. Buena semana.</p>
-              </>
-            ) : (
-              <>
-                <div className={styles.mareaHero}>Plan Marea</div>
-                <h2 className={styles.mareaHeadline}>¿Activamos Plan Marea esta semana?</h2>
-                <p className={styles.mareaSub}>
-                  Tu sistema de ventas y marketing semanal — 12 tareas, 3 horas.
-                </p>
-                <div className={styles.mareaBtns}>
-                  <button className={styles.mareaActivar} onClick={handleMareaActivar}>Activar</button>
-                  <button className={styles.mareaSkip} onClick={handleMareaSkip}>Saltar esta semana</button>
-                </div>
-              </>
-            )}
-          </section>
         ) : (
           <>
           <div className={styles.layout}>
