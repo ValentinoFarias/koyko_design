@@ -19,17 +19,24 @@ CREATE TABLE IF NOT EXISTS studio_hub_state (
   -- Fixed primary key — we only ever have one row.
   id          text PRIMARY KEY DEFAULT 'default',
 
-  -- The three blobs that used to live in localStorage:
+  -- The blobs that used to live in localStorage (+ leads, added later):
   --   tasks   → Task[]       (weekly task list)
   --   running → RunningMap   (task id → timer start timestamp)
   --   plans   → Plan[]       (user-authored Plan Marea plans)
+  --   leads   → Lead[]       (CRM pipeline leads)
   tasks       jsonb        NOT NULL DEFAULT '[]'::jsonb,
   running     jsonb        NOT NULL DEFAULT '{}'::jsonb,
   plans       jsonb        NOT NULL DEFAULT '[]'::jsonb,
+  leads       jsonb        NOT NULL DEFAULT '[]'::jsonb,
 
   -- Timestamp of the last write (useful for debugging / auditing).
   updated_at  timestamptz  NOT NULL DEFAULT now()
 );
+
+-- Migration for tables created before the `leads` column existed.
+-- (Safe to re-run: IF NOT EXISTS makes this a no-op once applied.)
+ALTER TABLE studio_hub_state
+  ADD COLUMN IF NOT EXISTS leads jsonb NOT NULL DEFAULT '[]'::jsonb;
 
 -- Seed the single default row if it doesn't exist yet.
 -- (Safe to re-run: ON CONFLICT does nothing if the row is already there.)

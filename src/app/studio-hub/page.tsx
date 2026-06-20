@@ -21,6 +21,7 @@ import {
   type ReactNode,
 } from 'react';
 import styles from './studio-hub.module.css';
+import StudioLeads, { type Lead } from './StudioLeads';
 
 /* ---------------------------------------------------------------------------
    Types + constants
@@ -247,6 +248,9 @@ export default function StudioHubPage() {
   // means "the initial load from the database has finished".
   const [mounted, setMounted] = useState(false);
 
+  // Which top-level tab is showing: the weekly task board or the Leads CRM.
+  const [tab, setTab] = useState<'tasks' | 'leads'>('tasks');
+
   // Auth gate: null = still checking, false = needs password, true = logged in.
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [loginPw, setLoginPw] = useState('');
@@ -282,6 +286,9 @@ export default function StudioHubPage() {
   const [planDraft, setPlanDraft] = useState<Record<string, { title: string; cat: string }>>({});
   const [openPlans, setOpenPlans] = useState<Record<string, boolean>>({}); // per-plan collapse
 
+  // Leads CRM pipeline (shown in the Leads tab).
+  const [leads, setLeads] = useState<Lead[]>([]);
+
   /* ---- Load state from the database (also re-used right after a login) ---- */
   const loadState = useCallback(async () => {
     try {
@@ -299,12 +306,14 @@ export default function StudioHubPage() {
         tasks: Task[];
         running: RunningMap;
         plans: Plan[];
+        leads: Lead[];
       };
 
       let nextTasks = Array.isArray(data.tasks) ? data.tasks : [];
       let nextRunning =
         data.running && typeof data.running === 'object' ? data.running : {};
       let nextPlans = Array.isArray(data.plans) ? data.plans : [];
+      const nextLeads = Array.isArray(data.leads) ? data.leads : [];
 
       // One-time migration: if the database is still empty but THIS browser has
       // old localStorage data, adopt it so nothing you already logged is lost.
@@ -346,6 +355,7 @@ export default function StudioHubPage() {
       setTasks(nextTasks);
       setRunning(nextRunning);
       setPlans(nextPlans);
+      setLeads(nextLeads);
       setAuthed(true);
       setMounted(true);
     } catch (err) {
@@ -373,7 +383,7 @@ export default function StudioHubPage() {
       fetch('/api/studio-hub', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tasks, running, plans }),
+        body: JSON.stringify({ tasks, running, plans, leads }),
       }).catch((err) => {
         // Network hiccup — the next change retries with the latest state.
         console.error('studio-hub save error:', err);
@@ -382,7 +392,7 @@ export default function StudioHubPage() {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [tasks, running, plans, mounted, authed]);
+  }, [tasks, running, plans, leads, mounted, authed]);
 
   /* ---- Password gate submit ---- */
   const handleLogin = useCallback(
@@ -1110,6 +1120,28 @@ export default function StudioHubPage() {
           </form>
         ) : (
           <>
+          {/* -------- Tab bar: Tasks board vs Leads CRM -------- */}
+          <nav className={styles.tabBar} aria-label="Studio Hub sections">
+            <button
+              className={`${styles.tabBtn} ${tab === 'tasks' ? styles.tabBtnActive : ''}`}
+              onClick={() => setTab('tasks')}
+              aria-current={tab === 'tasks'}
+            >
+              Tasks
+            </button>
+            <button
+              className={`${styles.tabBtn} ${tab === 'leads' ? styles.tabBtnActive : ''}`}
+              onClick={() => setTab('leads')}
+              aria-current={tab === 'leads'}
+            >
+              Leads
+            </button>
+          </nav>
+
+          {tab === 'leads' && <StudioLeads leads={leads} setLeads={setLeads} />}
+
+          {tab === 'tasks' && (
+          <>
           <div className={styles.layout}>
             {/* -------- Weekly board -------- */}
             <section aria-label="Weekly task board">
@@ -1533,6 +1565,8 @@ export default function StudioHubPage() {
             </div>
             {chartInner}
           </section>
+          </>
+          )}
           </>
         )}
       </div>

@@ -23,6 +23,7 @@ export type StudioHubState = {
   tasks: unknown[];
   running: Record<string, unknown>;
   plans: unknown[];
+  leads: unknown[];
 };
 
 // Everything lives in a single row identified by this fixed id.
@@ -40,16 +41,22 @@ function getSql() {
 export async function readState(): Promise<StudioHubState> {
   const sql = getSql();
   const rows = (await sql`
-    SELECT tasks, running, plans
+    SELECT tasks, running, plans, leads
     FROM studio_hub_state
     WHERE id = ${ROW_ID}
-  `) as Array<{ tasks: unknown[]; running: Record<string, unknown>; plans: unknown[] }>;
+  `) as Array<{
+    tasks: unknown[];
+    running: Record<string, unknown>;
+    plans: unknown[];
+    leads: unknown[];
+  }>;
 
   const row = rows[0];
   return {
     tasks: row?.tasks ?? [],
     running: row?.running ?? {},
     plans: row?.plans ?? [],
+    leads: row?.leads ?? [],
   };
 }
 
@@ -60,18 +67,20 @@ export async function readState(): Promise<StudioHubState> {
 export async function writeState(state: StudioHubState): Promise<void> {
   const sql = getSql();
   await sql`
-    INSERT INTO studio_hub_state (id, tasks, running, plans, updated_at)
+    INSERT INTO studio_hub_state (id, tasks, running, plans, leads, updated_at)
     VALUES (
       ${ROW_ID},
       ${JSON.stringify(state.tasks)}::jsonb,
       ${JSON.stringify(state.running)}::jsonb,
       ${JSON.stringify(state.plans)}::jsonb,
+      ${JSON.stringify(state.leads)}::jsonb,
       now()
     )
     ON CONFLICT (id) DO UPDATE SET
       tasks      = EXCLUDED.tasks,
       running    = EXCLUDED.running,
       plans      = EXCLUDED.plans,
+      leads      = EXCLUDED.leads,
       updated_at = now()
   `;
 }

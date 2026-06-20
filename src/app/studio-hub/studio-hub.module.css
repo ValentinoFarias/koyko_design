@@ -1022,6 +1022,287 @@
 }
 
 /* =============================================================================
+   TAB BAR  (page.tsx — Tasks | Leads)
+   Switches between the weekly task board and the Leads CRM.
+   ============================================================================= */
+.tabBar {
+  display: flex;
+  gap: 6px;
+  margin-top: 32px;
+  border-bottom: 1.5px solid rgba(var(--ink-rgb), 0.12);
+}
+.tabBtn {
+  position: relative;
+  padding: 12px 22px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  color: rgba(var(--ink-rgb), 0.5);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.tabBtn:hover { color: var(--color-ink); }
+/* Active tab: ink text + a signal underline sitting on the bar's border. */
+.tabBtnActive { color: var(--color-ink); }
+.tabBtnActive::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1.5px;
+  height: 2px;
+  background: var(--color-signal);
+}
+
+/* =============================================================================
+   LEADS CRM  (StudioLeads.tsx)
+   Kanban pipeline: a horizontal row of status columns holding draggable
+   lead cards, plus an add-lead form and an inline card editor.
+   ============================================================================= */
+.leads { margin-top: 32px; }
+
+/* Add-lead form — mirrors .addForm but tuned for the wider lead fields. */
+.leadAddForm {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+/* Board: columns scroll horizontally when they overflow the viewport. */
+.leadBoard {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 1fr);
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x proximity;
+}
+
+/* A single status column. */
+.leadCol {
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  background: rgba(var(--ink-rgb), 0.025);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  scroll-snap-align: start;
+  transition: background 0.15s, border-color 0.15s;
+}
+/* Won/Lost are closed states — slightly muted. */
+.leadColClosed { opacity: 0.75; }
+/* Highlight a column while a card is dragged over it. */
+.leadColDragOver {
+  background: rgba(var(--signal-rgb), 0.07);
+  border-color: var(--color-signal);
+}
+
+.leadColHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+.leadColDot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; }
+.leadColName {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+.leadColCount {
+  margin-left: auto;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: rgba(var(--ink-rgb), 0.45);
+}
+
+.leadColList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+/* ---------- Lead card ---------- */
+.leadCard {
+  background: #fff;
+  border: 1.5px solid rgba(var(--ink-rgb), 0.14);
+  border-radius: 10px;
+  padding: 12px 12px 10px;
+  cursor: grab;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.leadCard:hover { border-color: var(--color-ink); }
+.leadCard:active { cursor: grabbing; }
+/* Expanded (editing) card: signal border + lift, and no longer draggable. */
+.leadCardEditing {
+  cursor: default;
+  border-color: var(--color-signal);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.leadCardHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.leadName {
+  font-family: var(--ff-display);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--color-ink);
+  word-break: break-word;
+}
+.leadCompany {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: rgba(var(--ink-rgb), 0.55);
+}
+
+.leadMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.leadChip {
+  font-family: var(--ff-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 999px;
+  color: rgba(var(--ink-rgb), 0.7);
+}
+.leadFollow {
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  color: rgba(var(--ink-rgb), 0.55);
+}
+/* Overdue follow-up turns red (matches the failed-task colour). */
+.leadFollowOverdue { color: #c0392b; font-weight: 600; }
+
+/* ---------- Inline editor ---------- */
+.leadEditor {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.leadField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.leadField > span {
+  font-family: var(--ff-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--ink-rgb), 0.5);
+}
+.leadField input,
+.leadField select,
+.leadField textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--ff-display);
+  font-size: 13px;
+  color: var(--color-ink);
+  background: #fff;
+  border: 1.5px solid rgba(var(--ink-rgb), 0.2);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.leadField textarea { resize: vertical; font-size: 13px; }
+.leadField input:focus,
+.leadField select:focus,
+.leadField textarea:focus { border-color: var(--color-signal); }
+.leadFieldRow { display: flex; gap: 10px; }
+
+.leadEditorFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.leadDoneBtn {
+  padding: 7px 16px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.leadDoneBtn:hover { background: var(--color-signal); }
+.leadDeleteBtn {
+  padding: 7px 12px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  background: transparent;
+  color: rgba(var(--ink-rgb), 0.5);
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.leadDeleteBtn:hover { color: #c0392b; }
+.leadConfirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: #c0392b;
+}
+.leadConfirmYes {
+  background: #c0392b;
+  color: var(--color-paper);
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.leadConfirmNo {
+  background: transparent;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 6px;
+  padding: 5px 10px;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+/* =============================================================================
    MEDIA QUERIES  (smallest → largest)
    ============================================================================= */
 
@@ -1034,6 +1315,9 @@
   .timerValue { min-width: 72px; }
   /* Force a minimum drawing width so chart labels stay legible (scrolls). */
   .chartCanvas { min-width: 560px; }
+  /* Leads: stack the paired editor fields, narrow the kanban columns. */
+  .leadFieldRow { flex-direction: column; }
+  .leadBoard { grid-auto-columns: minmax(220px, 85vw); }
 }
 
 /* Desktop: board + sidebar (Reporte + Plans cards) side by side. */
