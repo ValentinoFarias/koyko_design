@@ -274,6 +274,8 @@ export default function StudioHubPage() {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   // Report + Plans cards: collapse state, the user's named plans, and drafts.
+  const [reportWeek, setReportWeek] = useState<string>(() => weekKeyOf(new Date()));
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(true);
   const [plansOpen, setPlansOpen] = useState(true);
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -529,6 +531,19 @@ export default function StudioHubPage() {
   const done = useMemo(() => weekTasks.filter((t) => t.done), [weekTasks]);
   const failed = useMemo(() => weekTasks.filter((t) => t.failed && !t.done), [weekTasks]);
 
+  // Report has its own week selector, independent from the board's anchor.
+  const reportTasks = useMemo(
+    () => tasks.filter((t) => t.weekKey === reportWeek),
+    [tasks, reportWeek],
+  );
+  const reportDone = useMemo(() => reportTasks.filter((t) => t.done), [reportTasks]);
+
+  // Sorted list of week keys that have at least one task (most recent first).
+  const taskWeeks = useMemo(() => {
+    const keys = [...new Set(tasks.map((t) => t.weekKey))].sort().reverse();
+    return keys.slice(0, 8);
+  }, [tasks]);
+
   // Live elapsed seconds for a task = committed time + current running session.
   const elapsedOf = useCallback(
     (t: Task): number => {
@@ -684,16 +699,17 @@ export default function StudioHubPage() {
     );
   }, []);
 
-  /* ---- Weekly report stats ---- */
+  /* ---- Weekly report stats (uses reportWeek, not the board's anchor) ---- */
   const stats = useMemo(() => {
-    const total = weekTasks.length;
-    const completed = done.length;
+    const total = reportTasks.length;
+    const completed = reportDone.length;
+    const reportFailed = reportTasks.filter((t) => t.failed && !t.done).length;
     const rate = total ? Math.round((completed / total) * 100) : 0;
-    const totalTime = weekTasks.reduce((sum, t) => sum + elapsedOf(t), 0);
+    const totalTime = reportTasks.reduce((sum, t) => sum + elapsedOf(t), 0);
 
     // Count tasks per category (skip empties).
     const byCategory: Record<string, number> = {};
-    for (const t of weekTasks) {
+    for (const t of reportTasks) {
       if (!t.category) continue;
       byCategory[t.category] = (byCategory[t.category] ?? 0) + 1;
     }
@@ -703,13 +719,14 @@ export default function StudioHubPage() {
     return {
       total,
       completed,
-      pending: total - completed,
+      failed: reportFailed,
+      pending: total - completed - reportFailed,
       rate,
       totalTime,
       categoryRows,
       maxCat,
     };
-  }, [weekTasks, done, elapsedOf]);
+  }, [reportTasks, reportDone, elapsedOf]);
 
   /* ---- Time-by-category line chart data (weekly or monthly) ---- */
   const chart = useMemo(() => {
@@ -1227,6 +1244,10 @@ export default function StudioHubPage() {
                     <span className={styles.statVal}>{stats.completed}</span>
                   </div>
                   <div className={styles.statRow}>
+                    <span className={styles.statKey}>Failed</span>
+                    <span className={`${styles.statVal} ${stats.failed > 0 ? styles.statValFailed : ''}`}>{stats.failed}</span>
+                  </div>
+                  <div className={styles.statRow}>
                     <span className={styles.statKey}>Pending</span>
                     <span className={styles.statVal}>{stats.pending}</span>
                   </div>
@@ -1260,6 +1281,50 @@ export default function StudioHubPage() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* History dropdown — bottom of the card */}
+                  {taskWeeks.length > 1 && (
+                    <div className={styles.historyWrap}>
+                      <div className={styles.historyRow}>
+                        <button
+                          className={styles.historyBtn}
+                          onClick={() => setHistoryOpen((o) => !o)}
+                          aria-expanded={historyOpen}
+                        >
+                          History
+                          <span className={`${styles.historyChevron} ${historyOpen ? styles.historyChevronOpen : ''}`} aria-hidden="true">▾</span>
+                        </button>
+                        {reportWeek !== weekKeyOf(new Date()) && (
+                          <span className={styles.historyActive}>
+                            W{reportWeek.split('-W')[1]}
+                            <button
+                              className={styles.historyReset}
+                              onClick={() => { setReportWeek(weekKeyOf(new Date())); setHistoryOpen(false); }}
+                              title="Back to current week"
+                            >✕</button>
+                          </span>
+                        )}
+                      </div>
+                      {historyOpen && (
+                        <div className={styles.historyMenu}>
+                          {taskWeeks
+                            .filter((wk) => wk !== weekKeyOf(new Date()))
+                            .map((wk) => {
+                              const monday = weekKeyToMonday(wk);
+                              return (
+                                <button
+                                  key={wk}
+                                  className={`${styles.historyItem} ${reportWeek === wk ? styles.historyItemActive : ''}`}
+                                  onClick={() => { setReportWeek(wk); setHistoryOpen(false); }}
+                                >
+                                  {weekLabelOf(monday)}
+                                </button>
+                              );
+                            })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
