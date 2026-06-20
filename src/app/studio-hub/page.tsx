@@ -34,6 +34,8 @@ type Task = {
   createdAt: number; // epoch ms
   completedAt: number | null; // epoch ms when marked done
   done: boolean;
+  failed: boolean;
+  failedAt: number | null; // epoch ms when marked failed (manually or auto)
   timeLogged: number; // committed seconds tracked against this task
 };
 
@@ -439,6 +441,8 @@ export default function StudioHubPage() {
             createdAt: Date.now(),
             completedAt: null,
             done: false,
+            failed: false,
+            failedAt: null,
             timeLogged: 0,
           });
         }
@@ -464,6 +468,34 @@ export default function StudioHubPage() {
     return () => clearInterval(id);
   }, [running]);
 
+  /* ---- Auto-fail: every Sunday at 8pm, mark all non-done tasks as failed ---- */
+  useEffect(() => {
+    if (!mounted || authed !== true) return;
+
+    const tryAutoFail = () => {
+      const now = new Date();
+      // getDay() === 0 is Sunday; hours >= 20 is 8pm or later
+      if (now.getDay() !== 0 || now.getHours() < 20) return;
+      const currentWeekKey = weekKeyOf(now);
+      setTasks((prev) => {
+        const hasEligible = prev.some(
+          (t) => t.weekKey === currentWeekKey && !t.done && !t.failed,
+        );
+        if (!hasEligible) return prev;
+        const now2 = Date.now();
+        return prev.map((t) =>
+          t.weekKey === currentWeekKey && !t.done && !t.failed
+            ? { ...t, failed: true, failedAt: now2 }
+            : t,
+        );
+      });
+    };
+
+    tryAutoFail(); // fire immediately in case the page loads on Sunday 8pm+
+    const id = setInterval(tryAutoFail, 60_000);
+    return () => clearInterval(id);
+  }, [mounted, authed]);
+
   /* ---- Derived week data ---- */
   const weekKey = weekKeyOf(anchor);
   const isCurrentWeek = mounted && weekKey === weekKeyOf(new Date());
@@ -478,15 +510,24 @@ export default function StudioHubPage() {
     const reached =
       mondayOf(new Date()).getTime() >= mondayOf(parseISODate(p.activationDate)).getTime();
     const live = Boolean(p.activatedWeek) || reached;
-    return `${p.name} · ${live ? 'activo' : fmtNiceDate(p.activationDate)}`;
+    if (!live) return `${p.name} · ${fmtNiceDate(p.activationDate)}`;
+    // Calculate which week of the 13-week plan we're currently in
+    const startMonday = p.activatedWeek
+      ? weekKeyToMonday(p.activatedWeek)
+      : mondayOf(parseISODate(p.activationDate));
+    const currentMonday = mondayOf(new Date());
+    const weekNum = Math.round((currentMonday.getTime() - startMonday.getTime()) / (7 * 86400000)) + 1;
+    const clampedWeek = Math.max(1, Math.min(weekNum, 13));
+    return `${p.name} · Activo · Week ${clampedWeek} of 13`;
   }, [plans]);
 
   const weekTasks = useMemo(
     () => tasks.filter((t) => t.weekKey === weekKey),
     [tasks, weekKey],
   );
-  const pending = useMemo(() => weekTasks.filter((t) => !t.done), [weekTasks]);
+  const pending = useMemo(() => weekTasks.filter((t) => !t.done && !t.failed), [weekTasks]);
   const done = useMemo(() => weekTasks.filter((t) => t.done), [weekTasks]);
+  const failed = useMemo(() => weekTasks.filter((t) => t.failed && !t.done), [weekTasks]);
 
   // Live elapsed seconds for a task = committed time + current running session.
   const elapsedOf = useCallback(
@@ -512,6 +553,8 @@ export default function StudioHubPage() {
         createdAt: Date.now(),
         completedAt: null,
         done: false,
+        failed: false,
+        failedAt: null,
         timeLogged: 0,
       };
       setTasks((prev) => [task, ...prev]);
@@ -550,6 +593,17 @@ export default function StudioHubPage() {
       prev.map((t) =>
         t.id === id
           ? { ...t, done: !t.done, completedAt: !t.done ? Date.now() : null }
+          : t,
+      ),
+    );
+  }, [commitTimer]);
+
+  const toggleFailed = useCallback((id: string) => {
+    commitTimer(id);
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === id
+          ? { ...t, failed: !t.failed, failedAt: !t.failed ? Date.now() : null }
           : t,
       ),
     );
@@ -756,18 +810,26 @@ export default function StudioHubPage() {
     return (
       <li
         key={t.id}
-        className={`${styles.taskRow} ${t.done ? styles.taskRowDone : ''}`}
+        className={`${styles.taskRow} ${t.done ? styles.taskRowDone : ''} ${t.failed && !t.done ? styles.taskRowFailed : ''}`}
       >
-        <input
-          type="checkbox"
-          className={styles.check}
-          checked={t.done}
-          onChange={() => toggleDone(t.id)}
-          aria-label={t.done ? `Mark "${t.title}" as not done` : `Mark "${t.title}" as done`}
-        />
+        <div className={styles.checkGroup}>
+          <input
+            type="checkbox"
+            className={styles.check}
+            checked={t.done}
+            onChange={() => toggleDone(t.id)}
+            aria-label={t.done ? `Mark "${t.title}" as not done` : `Mark "${t.title}" as done`}
+          />
+          <button
+            className={`${styles.failCheck} ${t.failed && !t.done ? styles.failCheckActive : ''}`}
+            onClick={() => toggleFailed(t.id)}
+            aria-label={t.failed && !t.done ? `Unmark "${t.title}" as failed` : `Mark "${t.title}" as failed`}
+            title={t.failed && !t.done ? 'Unmark failed' : 'Mark as failed'}
+          />
+        </div>
 
         <div className={styles.taskMain}>
-          <div className={`${styles.taskTitle} ${t.done ? styles.taskTitleDone : ''}`}>
+          <div className={`${styles.taskTitle} ${t.done ? styles.taskTitleDone : ''} ${t.failed && !t.done ? styles.taskTitleFailed : ''}`}>
             {t.title}
           </div>
           <div className={styles.taskMeta}>
@@ -775,6 +837,9 @@ export default function StudioHubPage() {
             <span>Added {fmtDate(t.createdAt)}</span>
             {t.done && t.completedAt && (
               <span className={styles.metaDone}>✓ Done {fmtDate(t.completedAt)}</span>
+            )}
+            {t.failed && !t.done && t.failedAt && (
+              <span className={styles.metaFailed}>✕ Failed {fmtDate(t.failedAt)}</span>
             )}
           </div>
         </div>
@@ -836,7 +901,7 @@ export default function StudioHubPage() {
               aria-label={`Delete "${t.title}"`}
               title="Delete"
             >
-              ✕
+              ⌫
             </button>
           </div>
         )}
@@ -1096,11 +1161,11 @@ export default function StudioHubPage() {
               <div className={styles.sectionLabel}>
                 To do <span className={styles.count}>({pending.length})</span>
               </div>
-              {pending.length === 0 && done.length === 0 ? (
+              {pending.length === 0 && done.length === 0 && failed.length === 0 ? (
                 <p className={styles.empty}>No tasks this week yet. Add one above.</p>
-              ) : pending.length === 0 ? (
+              ) : pending.length === 0 && failed.length === 0 ? (
                 <p className={styles.empty}>All done for this week. Nice.</p>
-              ) : (
+              ) : pending.length === 0 ? null : (
                 <ul className={styles.taskList}>{pending.map(renderTask)}</ul>
               )}
 
@@ -1111,6 +1176,16 @@ export default function StudioHubPage() {
                     Done <span className={styles.count}>({done.length})</span>
                   </div>
                   <ul className={styles.taskList}>{done.map(renderTask)}</ul>
+                </>
+              )}
+
+              {/* Failed section */}
+              {failed.length > 0 && (
+                <>
+                  <div className={`${styles.sectionLabel} ${styles.sectionLabelFailed}`}>
+                    Failed <span className={styles.count}>({failed.length})</span>
+                  </div>
+                  <ul className={styles.taskList}>{failed.map(renderTask)}</ul>
                 </>
               )}
             </section>

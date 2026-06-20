@@ -263,6 +263,7 @@
 }
 .sectionLabel .count { color: var(--color-ink); }
 .sectionLabelDone { margin-top: 44px; }
+.sectionLabelFailed { margin-top: 44px; color: #c0392b; }
 
 /* ---------- Task rows ---------- */
 .taskList { list-style: none; margin: 0; padding: 0; }
@@ -275,34 +276,88 @@
   border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
 }
 .taskRowDone { opacity: 0.55; }
+.taskRowFailed { opacity: 0.6; background: rgba(192, 57, 43, 0.04); border-radius: 6px; }
 
-/* Custom checkbox built from a native <input> for accessibility. */
+/* Pair of done + failed checkboxes on the left of each task row. */
+.checkGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Shared base for both checkbox-style controls */
+.check,
+.failCheck {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+/* Done checkbox (native input) */
 .check {
   appearance: none;
   -webkit-appearance: none;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  margin-top: 2px;
   border: 1.5px solid var(--color-ink);
-  border-radius: 6px;
   background: transparent;
-  cursor: pointer;
   display: grid;
   place-content: center;
-  transition: background 0.15s, border-color 0.15s;
 }
-.check:hover { border-color: var(--color-signal); }
-.check:checked { background: var(--color-signal); border-color: var(--color-signal); }
+.check:hover { border-color: #27ae60; }
+.check:checked { background: #27ae60; border-color: #27ae60; }
 .check:checked::after {
   content: "";
-  width: 6px;
-  height: 11px;
+  width: 5px;
+  height: 10px;
   border: solid var(--color-paper);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg) translateY(-1px);
 }
-.check:focus-visible { outline: 2px solid var(--color-signal); outline-offset: 2px; }
+.check:focus-visible { outline: 2px solid #27ae60; outline-offset: 2px; }
+
+/* Failed checkbox (button) — same visual weight as done checkbox */
+.failCheck {
+  border: 1.5px solid var(--color-ink);
+  background: transparent;
+  padding: 0;
+  box-sizing: border-box;
+  display: grid;
+  place-content: center;
+  position: relative;
+}
+/* × arms hidden by default */
+.failCheck::before,
+.failCheck::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 1.5px;
+  background: var(--color-ink);
+  border-radius: 1px;
+  opacity: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+.failCheck::before { transform: rotate(45deg); }
+.failCheck::after  { transform: rotate(-45deg); }
+
+.failCheck:hover { border-color: #c0392b; }
+.failCheck:hover::before,
+.failCheck:hover::after { opacity: 1; background: #c0392b; }
+
+/* Active (failed) state — red fill with white × */
+.failCheckActive {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+.failCheckActive::before,
+.failCheckActive::after { background: var(--color-paper); opacity: 1; }
+.failCheckActive:hover { background: #a93226; border-color: #a93226; }
+.failCheck:focus-visible { outline: 2px solid #c0392b; outline-offset: 2px; }
 
 .taskMain { flex: 1; min-width: 0; }
 .taskTitle {
@@ -313,6 +368,7 @@
   word-break: break-word;
 }
 .taskTitleDone { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.taskTitleFailed { text-decoration: line-through; text-decoration-thickness: 1.5px; color: #c0392b; }
 
 /* Meta line: category chip + created / completed timestamps. */
 .taskMeta {
@@ -336,6 +392,7 @@
   color: var(--color-ink);
 }
 .metaDone { color: var(--color-signal); }
+.metaFailed { color: #c0392b; }
 
 /* Right-hand controls cluster: timer + delete. */
 .taskAside {
