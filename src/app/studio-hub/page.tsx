@@ -16,6 +16,7 @@ import {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
   type FormEvent,
   type ReactNode,
 } from 'react';
@@ -240,8 +241,15 @@ function niceCeil(v: number): number {
 
 export default function StudioHubPage() {
   // `mounted` gates all browser-dependent UI so the server-rendered HTML and
-  // the first client render match (no hydration mismatch from Date/localStorage).
+  // the first client render match (no hydration mismatch from Date). It now also
+  // means "the initial load from the database has finished".
   const [mounted, setMounted] = useState(false);
+
+  // Auth gate: null = still checking, false = needs password, true = logged in.
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [loginPw, setLoginPw] = useState('');
+  const [loginErr, setLoginErr] = useState('');
+  const [loggingIn, setLoggingIn] = useState(false);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [running, setRunning] = useState<RunningMap>({});
@@ -270,54 +278,136 @@ export default function StudioHubPage() {
   const [planDraft, setPlanDraft] = useState<Record<string, { title: string; cat: string }>>({});
   const [openPlans, setOpenPlans] = useState<Record<string, boolean>>({}); // per-plan collapse
 
-  /* ---- Load persisted state once, on mount ---- */
-  useEffect(() => {
-    setAnchor(mondayOf(new Date()));
-
-    let plansInit: Plan[] = [];
-
+  /* ---- Load state from the database (also re-used right after a login) ---- */
+  const loadState = useCallback(async () => {
     try {
-      const rawTasks = localStorage.getItem(STORAGE_KEY);
-      if (rawTasks) setTasks(JSON.parse(rawTasks));
-      const rawRunning = localStorage.getItem(RUNNING_KEY);
-      if (rawRunning) setRunning(JSON.parse(rawRunning));
+      const res = await fetch('/api/studio-hub');
 
-      const rawPlans = localStorage.getItem(MAREA_PLANS_KEY);
-      if (rawPlans) {
-        plansInit = JSON.parse(rawPlans);
-      } else {
-        // Seed one plan: the classic Plan Marea checklist (off by default).
-        plansInit = [{
-          id: newId(),
-          name: 'Plan Marea',
-          tasks: PLAN_MAREA_TASKS,
-          activationDate: dateKeyOf(mondayOf(new Date())),
-          active: false,
-          activatedWeek: null,
-        }];
-        localStorage.setItem(MAREA_PLANS_KEY, JSON.stringify(plansInit));
+      // 401 = no valid session cookie yet -> show the password gate.
+      if (res.status === 401) {
+        setAuthed(false);
+        setMounted(true);
+        return;
       }
-    } catch {
-      // Corrupt/blocked storage — start clean rather than crash.
+      if (!res.ok) throw new Error(`Load failed (${res.status})`);
+
+      const data = (await res.json()) as {
+        tasks: Task[];
+        running: RunningMap;
+        plans: Plan[];
+      };
+
+      let nextTasks = Array.isArray(data.tasks) ? data.tasks : [];
+      let nextRunning =
+        data.running && typeof data.running === 'object' ? data.running : {};
+      let nextPlans = Array.isArray(data.plans) ? data.plans : [];
+
+      // One-time migration: if the database is still empty but THIS browser has
+      // old localStorage data, adopt it so nothing you already logged is lost.
+      // (We leave localStorage untouched as a backup; next load the DB wins.)
+      const dbEmpty =
+        nextTasks.length === 0 &&
+        nextPlans.length === 0 &&
+        Object.keys(nextRunning).length === 0;
+      if (dbEmpty) {
+        try {
+          const lsTasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          const lsRunning = JSON.parse(localStorage.getItem(RUNNING_KEY) || '{}');
+          const lsPlans = JSON.parse(localStorage.getItem(MAREA_PLANS_KEY) || '[]');
+          if (lsTasks.length || lsPlans.length || Object.keys(lsRunning).length) {
+            nextTasks = lsTasks;
+            nextRunning = lsRunning;
+            nextPlans = lsPlans;
+            // The save effect below pushes this up to the DB right after mount.
+          }
+        } catch {
+          // Corrupt/blocked localStorage — ignore and carry on.
+        }
+      }
+
+      // Still no plans anywhere? Seed the classic Plan Marea checklist (off).
+      if (nextPlans.length === 0) {
+        nextPlans = [
+          {
+            id: newId(),
+            name: 'Plan Marea',
+            tasks: PLAN_MAREA_TASKS,
+            activationDate: dateKeyOf(mondayOf(new Date())),
+            active: false,
+            activatedWeek: null,
+          },
+        ];
+      }
+
+      setTasks(nextTasks);
+      setRunning(nextRunning);
+      setPlans(nextPlans);
+      setAuthed(true);
+      setMounted(true);
+    } catch (err) {
+      // Hard failure -> fall back to the login gate instead of a blank crash.
+      console.error('studio-hub load error:', err);
+      setAuthed(false);
+      setMounted(true);
     }
-
-    setPlans(plansInit);
-
-    setMounted(true);
   }, []);
 
-  /* ---- Persist on change (only after mount, so we never overwrite with []) ---- */
+  /* ---- On mount: set the week anchor, then load from the database ---- */
   useEffect(() => {
-    if (mounted) localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  }, [tasks, mounted]);
+    setAnchor(mondayOf(new Date()));
+    loadState();
+  }, [loadState]);
 
+  /* ---- Persist to the database (debounced) whenever state changes ---- */
+  // The three old localStorage writes become ONE PUT, fired ~800ms after the
+  // last change so rapid edits (and timer ticks) don't spam the network.
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (mounted) localStorage.setItem(RUNNING_KEY, JSON.stringify(running));
-  }, [running, mounted]);
+    if (!mounted || authed !== true) return; // never save before load / login
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      fetch('/api/studio-hub', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks, running, plans }),
+      }).catch((err) => {
+        // Network hiccup — the next change retries with the latest state.
+        console.error('studio-hub save error:', err);
+      });
+    }, 800);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [tasks, running, plans, mounted, authed]);
 
-  useEffect(() => {
-    if (mounted) localStorage.setItem(MAREA_PLANS_KEY, JSON.stringify(plans));
-  }, [plans, mounted]);
+  /* ---- Password gate submit ---- */
+  const handleLogin = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      setLoggingIn(true);
+      setLoginErr('');
+      try {
+        const res = await fetch('/api/studio-hub/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: loginPw }),
+        });
+        if (!res.ok) {
+          setLoginErr('Wrong password — try again.');
+          setLoggingIn(false);
+          return;
+        }
+        // Logged in: clear the field and pull the data down.
+        setLoginPw('');
+        setLoggingIn(false);
+        await loadState();
+      } catch {
+        setLoginErr('Network error — try again.');
+        setLoggingIn(false);
+      }
+    },
+    [loginPw, loadState],
+  );
 
   /* ---- Auto-activate plans whose activation week has arrived ---- */
   useEffect(() => {
@@ -910,6 +1000,32 @@ export default function StudioHubPage() {
         {/* Everything below depends on the browser; render after mount. */}
         {!mounted ? (
           <p className={styles.empty} style={{ marginTop: 40 }}>Loading…</p>
+        ) : authed === false ? (
+          /* Password gate — shown until a valid login cookie is present. */
+          <form className={styles.login} onSubmit={handleLogin}>
+            <p className={styles.loginLabel}>
+              This dashboard is private. Enter the password to continue.
+            </p>
+            <div className={styles.loginRow}>
+              <input
+                className={styles.addInput}
+                type="password"
+                value={loginPw}
+                onChange={(e) => setLoginPw(e.target.value)}
+                placeholder="Password"
+                aria-label="Password"
+                autoFocus
+              />
+              <button
+                className={styles.addBtn}
+                type="submit"
+                disabled={loggingIn || !loginPw}
+              >
+                {loggingIn ? 'Checking…' : 'Unlock'}
+              </button>
+            </div>
+            {loginErr && <p className={styles.loginError}>{loginErr}</p>}
+          </form>
         ) : (
           <>
           <div className={styles.layout}>
