@@ -20,23 +20,31 @@ CREATE TABLE IF NOT EXISTS studio_hub_state (
   id          text PRIMARY KEY DEFAULT 'default',
 
   -- The blobs that used to live in localStorage (+ leads, added later):
-  --   tasks   → Task[]       (weekly task list)
-  --   running → RunningMap   (task id → timer start timestamp)
-  --   plans   → Plan[]       (user-authored Plan Marea plans)
-  --   leads   → Lead[]       (CRM pipeline leads)
+  --   tasks    → Task[]       (weekly task list)
+  --   running  → RunningMap   (task id → timer start timestamp)
+  --   plans    → Plan[]       (user-authored Plan Marea plans)
+  --   leads    → Lead[]       (Sales CRM pipeline)
+  --   projects → Project[]    (Clients stage kanban)
+  --   todos    → Todo[]       (Marketing + Admin checklists)
   tasks       jsonb        NOT NULL DEFAULT '[]'::jsonb,
   running     jsonb        NOT NULL DEFAULT '{}'::jsonb,
   plans       jsonb        NOT NULL DEFAULT '[]'::jsonb,
   leads       jsonb        NOT NULL DEFAULT '[]'::jsonb,
+  projects    jsonb        NOT NULL DEFAULT '[]'::jsonb,
+  todos       jsonb        NOT NULL DEFAULT '[]'::jsonb,
 
   -- Timestamp of the last write (useful for debugging / auditing).
   updated_at  timestamptz  NOT NULL DEFAULT now()
 );
 
--- Migration for tables created before the `leads` column existed.
--- (Safe to re-run: IF NOT EXISTS makes this a no-op once applied.)
+-- Migrations for columns added after the table was first created.
+-- (Safe to re-run: IF NOT EXISTS makes each a no-op once applied.)
 ALTER TABLE studio_hub_state
   ADD COLUMN IF NOT EXISTS leads jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE studio_hub_state
+  ADD COLUMN IF NOT EXISTS projects jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE studio_hub_state
+  ADD COLUMN IF NOT EXISTS todos jsonb NOT NULL DEFAULT '[]'::jsonb;
 
 -- Seed the single default row if it doesn't exist yet.
 -- (Safe to re-run: ON CONFLICT does nothing if the row is already there.)

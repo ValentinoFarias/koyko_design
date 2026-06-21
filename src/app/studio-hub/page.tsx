@@ -1,14 +1,19 @@
 'use client';
 
 /* =============================================================================
-   STUDIO HUB — private weekly task manager + time tracker (Koyko Design Studio)
+   STUDIO HUB — internal business OS for Koyko Design Studio
 
-   This is an internal, URL-only page (no public link, marked noindex in the
-   sibling layout.tsx). Everything lives client-side and persists to
-   localStorage — no backend, no auth.
+   A private, noindex route (see the sibling layout.tsx) organised into area
+   tabs: Dashboard (weekly board + timers + Plan Marea), Sales (Leads CRM),
+   Clients (project kanban), and Marketing / Admin (todo lists).
 
-   It's a client component because it relies on browser-only APIs:
-   localStorage, timers (setInterval), and the current date.
+   State persists to a single row of Postgres (Neon) via /api/studio-hub, gated
+   behind one password + a signed cookie (see ../../lib/studio-hub/auth.ts).
+   The whole state — { tasks, running, plans, leads, projects, todos } — is read
+   and written as one JSON blob (see ../../lib/studio-hub/db.ts).
+
+   It's a client component because it relies on browser-only APIs: timers
+   (setInterval), drag-and-drop, and the current date.
    ============================================================================= */
 
 import {
@@ -22,6 +27,8 @@ import {
 } from 'react';
 import styles from './studio-hub.module.css';
 import StudioLeads, { type Lead } from './StudioLeads';
+import StudioClients, { type Project } from './StudioClients';
+import StudioTodos, { type Todo } from './StudioTodos';
 
 /* ---------------------------------------------------------------------------
    Types + constants
@@ -68,6 +75,9 @@ const CATEGORIES = [
 
 const STORAGE_KEY = 'koyko-dashboard-tasks';
 const RUNNING_KEY = 'koyko-dashboard-running';
+
+// Plan Marea runs for a fixed number of weeks (shown as "Week N of 13").
+const PLAN_WEEKS = 13;
 
 /* ---- Plan Marea: user-authored plans ---- */
 const MAREA_PLANS_KEY = 'koyko-marea-plans';   // Plan[]
@@ -248,8 +258,10 @@ export default function StudioHubPage() {
   // means "the initial load from the database has finished".
   const [mounted, setMounted] = useState(false);
 
-  // Which top-level tab is showing: the weekly task board or the Leads CRM.
-  const [tab, setTab] = useState<'tasks' | 'leads'>('tasks');
+  // Which top-level area tab is showing.
+  const [tab, setTab] = useState<
+    'dashboard' | 'sales' | 'clients' | 'marketing' | 'admin'
+  >('dashboard');
 
   // Auth gate: null = still checking, false = needs password, true = logged in.
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -286,8 +298,12 @@ export default function StudioHubPage() {
   const [planDraft, setPlanDraft] = useState<Record<string, { title: string; cat: string }>>({});
   const [openPlans, setOpenPlans] = useState<Record<string, boolean>>({}); // per-plan collapse
 
-  // Leads CRM pipeline (shown in the Leads tab).
+  // Leads CRM pipeline (Sales tab).
   const [leads, setLeads] = useState<Lead[]>([]);
+  // Client projects (Clients tab — stage kanban).
+  const [projects, setProjects] = useState<Project[]>([]);
+  // Marketing + Admin checklists (one list, split by area in the UI).
+  const [todos, setTodos] = useState<Todo[]>([]);
 
   /* ---- Load state from the database (also re-used right after a login) ---- */
   const loadState = useCallback(async () => {
@@ -307,6 +323,8 @@ export default function StudioHubPage() {
         running: RunningMap;
         plans: Plan[];
         leads: Lead[];
+        projects: Project[];
+        todos: Todo[];
       };
 
       let nextTasks = Array.isArray(data.tasks) ? data.tasks : [];
@@ -314,6 +332,8 @@ export default function StudioHubPage() {
         data.running && typeof data.running === 'object' ? data.running : {};
       let nextPlans = Array.isArray(data.plans) ? data.plans : [];
       const nextLeads = Array.isArray(data.leads) ? data.leads : [];
+      const nextProjects = Array.isArray(data.projects) ? data.projects : [];
+      const nextTodos = Array.isArray(data.todos) ? data.todos : [];
 
       // One-time migration: if the database is still empty but THIS browser has
       // old localStorage data, adopt it so nothing you already logged is lost.
@@ -356,6 +376,8 @@ export default function StudioHubPage() {
       setRunning(nextRunning);
       setPlans(nextPlans);
       setLeads(nextLeads);
+      setProjects(nextProjects);
+      setTodos(nextTodos);
       setAuthed(true);
       setMounted(true);
     } catch (err) {
@@ -383,7 +405,7 @@ export default function StudioHubPage() {
       fetch('/api/studio-hub', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tasks, running, plans, leads }),
+        body: JSON.stringify({ tasks, running, plans, leads, projects, todos }),
       }).catch((err) => {
         // Network hiccup — the next change retries with the latest state.
         console.error('studio-hub save error:', err);
@@ -392,7 +414,7 @@ export default function StudioHubPage() {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [tasks, running, plans, leads, mounted, authed]);
+  }, [tasks, running, plans, leads, projects, todos, mounted, authed]);
 
   /* ---- Password gate submit ---- */
   const handleLogin = useCallback(
@@ -523,14 +545,14 @@ export default function StudioHubPage() {
       mondayOf(new Date()).getTime() >= mondayOf(parseISODate(p.activationDate)).getTime();
     const live = Boolean(p.activatedWeek) || reached;
     if (!live) return `${p.name} · ${fmtNiceDate(p.activationDate)}`;
-    // Calculate which week of the 13-week plan we're currently in
+    // Calculate which week of the plan we're currently in
     const startMonday = p.activatedWeek
       ? weekKeyToMonday(p.activatedWeek)
       : mondayOf(parseISODate(p.activationDate));
     const currentMonday = mondayOf(new Date());
     const weekNum = Math.round((currentMonday.getTime() - startMonday.getTime()) / (7 * 86400000)) + 1;
-    const clampedWeek = Math.max(1, Math.min(weekNum, 13));
-    return `${p.name} · Activo · Week ${clampedWeek} of 13`;
+    const clampedWeek = Math.max(1, Math.min(weekNum, PLAN_WEEKS));
+    return `${p.name} · Activo · Week ${clampedWeek} of ${PLAN_WEEKS}`;
   }, [plans]);
 
   const weekTasks = useMemo(
@@ -737,6 +759,32 @@ export default function StudioHubPage() {
       maxCat,
     };
   }, [reportTasks, reportDone, elapsedOf]);
+
+  /* ---- Dashboard overview tiles: a pulse across all areas ---- */
+  const overview = useMemo(() => {
+    const thisWeek = weekKeyOf(new Date());
+    const wkTasks = tasks.filter((t) => t.weekKey === thisWeek);
+    const wkDone = wkTasks.filter((t) => t.done).length;
+    const today = dateKeyOf(new Date());
+    return {
+      // Clients in active delivery (everything not yet 'live').
+      activeProjects: projects.filter((p) => p.stage !== 'live').length,
+      // Open leads = anything still in the pipeline (not Won/Lost).
+      openLeads: leads.filter((l) => l.status !== 'Won' && l.status !== 'Lost').length,
+      // Leads needing a chase today (follow-up due, still open).
+      dueFollowUps: leads.filter(
+        (l) =>
+          l.nextFollowUp &&
+          l.status !== 'Won' &&
+          l.status !== 'Lost' &&
+          l.nextFollowUp <= today,
+      ).length,
+      // Marketing + Admin checklist items still open.
+      pendingTodos: todos.filter((t) => !t.done).length,
+      // This week's task completion rate.
+      weekPct: wkTasks.length ? Math.round((wkDone / wkTasks.length) * 100) : 0,
+    };
+  }, [tasks, projects, leads, todos]);
 
   /* ---- Time-by-category line chart data (weekly or monthly) ---- */
   const chart = useMemo(() => {
@@ -1120,28 +1168,61 @@ export default function StudioHubPage() {
           </form>
         ) : (
           <>
-          {/* -------- Tab bar: Tasks board vs Leads CRM -------- */}
+          {/* -------- Tab bar: one button per business area -------- */}
           <nav className={styles.tabBar} aria-label="Studio Hub sections">
-            <button
-              className={`${styles.tabBtn} ${tab === 'tasks' ? styles.tabBtnActive : ''}`}
-              onClick={() => setTab('tasks')}
-              aria-current={tab === 'tasks'}
-            >
-              Tasks
-            </button>
-            <button
-              className={`${styles.tabBtn} ${tab === 'leads' ? styles.tabBtnActive : ''}`}
-              onClick={() => setTab('leads')}
-              aria-current={tab === 'leads'}
-            >
-              Leads
-            </button>
+            {([
+              ['dashboard', 'Dashboard'],
+              ['sales', 'Sales'],
+              ['clients', 'Clients'],
+              ['marketing', 'Marketing'],
+              ['admin', 'Admin'],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                className={`${styles.tabBtn} ${tab === key ? styles.tabBtnActive : ''}`}
+                onClick={() => setTab(key)}
+                aria-current={tab === key}
+              >
+                {label}
+              </button>
+            ))}
           </nav>
 
-          {tab === 'leads' && <StudioLeads leads={leads} setLeads={setLeads} />}
+          {/* Each area tab renders its own component. Dashboard (below) keeps
+              the original weekly board + report + Plan Marea. */}
+          {tab === 'sales' && <StudioLeads leads={leads} setLeads={setLeads} />}
+          {tab === 'clients' && <StudioClients projects={projects} setProjects={setProjects} />}
+          {tab === 'marketing' && <StudioTodos area="Marketing" todos={todos} setTodos={setTodos} />}
+          {tab === 'admin' && <StudioTodos area="Admin" todos={todos} setTodos={setTodos} />}
 
-          {tab === 'tasks' && (
+          {tab === 'dashboard' && (
           <>
+          {/* -------- Overview tiles: pulse across all areas -------- */}
+          <div className={styles.tiles}>
+            <button className={styles.tile} onClick={() => setTab('clients')}>
+              <span className={styles.tileNum}>{overview.activeProjects}</span>
+              <span className={styles.tileLabel}>Active projects</span>
+            </button>
+            <button className={styles.tile} onClick={() => setTab('sales')}>
+              <span className={styles.tileNum}>{overview.openLeads}</span>
+              <span className={styles.tileLabel}>Open leads</span>
+            </button>
+            <button className={styles.tile} onClick={() => setTab('sales')}>
+              <span className={`${styles.tileNum} ${overview.dueFollowUps > 0 ? styles.tileNumAlert : ''}`}>
+                {overview.dueFollowUps}
+              </span>
+              <span className={styles.tileLabel}>Follow-ups due</span>
+            </button>
+            <button className={styles.tile} onClick={() => setTab('admin')}>
+              <span className={styles.tileNum}>{overview.pendingTodos}</span>
+              <span className={styles.tileLabel}>Open todos</span>
+            </button>
+            <div className={styles.tile}>
+              <span className={styles.tileNum}>{overview.weekPct}<span className={styles.tilePct}>%</span></span>
+              <span className={styles.tileLabel}>Week done</span>
+            </div>
+          </div>
+
           <div className={styles.layout}>
             {/* -------- Weekly board -------- */}
             <section aria-label="Weekly task board">

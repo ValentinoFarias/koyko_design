@@ -1063,13 +1063,106 @@
    lead cards, plus an add-lead form and an inline card editor.
    ============================================================================= */
 .leads { margin-top: 32px; }
+/* Clients board + Marketing/Admin lists reuse the lead/task styles below; these
+   containers just share the same top margin. */
+.todos { margin-top: 32px; }
+
+/* Opt-in starter seeding (empty Clients / Marketing / Admin areas). */
+.seedEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 32px;
+}
+.seedBtn {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  padding: 10px 18px;
+  border: 1.5px dashed rgba(var(--ink-rgb), 0.4);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.seedBtn:hover {
+  border-color: var(--color-signal);
+  color: var(--color-signal);
+  background: rgba(var(--signal-rgb), 0.06);
+}
+
+/* Dashboard overview tiles — a quick pulse; most tiles deep-link to their tab. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 32px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1.5px solid rgba(var(--ink-rgb), 0.12);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+/* The week-done tile is a <div>, not a button — keep it non-interactive. */
+.tile:not(div):hover { border-color: var(--color-ink); }
+div.tile { cursor: default; }
+.tileNum {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-ink);
+}
+.tileNumAlert { color: #c0392b; }
+.tilePct { font-size: 16px; color: rgba(var(--ink-rgb), 0.5); }
+.tileLabel {
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--ink-rgb), 0.55);
+}
 
 /* Add-lead form — mirrors .addForm but tuned for the wider lead fields. */
 .leadAddForm {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
+}
+
+/* Due-follow-ups filter toggle (Sales tab). */
+.leadFilterRow {
+  display: flex;
+  margin-bottom: 24px;
+}
+.leadFilterBtn {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border: 1px solid rgba(var(--ink-rgb), 0.3);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(var(--ink-rgb), 0.6);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.leadFilterBtn:hover { border-color: var(--color-ink); color: var(--color-ink); }
+.leadFilterBtnActive {
+  border-color: var(--color-signal);
+  color: var(--color-signal);
+  background: rgba(var(--signal-rgb), 0.07);
 }
 
 /* Board: columns scroll horizontally when they overflow the viewport. */
@@ -1195,6 +1288,17 @@
   border-radius: 999px;
   color: rgba(var(--ink-rgb), 0.7);
 }
+/* Clients: a project on the Care Plan (uptime + critical bugs). */
+.carePlanBadge {
+  font-family: var(--ff-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(39, 174, 96, 0.12);
+  color: #1e8449;
+}
 .leadFollow {
   font-family: var(--ff-mono);
   font-size: 10.5px;
@@ -1245,6 +1349,17 @@
 .leadField select:focus,
 .leadField textarea:focus { border-color: var(--color-signal); }
 .leadFieldRow { display: flex; gap: 10px; }
+/* Inline checkbox + label row in the project editor (e.g. Care Plan toggle). */
+.leadCheckRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  color: rgba(var(--ink-rgb), 0.75);
+  cursor: pointer;
+}
+.leadCheckRow input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-signal); }
 
 .leadEditorFoot {
   display: flex;

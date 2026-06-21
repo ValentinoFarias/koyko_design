@@ -24,6 +24,8 @@ export type StudioHubState = {
   running: Record<string, unknown>;
   plans: unknown[];
   leads: unknown[];
+  projects: unknown[];
+  todos: unknown[];
 };
 
 // Everything lives in a single row identified by this fixed id.
@@ -41,7 +43,7 @@ function getSql() {
 export async function readState(): Promise<StudioHubState> {
   const sql = getSql();
   const rows = (await sql`
-    SELECT tasks, running, plans, leads
+    SELECT tasks, running, plans, leads, projects, todos
     FROM studio_hub_state
     WHERE id = ${ROW_ID}
   `) as Array<{
@@ -49,6 +51,8 @@ export async function readState(): Promise<StudioHubState> {
     running: Record<string, unknown>;
     plans: unknown[];
     leads: unknown[];
+    projects: unknown[];
+    todos: unknown[];
   }>;
 
   const row = rows[0];
@@ -57,6 +61,8 @@ export async function readState(): Promise<StudioHubState> {
     running: row?.running ?? {},
     plans: row?.plans ?? [],
     leads: row?.leads ?? [],
+    projects: row?.projects ?? [],
+    todos: row?.todos ?? [],
   };
 }
 
@@ -67,13 +73,15 @@ export async function readState(): Promise<StudioHubState> {
 export async function writeState(state: StudioHubState): Promise<void> {
   const sql = getSql();
   await sql`
-    INSERT INTO studio_hub_state (id, tasks, running, plans, leads, updated_at)
+    INSERT INTO studio_hub_state (id, tasks, running, plans, leads, projects, todos, updated_at)
     VALUES (
       ${ROW_ID},
       ${JSON.stringify(state.tasks)}::jsonb,
       ${JSON.stringify(state.running)}::jsonb,
       ${JSON.stringify(state.plans)}::jsonb,
       ${JSON.stringify(state.leads)}::jsonb,
+      ${JSON.stringify(state.projects)}::jsonb,
+      ${JSON.stringify(state.todos)}::jsonb,
       now()
     )
     ON CONFLICT (id) DO UPDATE SET
@@ -81,6 +89,8 @@ export async function writeState(state: StudioHubState): Promise<void> {
       running    = EXCLUDED.running,
       plans      = EXCLUDED.plans,
       leads      = EXCLUDED.leads,
+      projects   = EXCLUDED.projects,
+      todos      = EXCLUDED.todos,
       updated_at = now()
   `;
 }

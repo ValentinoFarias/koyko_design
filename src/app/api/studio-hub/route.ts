@@ -53,6 +53,8 @@ export async function PUT(request: Request) {
           : {},
       plans: Array.isArray(body?.plans) ? body.plans : [],
       leads: Array.isArray(body?.leads) ? body.leads : [],
+      projects: Array.isArray(body?.projects) ? body.projects : [],
+      todos: Array.isArray(body?.todos) ? body.todos : [],
     };
 
     await writeState(state);

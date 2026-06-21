@@ -19,6 +19,7 @@ import styles from './studio-hub.module.css';
 
 export type LeadStatus =
   | 'New'
+  | 'Email Sent'
   | 'Contacted'
   | 'Qualified'
   | 'Proposal'
@@ -56,6 +57,7 @@ export type Lead = {
 // Pipeline order. Won/Lost are the "closed" columns, rendered muted at the end.
 const STATUSES: LeadStatus[] = [
   'New',
+  'Email Sent',
   'Contacted',
   'Qualified',
   'Proposal',
@@ -76,6 +78,7 @@ const SOURCES: LeadSource[] = [
 // Accent per status, aligned with the Notion palette.
 const STATUS_COLORS: Record<LeadStatus, string> = {
   New: '#9C9389', // warm grey
+  'Email Sent': '#5A8A7B', // sage
   Contacted: '#3F6189', // slate blue
   Qualified: '#7A5A9B', // purple
   Proposal: '#C9A227', // yellow/gold
@@ -142,6 +145,16 @@ export default function StudioLeads({ leads, setLeads }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   // The status column currently hovered during a drag (for highlight).
   const [dragOverStatus, setDragOverStatus] = useState<LeadStatus | null>(null);
+  // When on, show only leads whose follow-up is due (today or earlier).
+  const [onlyDue, setOnlyDue] = useState(false);
+
+  // A lead's follow-up is "due" if it's today or earlier and the lead is open.
+  const isDue = (lead: Lead): boolean => {
+    if (!lead.nextFollowUp) return false;
+    if (lead.status === 'Won' || lead.status === 'Lost') return false;
+    return lead.nextFollowUp <= todayKey();
+  };
+  const dueCount = leads.filter(isDue).length;
 
   /* ---- Actions ---- */
 
@@ -372,6 +385,17 @@ export default function StudioLeads({ leads, setLeads }: Props) {
         </button>
       </form>
 
+      {/* Due-follow-ups filter: a quick view of who needs chasing today. */}
+      <div className={styles.leadFilterRow}>
+        <button
+          className={`${styles.leadFilterBtn} ${onlyDue ? styles.leadFilterBtnActive : ''}`}
+          onClick={() => setOnlyDue((v) => !v)}
+          aria-pressed={onlyDue}
+        >
+          {onlyDue ? '✓ ' : ''}Due follow-ups{dueCount > 0 ? ` (${dueCount})` : ''}
+        </button>
+      </div>
+
       {leads.length === 0 ? (
         <p className={styles.empty} style={{ marginTop: 32 }}>
           No leads yet. Add your first one above.
@@ -380,7 +404,9 @@ export default function StudioLeads({ leads, setLeads }: Props) {
         /* Kanban board: one column per status */
         <div className={styles.leadBoard}>
           {STATUSES.map((status) => {
-            const colLeads = leads.filter((l) => l.status === status);
+            const colLeads = leads.filter(
+              (l) => l.status === status && (!onlyDue || isDue(l)),
+            );
             const closed = status === 'Won' || status === 'Lost';
             return (
               <section
