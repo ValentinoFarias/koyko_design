@@ -21,7 +21,6 @@ export type LeadStatus =
   | 'New'
   | 'Email Sent'
   | 'Contacted'
-  | 'Qualified'
   | 'Proposal'
   | 'Negotiation'
   | 'Won'
@@ -59,12 +58,15 @@ const STATUSES: LeadStatus[] = [
   'New',
   'Email Sent',
   'Contacted',
-  'Qualified',
   'Proposal',
   'Negotiation',
   'Won',
   'Lost',
 ];
+
+// When a lead enters "Email Sent", we auto-schedule a follow-up this many days
+// later, so it surfaces in the "Due follow-ups" filter once the clock runs out.
+const EMAIL_FOLLOWUP_DAYS = 3;
 
 const SOURCES: LeadSource[] = [
   'Website',
@@ -80,7 +82,6 @@ const STATUS_COLORS: Record<LeadStatus, string> = {
   New: '#9C9389', // warm grey
   'Email Sent': '#5A8A7B', // sage
   Contacted: '#3F6189', // slate blue
-  Qualified: '#7A5A9B', // purple
   Proposal: '#C9A227', // yellow/gold
   Negotiation: '#EB5120', // signal orange
   Won: '#27ae60', // green
@@ -113,6 +114,23 @@ function fmtNiceDate(s: string): string {
 function todayKey(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Add `days` to a "YYYY-MM-DD" string and return the new "YYYY-MM-DD".
+function addDays(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+}
+
+// Whole days from today until `dateStr` (negative = overdue, 0 = today).
+function daysUntil(dateStr: string): number {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const target = new Date(y, m - 1, d).getTime();
+  const [ty, tm, td] = todayKey().split('-').map(Number);
+  const today = new Date(ty, tm - 1, td).getTime();
+  return Math.round((target - today) / 86400000);
 }
 
 // A follow-up date is overdue if it's strictly before today (and the lead is open).
@@ -187,6 +205,26 @@ export default function StudioLeads({ leads, setLeads }: Props) {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
   };
 
+  // Change a lead's status. Moving INTO "Email Sent" starts the 3-day clock:
+  // we set nextFollowUp = today + 3, so it lands in "Due follow-ups" when it's
+  // time to chase. We only do this on the transition (not on re-saves) so the
+  // clock isn't reset by unrelated edits.
+  const changeStatus = (id: string, status: LeadStatus) => {
+    setLeads((prev) =>
+      prev.map((l) => {
+        if (l.id !== id) return l;
+        const enteringEmailSent = status === 'Email Sent' && l.status !== 'Email Sent';
+        return {
+          ...l,
+          status,
+          nextFollowUp: enteringEmailSent
+            ? addDays(todayKey(), EMAIL_FOLLOWUP_DAYS)
+            : l.nextFollowUp,
+        };
+      }),
+    );
+  };
+
   const deleteLead = (id: string) => {
     setLeads((prev) => prev.filter((l) => l.id !== id));
     setConfirmingDelete(null);
@@ -195,7 +233,7 @@ export default function StudioLeads({ leads, setLeads }: Props) {
 
   // Drop a dragged lead into a status column.
   const dropOnStatus = (status: LeadStatus) => {
-    if (dragId) updateLead(dragId, { status });
+    if (dragId) changeStatus(dragId, status);
     setDragId(null);
     setDragOverStatus(null);
   };
@@ -205,6 +243,14 @@ export default function StudioLeads({ leads, setLeads }: Props) {
     const editing = editingId === lead.id;
     const confirming = confirmingDelete === lead.id;
     const overdue = isOverdue(lead.nextFollowUp, lead.status);
+
+    // Relative countdown for the follow-up clock (e.g. "in 3d", "today", "due").
+    let followLabel = '';
+    if (lead.nextFollowUp) {
+      const d = daysUntil(lead.nextFollowUp);
+      followLabel =
+        d > 1 ? `in ${d}d` : d === 1 ? 'tomorrow' : d === 0 ? 'today' : 'due';
+    }
 
     return (
       <li
@@ -229,7 +275,7 @@ export default function StudioLeads({ leads, setLeads }: Props) {
           {lead.source && <span className={styles.leadChip}>{lead.source}</span>}
           {lead.nextFollowUp && (
             <span className={`${styles.leadFollow} ${overdue ? styles.leadFollowOverdue : ''}`}>
-              {overdue ? '⚠ ' : '↻ '}{fmtNiceDate(lead.nextFollowUp)}
+              {overdue ? '⚠ ' : '↻ '}{fmtNiceDate(lead.nextFollowUp)} · {followLabel}
             </span>
           )}
         </div>
@@ -278,7 +324,7 @@ export default function StudioLeads({ leads, setLeads }: Props) {
                 <span>Status</span>
                 <select
                   value={lead.status}
-                  onChange={(e) => updateLead(lead.id, { status: e.target.value as LeadStatus })}
+                  onChange={(e) => changeStatus(lead.id, e.target.value as LeadStatus)}
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>{s}</option>
