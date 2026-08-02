@@ -1,15 +1,20 @@
 'use client';
 
+import { getAvailability } from '../../lib/availability';
+
 // Hero section for the V2 homepage.
 // Direct port of the proposal markup — all animation logic lives in CSS,
 // so no useEffect / useState here.
 export default function KoykoHeroV2() {
+  // Next free slot = one month from today, so the tag never goes stale.
+  const availability = getAvailability();
+
   return (
     <section className="v2-hero" id="top">
       {/* Meta strip: availability tag (with pulsing dot) + location */}
       <div className="v2-hero__meta">
         <span className="v2-hero__tag">
-          <i className="v2-hero__dot" aria-hidden="true" /> available · jun '26
+          <i className="v2-hero__dot" aria-hidden="true" /> available · {availability}
         </span>
         <span className="v2-hero__loc">Bristol &nbsp;/&nbsp; remote</span>
       </div>
