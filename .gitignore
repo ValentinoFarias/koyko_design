@@ -9,3 +9,6 @@ CLAUDE.md
 .env.production
 falling-text-demo.html
 .claude
+
+# Local Netlify folder
+.netlify

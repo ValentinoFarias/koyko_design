@@ -1,5 +1,3 @@
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Syne, Noto_Sans_JP, JetBrains_Mono } from 'next/font/google';
 import '../assets/css/style.css';
 
@@ -71,8 +69,6 @@ export default function RootLayout({ children }) {
     <html lang="en" className={fontVars} suppressHydrationWarning>
       <body>
         {children}
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

@@ -131,8 +131,7 @@ All state lives in **one row of Neon Postgres** as JSONB blobs (read/written as 
 - **Matter.js** — 2D physics engine for the Mission section word crumble
 - **Resend** — transactional email API for the contact form
 - **Neon** (`@neondatabase/serverless`) — serverless Postgres backing the Studio Hub
-- **Vercel Analytics** + **Speed Insights** — traffic and performance monitoring
-- **Vercel** — deployment and hosting
+- **Netlify** — deployment and hosting
 
 ---
 
@@ -190,11 +189,11 @@ koyko-web-next/
 
 ## Deployment
 
-The project is deployed on **Vercel** via the GitHub integration (`ValentinoFarias/koyko_design`, `main` branch).
+The project is deployed on **Netlify** via the GitHub integration (`ValentinoFarias/koyko_design`, `main` branch).
 
-1. Push to `main` — Vercel detects the Next.js project and builds automatically
-2. Set environment variables in the Vercel dashboard (see below)
-3. Custom domain configured via Namecheap → Vercel DNS
+1. Push to `main` — Netlify detects the Next.js project and builds it with the Next.js Runtime automatically
+2. Set environment variables in the Netlify dashboard (see below)
+3. Custom domain configured via Namecheap → Netlify DNS
 
 ---
 
@@ -213,7 +212,7 @@ STUDIO_HUB_PASSWORD=your-password  # password to unlock /studio-hub
 STUDIO_HUB_SECRET=long-random-hex  # used to sign the auth cookie
 ```
 
-In production, add these under the Vercel project's **Settings → Environment Variables**.
+In production, add these under the Netlify site's **Site configuration → Environment variables**.
 
 > The contact form (`/api/contact`) returns a 500 if `RESEND_API_KEY` or `CONTACT_EMAIL` is missing. The Studio Hub API throws if `DATABASE_URL`, `STUDIO_HUB_PASSWORD`, or `STUDIO_HUB_SECRET` is missing.
 
@@ -253,4 +252,4 @@ The Studio Hub features require the database/auth environment variables above; t
 - [Resend](https://resend.com) — transactional email API
 - [Neon](https://neon.tech) — serverless Postgres
 - [Next.js Documentation](https://nextjs.org/docs) — App Router, API routes, TypeScript
-- [Vercel](https://vercel.com) — deployment platform, Analytics, and Speed Insights
+- [Netlify](https://netlify.com) — deployment and hosting platform

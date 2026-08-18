@@ -31,7 +31,7 @@ const FAQS = [
     number: '02',
     question: 'What is hosting?',
     answer:
-      "Hosting is the server where your website actually lives — the files, the database, the images. Without it, your site isn't accessible online. Koyko uses professional infrastructure (Vercel + Supabase) — the same tools used by companies serving millions of users — so your site loads fast, stays online, and scales with you.",
+      "Hosting is the server where your website actually lives — the files, the database, the images. Without it, your site isn't accessible online. Koyko uses professional infrastructure (Netlify + Supabase) — the same tools used by companies serving millions of users — so your site loads fast, stays online, and scales with you.",
   },
   {
     number: '03',
@@ -85,13 +85,13 @@ const FAQS = [
     number: '11',
     question: 'What is the Care plan?',
     answer:
-      "£65/month — hosting on professional infrastructure (Vercel + Supabase), uptime monitoring to catch issues before you notice them, and critical bug coverage. If something breaks that affects your clients' ability to book or pay, it gets fixed at no extra cost. Recommended for any site with live transactions.",
+      "£65/month — hosting on professional infrastructure (Netlify + Supabase), uptime monitoring to catch issues before you notice them, and critical bug coverage. If something breaks that affects your clients' ability to book or pay, it gets fixed at no extra cost. Recommended for any site with live transactions.",
   },
   {
     number: '12',
     question: 'What technology does Koyko use?',
     answer:
-      'Next.js, Supabase, Stripe, Vercel, Cloudflare — industry-standard tools used by companies worldwide. Everything is open, well-documented, and free of lock-in. The code is yours. Any developer can work on it, at any time.',
+      'Next.js, Supabase, Stripe, Netlify, Cloudflare — industry-standard tools used by companies worldwide. Everything is open, well-documented, and free of lock-in. The code is yours. Any developer can work on it, at any time.',
   },
 ];
 
